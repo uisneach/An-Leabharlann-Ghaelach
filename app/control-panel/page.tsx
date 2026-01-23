@@ -211,33 +211,6 @@ export default function ApiControlPanel() {
     }
   };
 
-  const handleUpdateRelationship = async () => {
-    setLoading(true);
-    setError(null);
-    setResponse(null);
-
-    try {
-      
-
-      const res = await fetch(relApiUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fromNodeId: relFromNodeId,
-          toNodeId: relToNodeId,
-          type: relType
-        })
-      });
-      
-      const data = await res.json();
-      setResponse({ status: res.status, data });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleDeleteRelationship = async () => {
     setLoading(true);
     setError(null);
@@ -713,49 +686,6 @@ export default function ApiControlPanel() {
                   className="w-full bg-green-600 hover:bg-green-700 disabled:bg-slate-600 px-4 py-2 rounded font-medium transition-colors"
                 >
                   {loading ? 'Creating...' : 'Create Relationship'}
-                </button>
-              </div>
-            )}
-
-            {/* RELATIONSHIP UPDATE Form */}
-            {activeTab === 'rel-update' && (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">From Node ID *</label>
-                  <input
-                    type="text"
-                    value={relFromNodeId}
-                    onChange={(e) => setRelFromNodeId(e.target.value)}
-                    placeholder="e.g., user_123"
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded focus:outline-none focus:border-yellow-400"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">To Node ID *</label>
-                  <input
-                    type="text"
-                    value={relToNodeId}
-                    onChange={(e) => setRelToNodeId(e.target.value)}
-                    placeholder="e.g., user_456"
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded focus:outline-none focus:border-yellow-400"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Relationship Type *</label>
-                  <input
-                    type="text"
-                    value={relType}
-                    onChange={(e) => setRelType(e.target.value)}
-                    placeholder="e.g., FOLLOWS, FRIENDS_WITH"
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded focus:outline-none focus:border-yellow-400"
-                  />
-                </div>
-                <button
-                  onClick={handleUpdateRelationship}
-                  disabled={loading}
-                  className="w-full bg-yellow-600 hover:bg-yellow-700 disabled:bg-slate-600 px-4 py-2 rounded font-medium transition-colors"
-                >
-                  {loading ? 'Updating...' : 'Update Relationship'}
                 </button>
               </div>
             )}
