@@ -1,4 +1,4 @@
-import { runQuery } from '../lib/neo4j.js';
+import { runQuery } from '../../lib/neo4j.js';
 import { NextResponse } from 'next/server.js';
 
 export async function GET(request) {
