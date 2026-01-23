@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { runQuery } from '../../lib/neo4j';
+import { runQuery } from '@/lib/neo4j';
 
 export default async function handler(
   req: NextApiRequest,
