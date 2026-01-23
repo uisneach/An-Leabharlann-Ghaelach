@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { fromNodeId, toNodeId, type, properties } = body;
+    const { fromNodeId, toNodeId, type } = body;
 
     if (!fromNodeId || !toNodeId || !type) {
       return NextResponse.json(
@@ -84,14 +84,6 @@ export async function POST(request: NextRequest) {
         { 
           error: 'Invalid relationship type format. Use alphanumeric and underscores only.' 
         },
-        { status: 400 }
-      );
-    }
-
-    // Validate properties if provided
-    if (properties && typeof properties !== 'object') {
-      return NextResponse.json(
-        { error: 'properties must be an object' },
         { status: 400 }
       );
     }
@@ -113,23 +105,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the relationship
-    const createCypher = properties
-      ? `
-        MATCH (from {nodeId: $fromNodeId})
-        MATCH (to {nodeId: $toNodeId})
-        CREATE (from)-[r:${type} $properties]->(to)
-        RETURN r, from, to
-      `
-      : `
+    const createCypher = `
         MATCH (from {nodeId: $fromNodeId})
         MATCH (to {nodeId: $toNodeId})
         CREATE (from)-[r:${type}]->(to)
         RETURN r, from, to
       `;
 
-    const params = properties 
-      ? { fromNodeId, toNodeId, properties }
-      : { fromNodeId, toNodeId };
+    const params = { fromNodeId, toNodeId };
 
     const results = await runQuery(createCypher, params);
 

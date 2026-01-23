@@ -35,7 +35,6 @@ export default function ApiControlPanel() {
   const [relFromNodeId, setRelFromNodeId] = useState('');
   const [relToNodeId, setRelToNodeId] = useState('');
   const [relType, setRelType] = useState('');
-  const [relProperties, setRelProperties] = useState('{\n  "since": "2024-01-01"\n}');
 
   const apiBaseUrl = '/api/nodes';
   const relApiBaseUrl = '/api/relationships';
@@ -192,23 +191,13 @@ export default function ApiControlPanel() {
     setResponse(null);
 
     try {
-      let properties = {};
-      if (relProperties.trim()) {
-        try {
-          properties = JSON.parse(relProperties);
-        } catch (e) {
-          throw new Error('Invalid JSON in properties field');
-        }
-      }
-
       const res = await fetch(relApiBaseUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fromNodeId: relFromNodeId,
           toNodeId: relToNodeId,
-          type: relType,
-          properties
+          type: relType
         })
       });
       
@@ -227,12 +216,7 @@ export default function ApiControlPanel() {
     setResponse(null);
 
     try {
-      let properties;
-      try {
-        properties = JSON.parse(relProperties);
-      } catch (e) {
-        throw new Error('Invalid JSON in properties field');
-      }
+      
 
       const res = await fetch(relApiBaseUrl, {
         method: 'PUT',
@@ -240,8 +224,7 @@ export default function ApiControlPanel() {
         body: JSON.stringify({
           fromNodeId: relFromNodeId,
           toNodeId: relToNodeId,
-          type: relType,
-          properties
+          type: relType
         })
       });
       
