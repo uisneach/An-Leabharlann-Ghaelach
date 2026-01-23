@@ -2,18 +2,36 @@ import { runQuery } from '../../lib/neo4j.js';
 import { NextResponse } from 'next/server.js';
 import type { NextRequest } from 'next/server.js';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ nodeId: string }> }
-) {
+function getNodeId(request: NextRequest): string | null {
   try {
-    const { nodeId } = await params;
+    const url = new URL(request.url);
+    const pathSegments = url.pathname.split('/').filter(Boolean);
+    
+    // URL Path will be /api/nodes/[nodeId]
+    // Find the segment after 'nodes'
+    const nodesIndex = pathSegments.indexOf('nodes');
+    
+    if (nodesIndex === -1 || nodesIndex === pathSegments.length - 1) {
+      return null;
+    }
+    
+    // The node ID is the segment immediately after 'nodes'
+    const nodeId = pathSegments[nodesIndex + 1];
+    
+    return nodeId || null;
+  } catch (error) {
+    console.error('Error extracting node ID from URL:', error);
+    return null;
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const nodeId = getNodeId(request);
     
     if (!nodeId) {
       return NextResponse.json(
-        { 
-          error: 'Missing required query params: nodeId' 
-        },
+        { error: 'Node ID is required in path' },
         { status: 400 }
       );
     }
@@ -52,15 +70,9 @@ export async function GET(
 }
 
 // PUT - Update node labels and/or properties
-export async function PUT(
-  request: NextRequest,
-  context: any
-) {
+export async function PUT(request: NextRequest) {
   try {
-    console.log('Context:', context);
-    console.log('Params:', context?.params);
-    
-    const nodeId = context?.params?.nodeId;
+    const nodeId = getNodeId(request);
     
     if (!nodeId) {
       return NextResponse.json(
@@ -68,6 +80,7 @@ export async function PUT(
         { status: 400 }
       );
     }
+
     const body = await request.json();
     const { labels, properties } = body;
 
@@ -170,18 +183,13 @@ export async function PUT(
 }
 
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ nodeId: string }> }
-) {
+export async function DELETE(request: NextRequest) {
   try {
-    const { nodeId } = await params;
+    const nodeId = getNodeId(request);
     
     if (!nodeId) {
       return NextResponse.json(
-        { 
-          error: 'Missing required query params: nodeId' 
-        },
+        { error: 'Node ID is required in path' },
         { status: 400 }
       );
     }
