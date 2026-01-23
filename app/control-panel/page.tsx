@@ -31,7 +31,14 @@ export default function ApiControlPanel() {
   // Delete Node state
   const [deleteNodeId, setDeleteNodeId] = useState('');
 
-  const apiBaseUrl = 'https://leabharlann.uisneac.com/api/nodes';
+  // Relationship states
+  const [relFromNodeId, setRelFromNodeId] = useState('');
+  const [relToNodeId, setRelToNodeId] = useState('');
+  const [relType, setRelType] = useState('');
+  const [relProperties, setRelProperties] = useState('{\n  "since": "2024-01-01"\n}');
+
+  const apiBaseUrl = '/api/nodes';
+  const relApiBaseUrl = '/api/relationships';
 
   const handleGetNode = async () => {
     setLoading(true);
@@ -167,7 +174,7 @@ export default function ApiControlPanel() {
       const data = await res.json();
       setResponse({ status: res.status, data });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -183,6 +190,31 @@ export default function ApiControlPanel() {
             Neo4j API Control Panel
           </h1>
           <p className="text-slate-400">Build queries and test your Neo4j API endpoints</p>
+          
+          {/* Entity Type Selector */}
+          <div className="mt-4 flex gap-2">
+            <span className="text-slate-400 self-center">Entity:</span>
+            <button
+              onClick={() => setActiveTab('get')}
+              className={`px-4 py-2 rounded font-medium transition-colors ${
+                ['get', 'create', 'update', 'delete'].includes(activeTab)
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+              }`}
+            >
+              Nodes
+            </button>
+            <button
+              onClick={() => setActiveTab('rel-get')}
+              className={`px-4 py-2 rounded font-medium transition-colors ${
+                activeTab.startsWith('rel-')
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+              }`}
+            >
+              Relationships
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -191,54 +223,105 @@ export default function ApiControlPanel() {
             <h2 className="text-xl font-semibold mb-4">Query Builder</h2>
 
             {/* Tabs */}
-            <div className="flex gap-2 mb-6 border-b border-slate-700">
-              <button
-                onClick={() => setActiveTab('get')}
-                className={`px-4 py-2 font-medium transition-colors ${
-                  activeTab === 'get'
-                    ? 'text-blue-400 border-b-2 border-blue-400'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <Search className="w-4 h-4 inline mr-2" />
-                GET
-              </button>
-              <button
-                onClick={() => setActiveTab('create')}
-                className={`px-4 py-2 font-medium transition-colors ${
-                  activeTab === 'create'
-                    ? 'text-green-400 border-b-2 border-green-400'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <Plus className="w-4 h-4 inline mr-2" />
-                CREATE
-              </button>
-              <button
-                onClick={() => setActiveTab('update')}
-                className={`px-4 py-2 font-medium transition-colors ${
-                  activeTab === 'update'
-                    ? 'text-yellow-400 border-b-2 border-yellow-400'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <Plus className="w-4 h-4 inline mr-2" />
-                UPDATE
-              </button>
-              <button
-                onClick={() => setActiveTab('delete')}
-                className={`px-4 py-2 font-medium transition-colors ${
-                  activeTab === 'delete'
-                    ? 'text-red-400 border-b-2 border-red-400'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <Trash2 className="w-4 h-4 inline mr-2" />
-                DELETE
-              </button>
+            <div className="flex gap-2 mb-6 border-b border-slate-700 overflow-x-auto">
+              {['get', 'create', 'update', 'delete'].includes(activeTab) ? (
+                <>
+                  <button
+                    onClick={() => setActiveTab('get')}
+                    className={`px-4 py-2 font-medium transition-colors whitespace-nowrap ${
+                      activeTab === 'get'
+                        ? 'text-blue-400 border-b-2 border-blue-400'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Search className="w-4 h-4 inline mr-2" />
+                    GET
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('create')}
+                    className={`px-4 py-2 font-medium transition-colors whitespace-nowrap ${
+                      activeTab === 'create'
+                        ? 'text-green-400 border-b-2 border-green-400'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Plus className="w-4 h-4 inline mr-2" />
+                    CREATE
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('update')}
+                    className={`px-4 py-2 font-medium transition-colors whitespace-nowrap ${
+                      activeTab === 'update'
+                        ? 'text-yellow-400 border-b-2 border-yellow-400'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Plus className="w-4 h-4 inline mr-2" />
+                    UPDATE
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('delete')}
+                    className={`px-4 py-2 font-medium transition-colors whitespace-nowrap ${
+                      activeTab === 'delete'
+                        ? 'text-red-400 border-b-2 border-red-400'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Trash2 className="w-4 h-4 inline mr-2" />
+                    DELETE
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setActiveTab('rel-get')}
+                    className={`px-4 py-2 font-medium transition-colors whitespace-nowrap ${
+                      activeTab === 'rel-get'
+                        ? 'text-blue-400 border-b-2 border-blue-400'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Search className="w-4 h-4 inline mr-2" />
+                    GET
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('rel-create')}
+                    className={`px-4 py-2 font-medium transition-colors whitespace-nowrap ${
+                      activeTab === 'rel-create'
+                        ? 'text-green-400 border-b-2 border-green-400'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Plus className="w-4 h-4 inline mr-2" />
+                    CREATE
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('rel-update')}
+                    className={`px-4 py-2 font-medium transition-colors whitespace-nowrap ${
+                      activeTab === 'rel-update'
+                        ? 'text-yellow-400 border-b-2 border-yellow-400'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Plus className="w-4 h-4 inline mr-2" />
+                    UPDATE
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('rel-delete')}
+                    className={`px-4 py-2 font-medium transition-colors whitespace-nowrap ${
+                      activeTab === 'rel-delete'
+                        ? 'text-red-400 border-b-2 border-red-400'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Trash2 className="w-4 h-4 inline mr-2" />
+                    DELETE
+                  </button>
+                </>
+              )}
               <button
                 onClick={() => setActiveTab('health')}
-                className={`px-4 py-2 font-medium transition-colors ${
+                className={`px-4 py-2 font-medium transition-colors whitespace-nowrap ${
                   activeTab === 'health'
                     ? 'text-purple-400 border-b-2 border-purple-400'
                     : 'text-slate-400 hover:text-white'
@@ -446,6 +529,196 @@ export default function ApiControlPanel() {
                   className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-slate-600 px-4 py-2 rounded font-medium transition-colors"
                 >
                   {loading ? 'Checking...' : 'Check Health'}
+                </button>
+              </div>
+            )}
+
+            {/* RELATIONSHIP GET Form */}
+            {activeTab === 'rel-get' && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">From Node ID *</label>
+                  <input
+                    type="text"
+                    value={relFromNodeId}
+                    onChange={(e) => setRelFromNodeId(e.target.value)}
+                    placeholder="e.g., user_123"
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded focus:outline-none focus:border-blue-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">To Node ID *</label>
+                  <input
+                    type="text"
+                    value={relToNodeId}
+                    onChange={(e) => setRelToNodeId(e.target.value)}
+                    placeholder="e.g., user_456"
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded focus:outline-none focus:border-blue-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Relationship Type *</label>
+                  <input
+                    type="text"
+                    value={relType}
+                    onChange={(e) => setRelType(e.target.value)}
+                    placeholder="e.g., FOLLOWS, FRIENDS_WITH"
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded focus:outline-none focus:border-blue-400"
+                  />
+                </div>
+                <button
+                  onClick={handleGetRelationship}
+                  disabled={loading}
+                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 px-4 py-2 rounded font-medium transition-colors"
+                >
+                  {loading ? 'Loading...' : 'Get Relationship'}
+                </button>
+              </div>
+            )}
+
+            {/* RELATIONSHIP CREATE Form */}
+            {activeTab === 'rel-create' && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">From Node ID *</label>
+                  <input
+                    type="text"
+                    value={relFromNodeId}
+                    onChange={(e) => setRelFromNodeId(e.target.value)}
+                    placeholder="e.g., user_123"
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded focus:outline-none focus:border-green-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">To Node ID *</label>
+                  <input
+                    type="text"
+                    value={relToNodeId}
+                    onChange={(e) => setRelToNodeId(e.target.value)}
+                    placeholder="e.g., user_456"
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded focus:outline-none focus:border-green-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Relationship Type *</label>
+                  <input
+                    type="text"
+                    value={relType}
+                    onChange={(e) => setRelType(e.target.value)}
+                    placeholder="e.g., FOLLOWS, FRIENDS_WITH"
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded focus:outline-none focus:border-green-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Properties (JSON, optional)</label>
+                  <textarea
+                    value={relProperties}
+                    onChange={(e) => setRelProperties(e.target.value)}
+                    rows={4}
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded focus:outline-none focus:border-green-400 font-mono text-sm"
+                  />
+                </div>
+                <button
+                  onClick={handleCreateRelationship}
+                  disabled={loading}
+                  className="w-full bg-green-600 hover:bg-green-700 disabled:bg-slate-600 px-4 py-2 rounded font-medium transition-colors"
+                >
+                  {loading ? 'Creating...' : 'Create Relationship'}
+                </button>
+              </div>
+            )}
+
+            {/* RELATIONSHIP UPDATE Form */}
+            {activeTab === 'rel-update' && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">From Node ID *</label>
+                  <input
+                    type="text"
+                    value={relFromNodeId}
+                    onChange={(e) => setRelFromNodeId(e.target.value)}
+                    placeholder="e.g., user_123"
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded focus:outline-none focus:border-yellow-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">To Node ID *</label>
+                  <input
+                    type="text"
+                    value={relToNodeId}
+                    onChange={(e) => setRelToNodeId(e.target.value)}
+                    placeholder="e.g., user_456"
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded focus:outline-none focus:border-yellow-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Relationship Type *</label>
+                  <input
+                    type="text"
+                    value={relType}
+                    onChange={(e) => setRelType(e.target.value)}
+                    placeholder="e.g., FOLLOWS, FRIENDS_WITH"
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded focus:outline-none focus:border-yellow-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Properties (JSON) *</label>
+                  <textarea
+                    value={relProperties}
+                    onChange={(e) => setRelProperties(e.target.value)}
+                    rows={4}
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded focus:outline-none focus:border-yellow-400 font-mono text-sm"
+                  />
+                </div>
+                <button
+                  onClick={handleUpdateRelationship}
+                  disabled={loading}
+                  className="w-full bg-yellow-600 hover:bg-yellow-700 disabled:bg-slate-600 px-4 py-2 rounded font-medium transition-colors"
+                >
+                  {loading ? 'Updating...' : 'Update Relationship'}
+                </button>
+              </div>
+            )}
+
+            {/* RELATIONSHIP DELETE Form */}
+            {activeTab === 'rel-delete' && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">From Node ID *</label>
+                  <input
+                    type="text"
+                    value={relFromNodeId}
+                    onChange={(e) => setRelFromNodeId(e.target.value)}
+                    placeholder="e.g., user_123"
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded focus:outline-none focus:border-red-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">To Node ID *</label>
+                  <input
+                    type="text"
+                    value={relToNodeId}
+                    onChange={(e) => setRelToNodeId(e.target.value)}
+                    placeholder="e.g., user_456"
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded focus:outline-none focus:border-red-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Relationship Type *</label>
+                  <input
+                    type="text"
+                    value={relType}
+                    onChange={(e) => setRelType(e.target.value)}
+                    placeholder="e.g., FOLLOWS, FRIENDS_WITH"
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded focus:outline-none focus:border-red-400"
+                  />
+                </div>
+                <button
+                  onClick={handleDeleteRelationship}
+                  disabled={loading}
+                  className="w-full bg-red-600 hover:bg-red-700 disabled:bg-slate-600 px-4 py-2 rounded font-medium transition-colors"
+                >
+                  {loading ? 'Deleting...' : 'Delete Relationship'}
                 </button>
               </div>
             )}

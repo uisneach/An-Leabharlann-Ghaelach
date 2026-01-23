@@ -221,7 +221,7 @@ export async function DELETE(request: NextRequest) {
     
     return NextResponse.json({
       success: true,
-      node: deleteResults[0].n
+      message: `Node with nodeId '${nodeId}' deleted successfully`
     });
     
   } catch (error) {
