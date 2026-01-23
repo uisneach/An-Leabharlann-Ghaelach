@@ -36,7 +36,7 @@ export default function ApiControlPanel() {
   const [relToNodeId, setRelToNodeId] = useState('');
   const [relType, setRelType] = useState('');
 
-  const apiBaseUrl = '/api/nodes';
+  const apiBaseUrl = 'https://leabharlann.uisneac.com/api/nodes';
   const relApiBaseUrl = '/api/relationships';
 
   const handleGetNode = async () => {
