@@ -1,6 +1,7 @@
 import { runQuery } from '../../lib/neo4j.js';
 import { NextResponse } from 'next/server.js';
 import type { NextRequest } from 'next/server.js';
+import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,8 +28,8 @@ export async function POST(request: NextRequest) {
     }
     
     // Generate ID if not provided
-    if (!properties.id) {
-      properties.id = `${label.toLowerCase()}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    if (!properties.nodeId) {
+      properties.nodeId = uuidv4();
     }
     
     // Create node with dynamic label
