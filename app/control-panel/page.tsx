@@ -164,6 +164,120 @@ export default function ApiControlPanel() {
     }
   };
 
+  const handleGetRelationship = async () => {
+    setLoading(true);
+    setError(null);
+    setResponse(null);
+
+    try {
+      const params = new URLSearchParams({
+        fromNodeId: relFromNodeId,
+        toNodeId: relToNodeId,
+        type: relType
+      });
+      const res = await fetch(`${relApiBaseUrl}?${params.toString()}`);
+      
+      const data = await res.json();
+      setResponse({ status: res.status, data });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+    const handleCreateRelationship = async () => {
+    setLoading(true);
+    setError(null);
+    setResponse(null);
+
+    try {
+      let properties = {};
+      if (relProperties.trim()) {
+        try {
+          properties = JSON.parse(relProperties);
+        } catch (e) {
+          throw new Error('Invalid JSON in properties field');
+        }
+      }
+
+      const res = await fetch(relApiBaseUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fromNodeId: relFromNodeId,
+          toNodeId: relToNodeId,
+          type: relType,
+          properties
+        })
+      });
+      
+      const data = await res.json();
+      setResponse({ status: res.status, data });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateRelationship = async () => {
+    setLoading(true);
+    setError(null);
+    setResponse(null);
+
+    try {
+      let properties;
+      try {
+        properties = JSON.parse(relProperties);
+      } catch (e) {
+        throw new Error('Invalid JSON in properties field');
+      }
+
+      const res = await fetch(relApiBaseUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fromNodeId: relFromNodeId,
+          toNodeId: relToNodeId,
+          type: relType,
+          properties
+        })
+      });
+      
+      const data = await res.json();
+      setResponse({ status: res.status, data });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteRelationship = async () => {
+    setLoading(true);
+    setError(null);
+    setResponse(null);
+
+    try {
+      const params = new URLSearchParams({
+        fromNodeId: relFromNodeId,
+        toNodeId: relToNodeId,
+        type: relType
+      });
+      const res = await fetch(`${relApiBaseUrl}?${params.toString()}`, {
+        method: 'DELETE'
+      });
+      
+      const data = await res.json();
+      setResponse({ status: res.status, data });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleHealthCheck = async () => {
     setLoading(true);
     setError(null);
