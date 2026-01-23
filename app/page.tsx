@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Welcome from "./Welcome";
 import NodeList from "./NodeList";
+import Header from "./Header";
 import React, { useState, useEffect } from 'react';
 
 const defaultLabels = ['Author', 'Text', 'Edition'];
@@ -30,7 +31,7 @@ export default function Home() {
       setLoadingLabels(true);
       setErrorLabels(null);
       try {
-        const res = await fetch('https://leabharlann.uisneac.com/api/labels'); // Assuming an API endpoint that returns { labels: string[] }
+        const res = await fetch('https://leabharlann.uisneac.com/api/labels');
         if (!res.ok) {
           throw new Error(`Failed to load labels: ${res.status} ${res.statusText}`);
         }
@@ -60,6 +61,7 @@ export default function Home() {
 
   return (
     <div>
+      <Header />
       <div id="welcome-message" className="container-fluid">
         <h2>Fáilte go dtí an Leabharlann Ghaelach</h2>
         <p>Explore our digital library of Irish and Celtic texts, or sign up to contribute to the database. Learn how to navigate and use the collection in our <a href="/leabharlann/how-to/index.html">User Guide</a>.</p>
@@ -93,7 +95,7 @@ export default function Home() {
           {activeLabels.map((label) => (
             <NodeList 
               key={label} 
-              label={label} 
+              label={label}
               onRemove={() => removeLabel(label)} 
               isDefault={defaultLabels.includes(label)} 
               totalColumns={activeLabels.length} 
