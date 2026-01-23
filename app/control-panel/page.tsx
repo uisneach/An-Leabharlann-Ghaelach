@@ -36,7 +36,7 @@ export default function ApiControlPanel() {
   const [relToNodeId, setRelToNodeId] = useState('');
   const [relType, setRelType] = useState('');
 
-  const apiBaseUrl = 'https://leabharlann.uisneac.com/api';
+  const apiBaseUrl = '/api';
   const nodeApiUrl = `${apiBaseUrl}/nodes`;
   const relApiUrl = `${apiBaseUrl}/relationships`;
 
