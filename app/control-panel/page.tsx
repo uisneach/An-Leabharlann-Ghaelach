@@ -2,11 +2,16 @@
 import React, { useState } from 'react';
 import { Search, Plus, Trash2, Database, AlertCircle, CheckCircle } from 'lucide-react';
 
+type ApiResponse = {
+  status: number;
+  data: any;
+} | null;
+
 export default function ApiControlPanel() {
   const [activeTab, setActiveTab] = useState('get');
-  const [response, setResponse] = useState(null);
+  const [response, setResponse] = useState<ApiResponse>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);;
 
   // Get Node state
   const [getLabel, setGetLabel] = useState('');
