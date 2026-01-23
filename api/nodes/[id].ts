@@ -75,9 +75,12 @@ export async function DELETE(
     const checkResults = await runQuery(checkCypher, { nodeId });
 
     if (checkResults.length === 0) {
-      return res.status(404).json({ 
-        error: `Node not found with nodeId '${nodeId}'` 
-      });
+      return NextResponse.json(
+        { 
+          error: `Node not found with nodeId '${nodeId}'` 
+        },
+        { status: 404 }
+      );
     }
 
     // Delete node and all its relationships
@@ -87,11 +90,6 @@ export async function DELETE(
     `;
 
     await runQuery(deleteCypher, { nodeId });
-
-    res.status(200).json({
-      success: true,
-      message: `Node deleted with nodeId '${nodeId}'`
-    });
     
     return NextResponse.json({
       success: true,
@@ -99,10 +97,10 @@ export async function DELETE(
     });
     
   } catch (error) {
-    console.error('Get node error:', error);
+    console.error('Delete node error:', error);
     return NextResponse.json(
       { 
-        error: 'Failed to get node',
+        error: 'Failed to delete node',
         details: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }
