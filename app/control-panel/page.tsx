@@ -39,7 +39,19 @@ export default function ApiControlPanel() {
       if (getNodeId) params.append('nodeId', getNodeId);
       if (getLimit) params.append('limit', getLimit);
 
-      const res = await fetch(`${apiBaseUrl}/get?${params.toString()}`);
+      let res;
+      
+      // If nodeId is provided, use the dynamic route /api/nodes/[id]
+      if (getNodeId) {
+        res = await fetch(`${apiBaseUrl}/${getNodeId}`);
+      } else {
+        // Otherwise use the query parameter approach with label and limit
+        const params = new URLSearchParams();
+        if (getLabel) params.append('label', getLabel);
+        if (getLimit) params.append('limit', getLimit);
+
+        res = await fetch(`${apiBaseUrl}/get?${params.toString()}`);
+      }
       const data = await res.json();
       
       setResponse({ status: res.status, data });
