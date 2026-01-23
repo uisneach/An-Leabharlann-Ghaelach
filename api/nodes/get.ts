@@ -6,28 +6,28 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const label = searchParams.get('label');
-    const id = searchParams.get('id');
+    const nodeId = searchParams.get('nodeId');
     
-    if (!label || !id) {
+    if (!label || !nodeId) {
       return NextResponse.json(
         { 
-          error: 'Missing required query params: label, id' 
+          error: 'Missing required query params: label, nodeId' 
         },
         { status: 400 }
       );
     }
     
     const cypher = `
-      MATCH (n:${label} {id: $id})
+      MATCH (n:${label} {nodeId: $nodeId})
       RETURN n
     `;
     
-    const results = await runQuery(cypher, { id });
+    const results = await runQuery(cypher, { nodeId });
     
     if (results.length === 0) {
       return NextResponse.json(
         { 
-          error: `Node not found with label '${label}' and id '${id}'` 
+          error: `Node not found with label '${label}' and nodeId '${nodeId}'` 
         },
         { status: 404 }
       );
