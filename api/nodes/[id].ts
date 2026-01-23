@@ -51,6 +51,115 @@ export async function GET(
   }
 }
 
+// PUT - Update node labels and/or properties
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { nodeId: string } }
+) {
+  try {
+    const nodeId = params.nodeId;
+    const body = await request.json();
+    const { labels, properties } = body;
+
+    // At least one of labels or properties must be provided
+    if (!labels && !properties) {
+      return NextResponse.json(
+        { error: 'Must provide at least one of: labels, properties' },
+        { status: 400 }
+      );
+    }
+
+    // Validate labels if provided
+    if (labels) {
+      if (!Array.isArray(labels) || labels.length === 0) {
+        return NextResponse.json(
+          { error: 'labels must be a non-empty array' },
+          { status: 400 }
+        );
+      }
+
+      for (const label of labels) {
+        if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(label)) {
+          return NextResponse.json(
+            { 
+              error: `Invalid label format: '${label}'. Use alphanumeric and underscores only.` 
+            },
+            { status: 400 }
+          );
+        }
+      }
+    }
+
+    // Validate properties if provided
+    if (properties && typeof properties !== 'object') {
+      return NextResponse.json(
+        { error: 'properties must be an object' },
+        { status: 400 }
+      );
+    }
+
+    // Build the Cypher query dynamically
+    let cypher = 'MATCH (n {nodeId: $nodeId})\n';
+    const queryParams: Record<string, any> = { nodeId };
+
+    // If updating labels, we need to remove old labels and set new ones
+    if (labels) {
+      // Get current labels, remove them, then add new ones
+      cypher += `WITH n, labels(n) as oldLabels\n`;
+      cypher += `CALL {\n`;
+      cypher += `  WITH n, oldLabels\n`;
+      cypher += `  UNWIND oldLabels as oldLabel\n`;
+      cypher += `  CALL {\n`;
+      cypher += `    WITH n, oldLabel\n`;
+      cypher += `    REMOVE n:\`\${oldLabel}\`\n`;
+      cypher += `    RETURN n as temp\n`;
+      cypher += `  }\n`;
+      cypher += `  RETURN collect(temp) as temps\n`;
+      cypher += `}\n`;
+      cypher += `WITH n\n`;
+      cypher += `SET n${labels.map(l => `:${l}`).join('')}\n`;
+    }
+
+    // If updating properties, replace all properties except nodeId
+    if (properties) {
+      // Remove all properties then set new ones (preserving nodeId)
+      const propsWithId = { ...properties, nodeId };
+      queryParams.properties = propsWithId;
+      
+      cypher += `SET n = $properties\n`;
+    }
+
+    cypher += `RETURN n, labels(n) as labels`;
+
+    const results = await runQuery(cypher, queryParams);
+
+    if (results.length === 0) {
+      return NextResponse.json(
+        { error: `Node not found with nodeId '${nodeId}'` },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Node updated successfully',
+      node: results[0].n,
+      labels: results[0].labels
+    });
+
+  } catch (error) {
+    console.error('Update node error:', error);
+    return NextResponse.json(
+      {
+        error: 'Failed to update node',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
+      { status: 500 }
+    );
+  }
+}
+
+
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { nodeId: string } }

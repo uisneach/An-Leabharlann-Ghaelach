@@ -1,4 +1,3 @@
-'use client'
 import React, { useState } from 'react';
 import { Search, Plus, Trash2, Database, AlertCircle, CheckCircle } from 'lucide-react';
 
@@ -11,7 +10,7 @@ export default function ApiControlPanel() {
   const [activeTab, setActiveTab] = useState('get');
   const [response, setResponse] = useState<ApiResponse>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);;
+  const [error, setError] = useState<string | null>(null);
 
   // Get Node state
   const [getLabel, setGetLabel] = useState('');
@@ -22,11 +21,16 @@ export default function ApiControlPanel() {
   const [createLabel, setCreateLabel] = useState('');
   const [createProperties, setCreateProperties] = useState('{\n  "name": "Example",\n  "age": 30\n}');
 
+  // Update Node state
+  const [updateNodeId, setUpdateNodeId] = useState('');
+  const [updateLabels, setUpdateLabels] = useState('["User"]');
+  const [updateProperties, setUpdateProperties] = useState('{\n  "name": "Updated Name"\n}');
+  const [updateMode, setUpdateMode] = useState<'both' | 'labels' | 'properties'>('both');
+
   // Delete Node state
-  const [deleteLabel, setDeleteLabel] = useState('');
   const [deleteNodeId, setDeleteNodeId] = useState('');
 
-  const apiBaseUrl = 'https://leabharlann.uisneac.com/api/nodes';
+  const apiBaseUrl = '/api/nodes';
 
   const handleGetNode = async () => {
     setLoading(true);
@@ -34,11 +38,6 @@ export default function ApiControlPanel() {
     setResponse(null);
 
     try {
-      const params = new URLSearchParams();
-      if (getLabel) params.append('label', getLabel);
-      if (getNodeId) params.append('nodeId', getNodeId);
-      if (getLimit) params.append('limit', getLimit);
-
       let res;
       
       // If nodeId is provided, use the dynamic route /api/nodes/[id]
@@ -52,8 +51,8 @@ export default function ApiControlPanel() {
 
         res = await fetch(`${apiBaseUrl}/get?${params.toString()}`);
       }
-      const data = await res.json();
       
+      const data = await res.json();
       setResponse({ status: res.status, data });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
@@ -93,13 +92,58 @@ export default function ApiControlPanel() {
     }
   };
 
+  const handleUpdateNode = async () => {
+    setLoading(true);
+    setError(null);
+    setResponse(null);
+
+    try {
+      const body: { labels?: string[]; properties?: any } = {};
+
+      // Parse and add labels if needed
+      if (updateMode === 'both' || updateMode === 'labels') {
+        try {
+          const parsedLabels = JSON.parse(updateLabels);
+          if (!Array.isArray(parsedLabels)) {
+            throw new Error('Labels must be an array');
+          }
+          body.labels = parsedLabels;
+        } catch (e) {
+          throw new Error('Invalid JSON in labels field');
+        }
+      }
+
+      // Parse and add properties if needed
+      if (updateMode === 'both' || updateMode === 'properties') {
+        try {
+          body.properties = JSON.parse(updateProperties);
+        } catch (e) {
+          throw new Error('Invalid JSON in properties field');
+        }
+      }
+
+      const res = await fetch(`${apiBaseUrl}/${updateNodeId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      
+      const data = await res.json();
+      setResponse({ status: res.status, data });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDeleteNode = async () => {
     setLoading(true);
     setError(null);
     setResponse(null);
 
     try {
-      const res = await fetch(`${apiBaseUrl}/delete?label=${deleteLabel}&nodeId=${deleteNodeId}`, {
+      const res = await fetch(`${apiBaseUrl}/${deleteNodeId}`, {
         method: 'DELETE'
       });
       
@@ -122,7 +166,7 @@ export default function ApiControlPanel() {
       const data = await res.json();
       setResponse({ status: res.status, data });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -168,6 +212,17 @@ export default function ApiControlPanel() {
               >
                 <Plus className="w-4 h-4 inline mr-2" />
                 CREATE
+              </button>
+              <button
+                onClick={() => setActiveTab('update')}
+                className={`px-4 py-2 font-medium transition-colors ${
+                  activeTab === 'update'
+                    ? 'text-yellow-400 border-b-2 border-yellow-400'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Plus className="w-4 h-4 inline mr-2" />
+                UPDATE
               </button>
               <button
                 onClick={() => setActiveTab('delete')}
@@ -271,19 +326,93 @@ export default function ApiControlPanel() {
               </div>
             )}
 
+            {/* UPDATE Form */}
+            {activeTab === 'update' && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Node ID *</label>
+                  <input
+                    type="text"
+                    value={updateNodeId}
+                    onChange={(e) => setUpdateNodeId(e.target.value)}
+                    placeholder="e.g., user_123"
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded focus:outline-none focus:border-yellow-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Update Mode</label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setUpdateMode('both')}
+                      className={`flex-1 px-3 py-2 rounded text-sm font-medium transition-colors ${
+                        updateMode === 'both'
+                          ? 'bg-yellow-600 text-white'
+                          : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                      }`}
+                    >
+                      Both
+                    </button>
+                    <button
+                      onClick={() => setUpdateMode('labels')}
+                      className={`flex-1 px-3 py-2 rounded text-sm font-medium transition-colors ${
+                        updateMode === 'labels'
+                          ? 'bg-yellow-600 text-white'
+                          : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                      }`}
+                    >
+                      Labels Only
+                    </button>
+                    <button
+                      onClick={() => setUpdateMode('properties')}
+                      className={`flex-1 px-3 py-2 rounded text-sm font-medium transition-colors ${
+                        updateMode === 'properties'
+                          ? 'bg-yellow-600 text-white'
+                          : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                      }`}
+                    >
+                      Properties Only
+                    </button>
+                  </div>
+                </div>
+
+                {(updateMode === 'both' || updateMode === 'labels') && (
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Labels (JSON Array)</label>
+                    <textarea
+                      value={updateLabels}
+                      onChange={(e) => setUpdateLabels(e.target.value)}
+                      rows={3}
+                      className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded focus:outline-none focus:border-yellow-400 font-mono text-sm"
+                    />
+                  </div>
+                )}
+
+                {(updateMode === 'both' || updateMode === 'properties') && (
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Properties (JSON Object)</label>
+                    <textarea
+                      value={updateProperties}
+                      onChange={(e) => setUpdateProperties(e.target.value)}
+                      rows={6}
+                      className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded focus:outline-none focus:border-yellow-400 font-mono text-sm"
+                    />
+                  </div>
+                )}
+
+                <button
+                  onClick={handleUpdateNode}
+                  disabled={loading}
+                  className="w-full bg-yellow-600 hover:bg-yellow-700 disabled:bg-slate-600 px-4 py-2 rounded font-medium transition-colors"
+                >
+                  {loading ? 'Updating...' : 'Update Node'}
+                </button>
+              </div>
+            )}
+
             {/* DELETE Form */}
             {activeTab === 'delete' && (
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Label *</label>
-                  <input
-                    type="text"
-                    value={deleteLabel}
-                    onChange={(e) => setDeleteLabel(e.target.value)}
-                    placeholder="e.g., User"
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded focus:outline-none focus:border-red-400"
-                  />
-                </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Node ID *</label>
                   <input
