@@ -54,10 +54,20 @@ export async function GET(
 // PUT - Update node labels and/or properties
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { nodeId: string } }
+  context: any
 ) {
   try {
-    const { nodeId } = await params;
+    console.log('Context:', context);
+    console.log('Params:', context?.params);
+    
+    const nodeId = context?.params?.nodeId;
+    
+    if (!nodeId) {
+      return NextResponse.json(
+        { error: 'Node ID is required in path' },
+        { status: 400 }
+      );
+    }
     const body = await request.json();
     const { labels, properties } = body;
 
