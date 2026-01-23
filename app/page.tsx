@@ -30,7 +30,7 @@ export default function Home() {
       setLoadingLabels(true);
       setErrorLabels(null);
       try {
-        const res = await fetch('/api/labels'); // Assuming an API endpoint that returns { labels: string[] }
+        const res = await fetch('https://leabharlann.uisneac.com/api/labels'); // Assuming an API endpoint that returns { labels: string[] }
         if (!res.ok) {
           throw new Error(`Failed to load labels: ${res.status} ${res.statusText}`);
         }

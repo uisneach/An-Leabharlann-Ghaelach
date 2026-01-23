@@ -7,11 +7,15 @@ export async function GET(request: NextRequest) {
   try {
     const cypher = 'CALL db.labels()';
     const results = await runQuery(cypher, {});
+
+    console.log(results);
     
     const labels = results
       .map(record => record.label)
       .filter(label => label !== null);
     
+    console.log(labels);
+
     if (labels.length === 0) {
       return NextResponse.json(
         { 
