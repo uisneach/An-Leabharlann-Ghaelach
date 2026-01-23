@@ -31,7 +31,7 @@ export default function ApiControlPanel() {
   // Delete Node state
   const [deleteNodeId, setDeleteNodeId] = useState('');
 
-  const apiBaseUrl = 'https://leabharlann.uisneach.com/api/nodes';
+  const apiBaseUrl = 'https://leabharlann.uisneac.com/api/nodes';
 
   const handleGetNode = async () => {
     setLoading(true);
