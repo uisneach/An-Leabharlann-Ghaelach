@@ -57,7 +57,7 @@ export async function PUT(
   { params }: { params: { nodeId: string } }
 ) {
   try {
-    const nodeId = params.nodeId;
+    const { nodeId } = await params;
     const body = await request.json();
     const { labels, properties } = body;
 
