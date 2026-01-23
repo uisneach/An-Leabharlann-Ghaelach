@@ -117,7 +117,7 @@ export async function PUT(
       cypher += `  RETURN collect(temp) as temps\n`;
       cypher += `}\n`;
       cypher += `WITH n\n`;
-      cypher += `SET n${labels.map(l => `:${l}`).join('')}\n`;
+      cypher += `SET n${labels.map((l: string) => `:${l}`).join('')}\n`;
     }
 
     // If updating properties, replace all properties except nodeId
