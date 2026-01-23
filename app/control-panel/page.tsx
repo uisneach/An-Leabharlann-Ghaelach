@@ -1,3 +1,4 @@
+'use client'
 import React, { useState } from 'react';
 import { Search, Plus, Trash2, Database, AlertCircle, CheckCircle } from 'lucide-react';
 
