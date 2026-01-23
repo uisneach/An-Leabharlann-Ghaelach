@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { runQuery } from '../../lib/neo4j';
-import { CreateRelationshipRequest } from '../../lib/types';
+import { runQuery } from '@/lib/neo4j';
+import { CreateRelationshipRequest } from '@/lib/types';
 
 export default async function handler(
   req: NextApiRequest,
