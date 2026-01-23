@@ -706,15 +706,6 @@ export default function ApiControlPanel() {
                     className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded focus:outline-none focus:border-green-400"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Properties (JSON, optional)</label>
-                  <textarea
-                    value={relProperties}
-                    onChange={(e) => setRelProperties(e.target.value)}
-                    rows={4}
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded focus:outline-none focus:border-green-400 font-mono text-sm"
-                  />
-                </div>
                 <button
                   onClick={handleCreateRelationship}
                   disabled={loading}
@@ -756,15 +747,6 @@ export default function ApiControlPanel() {
                     onChange={(e) => setRelType(e.target.value)}
                     placeholder="e.g., FOLLOWS, FRIENDS_WITH"
                     className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded focus:outline-none focus:border-yellow-400"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Properties (JSON) *</label>
-                  <textarea
-                    value={relProperties}
-                    onChange={(e) => setRelProperties(e.target.value)}
-                    rows={4}
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded focus:outline-none focus:border-yellow-400 font-mono text-sm"
                   />
                 </div>
                 <button
