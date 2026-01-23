@@ -36,8 +36,9 @@ export default function ApiControlPanel() {
   const [relToNodeId, setRelToNodeId] = useState('');
   const [relType, setRelType] = useState('');
 
-  const apiBaseUrl = 'https://leabharlann.uisneac.com/api/nodes';
-  const relApiBaseUrl = '/api/relationships';
+  const apiBaseUrl = 'https://leabharlann.uisneac.com/api';
+  const nodeApiUrl = `${apiBaseUrl}/nodes`;
+  const relApiUrl = `${apiBaseUrl}/relationships`;
 
   const handleGetNode = async () => {
     setLoading(true);
@@ -49,14 +50,14 @@ export default function ApiControlPanel() {
       
       // If nodeId is provided, use the dynamic route /api/nodes/[id]
       if (getNodeId) {
-        res = await fetch(`${apiBaseUrl}/${getNodeId}`);
+        res = await fetch(`${nodeApiUrl}/${getNodeId}`);
       } else {
         // Otherwise use the query parameter approach with label and limit
         const params = new URLSearchParams();
         if (getLabel) params.append('label', getLabel);
         if (getLimit) params.append('limit', getLimit);
 
-        res = await fetch(`${apiBaseUrl}/get?${params.toString()}`);
+        res = await fetch(`${nodeApiUrl}/get?${params.toString()}`);
       }
       
       const data = await res.json();
@@ -81,7 +82,7 @@ export default function ApiControlPanel() {
         throw new Error('Invalid JSON in properties field');
       }
 
-      const res = await fetch(`${apiBaseUrl}/create`, {
+      const res = await fetch(`${nodeApiUrl}/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -129,7 +130,7 @@ export default function ApiControlPanel() {
         }
       }
 
-      const res = await fetch(`${apiBaseUrl}/${updateNodeId}`, {
+      const res = await fetch(`${nodeApiUrl}/${updateNodeId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
@@ -150,7 +151,7 @@ export default function ApiControlPanel() {
     setResponse(null);
 
     try {
-      const res = await fetch(`${apiBaseUrl}/${deleteNodeId}`, {
+      const res = await fetch(`${nodeApiUrl}/${deleteNodeId}`, {
         method: 'DELETE'
       });
       
@@ -174,7 +175,7 @@ export default function ApiControlPanel() {
         toNodeId: relToNodeId,
         type: relType
       });
-      const res = await fetch(`${relApiBaseUrl}?${params.toString()}`);
+      const res = await fetch(`${relApiUrl}?${params.toString()}`);
       
       const data = await res.json();
       setResponse({ status: res.status, data });
@@ -191,7 +192,7 @@ export default function ApiControlPanel() {
     setResponse(null);
 
     try {
-      const res = await fetch(relApiBaseUrl, {
+      const res = await fetch(relApiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -218,7 +219,7 @@ export default function ApiControlPanel() {
     try {
       
 
-      const res = await fetch(relApiBaseUrl, {
+      const res = await fetch(relApiUrl, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -248,7 +249,7 @@ export default function ApiControlPanel() {
         toNodeId: relToNodeId,
         type: relType
       });
-      const res = await fetch(`${relApiBaseUrl}?${params.toString()}`, {
+      const res = await fetch(`${relApiUrl}?${params.toString()}`, {
         method: 'DELETE'
       });
       
