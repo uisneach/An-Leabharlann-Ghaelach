@@ -7,9 +7,9 @@ export async function GET(
   { params }: { params: { nodeId: string } }
   ) {
   try {
-    const id = params.nodeId;
+    const nodeId = params.nodeId;
     
-    if (!id) {
+    if (!nodeId) {
       return NextResponse.json(
         { 
           error: 'Missing required query params: nodeId' 
@@ -23,12 +23,12 @@ export async function GET(
       RETURN n
     `;
     
-    const results = await runQuery(cypher, { id });
+    const results = await runQuery(cypher, { nodeId });
     
     if (results.length === 0) {
       return NextResponse.json(
         { 
-          error: `Node not found with nodeId '${id}'` 
+          error: `Node not found with nodeId '${nodeId}'` 
         },
         { status: 404 }
       );
@@ -57,7 +57,7 @@ export async function PUT(
   { params }: { params: { nodeId: string } }
 ) {
   try {
-    const id = params.nodeId;
+    const nodeId = params.nodeId;
     const body = await request.json();
     const { labels, properties } = body;
 
@@ -99,8 +99,8 @@ export async function PUT(
     }
 
     // Build the Cypher query dynamically
-    let cypher = 'MATCH (n {nodeId: $id})\n';
-    const queryParams: Record<string, any> = { id };
+    let cypher = 'MATCH (n {nodeId: $nodeId})\n';
+    const queryParams: Record<string, any> = { nodeId };
 
     // If updating labels, we need to remove old labels and set new ones
     if (labels) {
@@ -123,7 +123,7 @@ export async function PUT(
     // If updating properties, replace all properties except nodeId
     if (properties) {
       // Remove all properties then set new ones (preserving nodeId)
-      const propsWithId = { ...properties, id };
+      const propsWithId = { ...properties, nodeId };
       queryParams.properties = propsWithId;
       
       cypher += `SET n = $properties\n`;
@@ -135,7 +135,7 @@ export async function PUT(
 
     if (results.length === 0) {
       return NextResponse.json(
-        { error: `Node not found with nodeId '${id}'` },
+        { error: `Node not found with nodeId '${nodeId}'` },
         { status: 404 }
       );
     }
@@ -165,9 +165,9 @@ export async function DELETE(
   { params }: { params: { nodeId: string } }
   ) {
   try {
-    const id = params.nodeId;
+    const nodeId = params.nodeId;
     
-    if (!id) {
+    if (!nodeId) {
       return NextResponse.json(
         { 
           error: 'Missing required query params: nodeId' 
@@ -181,12 +181,12 @@ export async function DELETE(
       RETURN n
     `;
     
-    const checkResults = await runQuery(checkCypher, { id });
+    const checkResults = await runQuery(checkCypher, { nodeId });
 
     if (checkResults.length === 0) {
       return NextResponse.json(
         { 
-          error: `Node not found with nodeId '${id}'` 
+          error: `Node not found with nodeId '${nodeId}'` 
         },
         { status: 404 }
       );
@@ -198,7 +198,7 @@ export async function DELETE(
       DETACH DELETE n
     `;
 
-    const deleteResults = await runQuery(deleteCypher, { id });
+    const deleteResults = await runQuery(deleteCypher, { nodeId });
     
     return NextResponse.json({
       success: true,
