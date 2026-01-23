@@ -174,7 +174,7 @@ export default function ApiControlPanel() {
       const data = await res.json();
       setResponse({ status: res.status, data });
     } catch (err) {
-      setError(err.message);
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
     } finally {
       setLoading(false);
     }
