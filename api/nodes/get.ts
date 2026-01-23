@@ -1,7 +1,8 @@
 import { runQuery } from '../../lib/neo4j.js';
 import { NextResponse } from 'next/server.js';
+import type { NextRequest } from 'next/server.js';
 
-export async function GET(request) {
+export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const label = searchParams.get('label');

@@ -1,7 +1,8 @@
 import { runQuery } from '../../lib/neo4j.js';
 import { NextResponse } from 'next/server.js';
+import type { NextRequest } from 'next/server.js';
 
-export async function POST(request) {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { label, properties } = body;
