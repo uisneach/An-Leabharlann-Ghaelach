@@ -212,7 +212,8 @@ export async function DELETE(request: NextRequest) {
 
     // Delete node and all its relationships
     const deleteCypher = `
-      MATCH (n {nodeId: $nodeId})
+      MATCH (n)
+      WHERE n.nodeId = $nodeId
       DETACH DELETE n
     `;
 
