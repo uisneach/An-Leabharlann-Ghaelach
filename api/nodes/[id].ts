@@ -67,7 +67,7 @@ export async function DELETE(
       );
     }
     
-    const cypher = `
+    const checkCypher = `
       MATCH (n {nodeId: $nodeId})
       RETURN n
     `;
