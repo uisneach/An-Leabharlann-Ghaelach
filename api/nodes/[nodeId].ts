@@ -4,10 +4,10 @@ import type { NextRequest } from 'next/server.js';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { nodeId: string } }
-  ) {
+  { params }: { params: Promise<{ nodeId: string }> }
+) {
   try {
-    const nodeId = params.nodeId;
+    const { nodeId } = await params;
     
     if (!nodeId) {
       return NextResponse.json(
@@ -162,10 +162,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { nodeId: string } }
-  ) {
+  { params }: { params: Promise<{ nodeId: string }> }
+) {
   try {
-    const nodeId = params.nodeId;
+    const { nodeId } = await params;
     
     if (!nodeId) {
       return NextResponse.json(
