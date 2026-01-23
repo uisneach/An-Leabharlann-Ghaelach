@@ -1,3 +1,4 @@
+'use client'
 import React, { useState } from 'react';
 import { Search, Plus, Trash2, Database, AlertCircle, CheckCircle } from 'lucide-react';
 
@@ -20,7 +21,7 @@ export default function ApiControlPanel() {
   const [deleteLabel, setDeleteLabel] = useState('');
   const [deleteNodeId, setDeleteNodeId] = useState('');
 
-  const apiBaseUrl = '/api/nodes';
+  const apiBaseUrl = 'https://leabharlann.uisneac.com/api/nodes';
 
   const handleGetNode = async () => {
     setLoading(true);
