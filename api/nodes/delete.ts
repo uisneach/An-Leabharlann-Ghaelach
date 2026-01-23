@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { runQuery } from '@/lib/neo4j';
 import { DeleteNodeRequest } from '@/lib/types';
