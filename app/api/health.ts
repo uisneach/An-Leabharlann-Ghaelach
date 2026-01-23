@@ -1,8 +1,6 @@
 import { getDriver } from '../lib/neo4j';
 import { NextResponse } from 'next/server.js';
 
-//export const runtime = 'edge';
-
 export async function GET() {
   try {
     const driver = getDriver();
