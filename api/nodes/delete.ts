@@ -23,7 +23,7 @@ export default async function handler(
 
     // Check if node exists first
     const checkCypher = `
-      MATCH (n:${label} {id: $id})
+      MATCH (n:${label} {nodeId: $id})
       RETURN n
     `;
 
