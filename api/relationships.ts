@@ -1,6 +1,6 @@
 import { runQuery } from '../lib/neo4j.js';
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server.js';
+import type { NextRequest } from 'next/server.js';
 
 // GET - Retrieve relationship(s) between two nodes by type
 export async function GET(request: NextRequest) {
