@@ -1,8 +1,7 @@
 'use client'
 
 import Image from "next/image";
-import Welcome from "@/app/Welcome";
-import Header from "@/app/Header";
+import Welcome from "./Welcome";
 
 export default function Home() {
   return (
