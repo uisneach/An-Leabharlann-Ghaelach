@@ -89,11 +89,11 @@ export async function DELETE(
       DETACH DELETE n
     `;
 
-    await runQuery(deleteCypher, { nodeId });
+    const deleteResults = await runQuery(deleteCypher, { nodeId });
     
     return NextResponse.json({
       success: true,
-      node: results[0].n
+      node: deleteResults[0].n
     });
     
   } catch (error) {
