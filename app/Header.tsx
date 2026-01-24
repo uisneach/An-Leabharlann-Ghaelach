@@ -1,29 +1,50 @@
-'use client'
 import React, { useState, useEffect } from 'react';
 
-export default function Header() {
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
-  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-  const [username, setUsername] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  
-  const [loginUsername, setLoginUsername] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-  const [loginError, setLoginError] = useState('');
-  
-  const [registerUsername, setRegisterUsername] = useState('');
-  const [registerPassword, setRegisterPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [registerErrors, setRegisterErrors] = useState({});
-  const [registerAlert, setRegisterAlert] = useState('');
-  
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [searchError, setSearchError] = useState('');
+interface JwtPayload {
+  username?: string;
+  sub?: string;
+  exp?: number;
+}
 
-  const parseJwt = (token) => {
+interface Node {
+  id: string;
+  labels?: string[];
+  properties?: {
+    display_name?: string;
+    name?: string;
+    title?: string;
+  };
+}
+
+interface RegisterErrors {
+  username?: string;
+  password?: string;
+  confirmPassword?: string;
+}
+
+const Header: React.FC = () => {
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState<boolean>(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState<boolean>(false);
+  const [username, setUsername] = useState<string>('');
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+  
+  const [loginUsername, setLoginUsername] = useState<string>('');
+  const [loginPassword, setLoginPassword] = useState<string>('');
+  const [loginError, setLoginError] = useState<string>('');
+  
+  const [registerUsername, setRegisterUsername] = useState<string>('');
+  const [registerPassword, setRegisterPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>('');
+  const [registerErrors, setRegisterErrors] = useState<RegisterErrors>({});
+  const [registerAlert, setRegisterAlert] = useState<string>('');
+  
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchResults, setSearchResults] = useState<Node[]>([]);
+  const [searchError, setSearchError] = useState<string>('');
+
+  const parseJwt = (token: string): JwtPayload => {
     try {
       const part = token.split('.')[1];
       return JSON.parse(atob(part));
@@ -32,7 +53,7 @@ export default function Header() {
     }
   };
 
-  const checkAuthStatus = () => {
+  const checkAuthStatus = (): void => {
     const token = localStorage.getItem('token');
     if (!token) {
       setIsAuthenticated(false);
@@ -64,7 +85,7 @@ export default function Header() {
     checkAuthStatus();
   }, []);
 
-  const handleLogin = async () => {
+  const handleLogin = async (): Promise<void> => {
     setLoginError('');
 
     if (!loginUsername.trim() || !loginPassword) {
@@ -92,16 +113,16 @@ export default function Header() {
       setLoginUsername('');
       setLoginPassword('');
     } catch (err) {
-      setLoginError(err.message || 'Login failed');
+      setLoginError(err instanceof Error ? err.message : 'Login failed');
     }
   };
 
-  const handleRegister = async () => {
+  const handleRegister = async (): Promise<void> => {
     setRegisterAlert('');
     setRegisterErrors({});
 
     let valid = true;
-    const errors = {};
+    const errors: RegisterErrors = {};
 
     if (!/^[a-zA-Z0-9_]{3,20}$/.test(registerUsername)) {
       errors.username = 'Username must be 3-20 characters, alphanumeric and underscores only.';
@@ -157,11 +178,11 @@ export default function Header() {
         throw new Error(data.error?.message || 'Registration failed');
       }
     } catch (error) {
-      setRegisterAlert(error.message);
+      setRegisterAlert(error instanceof Error ? error.message : 'Registration failed');
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = (): void => {
     localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
     setIsAuthenticated(false);
@@ -169,7 +190,7 @@ export default function Header() {
     setIsDropdownOpen(false);
   };
 
-  const handleSearch = async () => {
+  const handleSearch = async (): Promise<void> => {
     setSearchError('');
 
     if (!searchQuery.trim() || searchQuery.length < 2) {
@@ -187,17 +208,17 @@ export default function Header() {
       setSearchResults(results);
       setIsSearchModalOpen(true);
     } catch (err) {
-      setSearchError(err.message || 'Search failed');
+      setSearchError(err instanceof Error ? err.message : 'Search failed');
     }
   };
 
-  const escapeHtml = (str) => {
+  const escapeHtml = (str: string): string => {
     return String(str).replace(/[&<>"']/g, (m) => {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' } as Record<string, string>)[m];
     });
   };
 
-  const handleKeyPress = (e, action) => {
+  const handleKeyPress = (e: React.KeyboardEvent, action: () => void): void => {
     if (e.key === 'Enter') {
       e.preventDefault();
       action();
@@ -402,3 +423,5 @@ export default function Header() {
     </>
   );
 };
+
+export default Header;
