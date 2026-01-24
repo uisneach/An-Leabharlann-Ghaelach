@@ -387,8 +387,8 @@ const NodeInfoPage = () => {
     const uncategorized: { incoming: any[]; outgoing: any[] } = { incoming: [], outgoing: [] };
 
     // Process all relationships
-    [...incoming.map(r => ({...r, direction: 'incoming'})), 
-     ...outgoing.map(r => ({...r, direction: 'outgoing'}))].forEach(rel => {
+    [...incoming.map(r => ({...r, direction: 'incoming' as const})), 
+     ...outgoing.map(r => ({...r, direction: 'outgoing' as const}))].forEach(rel => {
       let found = false;
       
       for (const [category, types] of Object.entries(relationshipCategories)) {
