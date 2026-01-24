@@ -39,7 +39,7 @@ export default function NodeList({ label, onRemove, isDefault, totalColumns }: N
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`https://leabharlann.uisneac.com/api/nodes/get?label=${encodeURIComponent(label)}&limit=0`);
+        const res = await fetch(`/api/nodes/get?label=${encodeURIComponent(label)}&limit=0`);
         if (!res.ok) {
           throw new Error(`Failed to load ${label} nodes: ${res.status} ${res.statusText}`);
         }
@@ -107,7 +107,7 @@ export default function NodeList({ label, onRemove, isDefault, totalColumns }: N
           
           return (
             <li key={item.nodeId}>
-              <a href={`/leabharlann/info/index.html?id=${encodeURIComponent(item.nodeId)}`}>{title}</a>
+              <a href={`/info?id=${encodeURIComponent(item.nodeId)}`}>{title}</a>
             </li>
           );
         })}
