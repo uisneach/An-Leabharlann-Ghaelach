@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 const defaultLabels = ['Author', 'Text', 'Edition'];
 
 interface Node {
-  id: string;
+  nodeId?: string;
   properties: Record<string, any>;
 }
 
@@ -21,7 +21,6 @@ export default function NodeList({ label, onRemove, isDefault, totalColumns }: N
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Initialize auth state after mount (client-side only)
   useEffect(() => {
     setIsAuthenticated(!!localStorage.getItem('token'));
   }, []);
@@ -37,12 +36,17 @@ export default function NodeList({ label, onRemove, isDefault, totalColumns }: N
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`/api/nodes/get?label=${encodeURIComponent(label)}&limit=0`);
+        const res = await fetch(`https://leabharlann.uisneac.com/api/nodes/get?label=${encodeURIComponent(label)}&limit=0`);
         if (!res.ok) {
           throw new Error(`Failed to load ${label} nodes: ${res.status} ${res.statusText}`);
         }
         const data = await res.json();
-        setNodes(data.nodes || []); // Assuming API returns { nodes: [...] }
+        
+        // DEBUG: Log the full response
+        console.log(`API Response for ${label}:`, data);
+        console.log(`First node:`, data.nodes?.[0]);
+        
+        setNodes(data.nodes || []);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An unknown error occurred');
       } finally {
@@ -54,7 +58,7 @@ export default function NodeList({ label, onRemove, isDefault, totalColumns }: N
 
   const getTitle = (item: Node) => {
     const properties = item.properties || {};
-    return (properties.display_name || properties.name || properties.title || item.id || '').trim().toLowerCase();
+    return (properties.display_name || properties.name || properties.title || item.nodeId || properties.nodeId || '').trim().toLowerCase();
   };
 
   const sortedNodes = [...nodes].sort((a, b) => 
@@ -99,12 +103,29 @@ export default function NodeList({ label, onRemove, isDefault, totalColumns }: N
         </div>
       </div>
       <ul id={`${label}-list`} className="node-list">
-        {sortedNodes.map((item) => {
+        {sortedNodes.map((item, index) => {
           const properties = item.properties || {};
-          const title = properties.display_name || properties.name || properties.title || item.id || 'Unknown';
+          
+          // DEBUG: Log each item
+          if (index === 0) {
+            console.log(`${label} - First item full object:`, item);
+            console.log(`${label} - Properties:`, properties);
+            console.log(`${label} - Available keys:`, Object.keys(properties));
+          }
+          
+          // Check multiple possible ID fields
+          const nodeId = item.nodeId || properties.nodeId || properties.id;
+          const title = properties.display_name || properties.name || properties.title || nodeId || 'Unknown';
+          
+          // DEBUG: Log what we're using
+          if (index === 0) {
+            console.log(`${label} - Using nodeId:`, nodeId);
+            console.log(`${label} - Using title:`, title);
+          }
+          
           return (
-            <li key={item.id}>
-              <a href={`/leabharlann/info/index.html?id=${encodeURIComponent(item.id)}`}>{title}</a>
+            <li key={nodeId || index}>
+              <a href={`/leabharlann/info/index.html?id=${encodeURIComponent(nodeId || '')}`}>{title}</a>
             </li>
           );
         })}
