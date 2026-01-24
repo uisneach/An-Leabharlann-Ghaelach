@@ -509,6 +509,7 @@ const NodeInfoPage = () => {
             />
           </div>
         )}
+      </div>
 
       <div className="row mt-4">
         {/* Main content */}
