@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
     }
 
     const ignored = keys.filter(k => prohibitedKeys.includes(k));
-    const allowedProps = {};
+    const allowedProps: Record<string, any> = {};
     for (const [key, value] of Object.entries(properties)) {
       if (!prohibitedKeys.includes(key)) {
         allowedProps[key] = value;
@@ -216,7 +216,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const ignored = keys.filter(k => prohibitedKeys.includes(k));
-    const allowedProps = {};
+    const allowedProps: Record<string, any> = {};
     for (const [key, value] of Object.entries(properties)) {
       if (!prohibitedKeys.includes(key)) {
         allowedProps[key] = value;
