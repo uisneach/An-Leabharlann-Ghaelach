@@ -4,8 +4,11 @@ import React, { useState, useEffect } from 'react';
 const defaultLabels = ['Author', 'Text', 'Edition'];
 
 interface Node {
-  nodeId?: string;
-  properties: Record<string, any>;
+  nodeId: string;
+  title?: string;
+  name?: string;
+  display_name?: string;
+  [key: string]: any; // Allow other properties
 }
 
 interface NodeListProps {
@@ -41,11 +44,6 @@ export default function NodeList({ label, onRemove, isDefault, totalColumns }: N
           throw new Error(`Failed to load ${label} nodes: ${res.status} ${res.statusText}`);
         }
         const data = await res.json();
-        
-        // DEBUG: Log the full response
-        console.log(`API Response for ${label}:`, data);
-        console.log(`First node:`, data.nodes?.[0]);
-        
         setNodes(data.nodes || []);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An unknown error occurred');
@@ -57,8 +55,8 @@ export default function NodeList({ label, onRemove, isDefault, totalColumns }: N
   }, [label]);
 
   const getTitle = (item: Node) => {
-    const properties = item.properties || {};
-    return (properties.display_name || properties.name || properties.title || item.nodeId || properties.nodeId || '').trim().toLowerCase();
+    // Properties are directly on the item, not nested
+    return (item.display_name || item.name || item.title || item.nodeId || '').trim().toLowerCase();
   };
 
   const sortedNodes = [...nodes].sort((a, b) => 
@@ -103,29 +101,13 @@ export default function NodeList({ label, onRemove, isDefault, totalColumns }: N
         </div>
       </div>
       <ul id={`${label}-list`} className="node-list">
-        {sortedNodes.map((item, index) => {
-          const properties = item.properties || {};
-          
-          // DEBUG: Log each item
-          if (index === 0) {
-            console.log(`${label} - First item full object:`, item);
-            console.log(`${label} - Properties:`, properties);
-            console.log(`${label} - Available keys:`, Object.keys(properties));
-          }
-          
-          // Check multiple possible ID fields
-          const nodeId = item.nodeId || properties.nodeId || properties.id;
-          const title = properties.display_name || properties.name || properties.title || nodeId || 'Unknown';
-          
-          // DEBUG: Log what we're using
-          if (index === 0) {
-            console.log(`${label} - Using nodeId:`, nodeId);
-            console.log(`${label} - Using title:`, title);
-          }
+        {sortedNodes.map((item) => {
+          // Properties are directly on item, not nested under item.properties
+          const title = item.display_name || item.name || item.title || item.nodeId || 'Unknown';
           
           return (
-            <li key={nodeId || index}>
-              <a href={`/leabharlann/info/index.html?id=${encodeURIComponent(nodeId || '')}`}>{title}</a>
+            <li key={item.nodeId}>
+              <a href={`/leabharlann/info/index.html?id=${encodeURIComponent(item.nodeId)}`}>{title}</a>
             </li>
           );
         })}
