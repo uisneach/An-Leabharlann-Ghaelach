@@ -226,7 +226,7 @@ const Header: React.FC = () => {
   };
 
   return (
-    <>
+    <header>
       <nav>
         <div id="logo-and-header">
           <a className="navbar-brand" href="https://uisneac.com" style={{ marginRight: 0 }}>
@@ -420,7 +420,7 @@ const Header: React.FC = () => {
           </div>
         </div>
       )}
-    </>
+    </header>
   );
 };
 
