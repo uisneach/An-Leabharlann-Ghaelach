@@ -123,7 +123,7 @@ const EditableField = ({
       await onSave(editValue);
       setIsEditing(false);
     } catch (error) {
-      console.error('Save failed:', error);
+      console.error('Save failed:', error instanceof Error ? error.message : error);
     } finally {
       setIsSaving(false);
     }
@@ -307,7 +307,7 @@ const NodeInfoPage = () => {
       setNodeData(data);
       setLoading(false);
     } catch (err) {
-      setError(err.message);
+      setError(err instanceof Error ? err.message : 'An error occurred');
       setLoading(false);
     }
   };
@@ -324,7 +324,7 @@ const NodeInfoPage = () => {
       await loadNodeData();
       showAlert('Property updated successfully', false);
     } catch (err) {
-      showAlert(err.message);
+      showAlert(err instanceof Error ? err.message : 'Failed to update property');
       throw err;
     }
   };
@@ -338,7 +338,7 @@ const NodeInfoPage = () => {
       await loadNodeData();
       showAlert('Property deleted successfully', false);
     } catch (err) {
-      showAlert(err.message);
+      showAlert(err instanceof Error ? err.message : 'Failed to delete property');
     }
   };
 
@@ -350,7 +350,7 @@ const NodeInfoPage = () => {
       await loadNodeData();
       showAlert('Labels updated successfully', false);
     } catch (err) {
-      showAlert(err.message);
+      showAlert(err instanceof Error ? err.message : 'Failed to update labels');
       throw err;
     }
   };
@@ -363,7 +363,7 @@ const NodeInfoPage = () => {
       if (!response.ok) throw new Error('Failed to delete node');
       window.location.href = '/leabharlann/index.html';
     } catch (err) {
-      showAlert(err.message);
+      showAlert(err instanceof Error ? err.message : 'Failed to delete node');
     }
   };
 
@@ -378,7 +378,7 @@ const NodeInfoPage = () => {
       await loadNodeData();
       showAlert('Relationship deleted successfully', false);
     } catch (err) {
-      showAlert(err.message);
+      showAlert(err instanceof Error ? err.message : 'Failed to delete relationship');
     }
   };
 
@@ -509,7 +509,6 @@ const NodeInfoPage = () => {
             />
           </div>
         )}
-      </div>
 
       <div className="row mt-4">
         {/* Main content */}
@@ -689,6 +688,7 @@ const NodeInfoPage = () => {
                 </div>
               )}
             </div>
+          </div>
           </div>
         </div>
       </div>
