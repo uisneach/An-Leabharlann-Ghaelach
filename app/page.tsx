@@ -8,17 +8,6 @@ import React, { useState, useEffect } from 'react';
 
 const defaultLabels = ['Author', 'Text', 'Edition'];
 
-/*export default function Home() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <Welcome />
-      <div className="node-list-container">
-        <NodeList />
-      </div>
-    </div>
-  );
-}*/
-
 export default function Home() {
   const [allLabels, setAllLabels] = useState<string[]>([]);
   const [activeLabels, setActiveLabels] = useState<string[]>(defaultLabels);
@@ -64,7 +53,7 @@ export default function Home() {
       <Header />
       <div id="welcome-message" className="container-fluid">
         <h2>Fáilte go dtí an Leabharlann Ghaelach</h2>
-        <p>Explore our digital library of Irish and Celtic texts, or sign up to contribute to the database. Learn how to navigate and use the collection in our <a href="/leabharlann/how-to/index.html">User Guide</a>.</p>
+        <p>Explore our digital library of Irish and Celtic texts, or sign up to contribute to the database. Learn how to navigate and use the collection in our <a href="/how-to/">User Guide</a>.</p>
       </div>
 
       <div id="content" className="container-fluid" style={{ position: 'relative' }}>

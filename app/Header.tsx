@@ -232,7 +232,7 @@ const Header: React.FC = () => {
           <a className="navbar-brand" href="https://uisneac.com" style={{ marginRight: 0 }}>
             <img src="https://uisneac.com/assets/Gold-Celtic-Design.png" alt="Logo" width="32" height="32" />
           </a>
-          <a className="navbar-brand" href="/leabharlann/index.html">An Leabharlann Ghaelach</a>
+          <a className="navbar-brand" href="/">An Leabharlann Ghaelach</a>
         </div>
         <div id="search-form">
           <input
