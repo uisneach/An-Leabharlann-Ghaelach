@@ -145,7 +145,11 @@ const NodeInfoPage = () => {
       }
       
       if (!found) {
-        uncategorized[rel.direction].push(rel);
+        if (rel.direction === 'incoming') {
+          uncategorized.incoming.push(rel);
+        } else {
+          uncategorized.outgoing.push(rel);
+        }
       }
     });
 
@@ -201,15 +205,12 @@ const NodeInfoPage = () => {
 
   if (!nodeData) {
     return (
-      <main>
-        <Header />
-        <div className="container mt-5 text-center">
-          <div className="p-5">
-            <h2 className="text-muted mb-3">No Node Selected</h2>
-            <p className="text-muted">Please select a node to view its details.</p>
-          </div>
+      <div className="container mt-5 text-center">
+        <div className="p-5">
+          <h2 className="text-muted mb-3">No Node Selected</h2>
+          <p className="text-muted">Please select a node to view its details.</p>
         </div>
-      </main>
+      </div>
     );
   }
 
