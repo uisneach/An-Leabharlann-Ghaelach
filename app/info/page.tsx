@@ -1,15 +1,14 @@
 'use client'
-
 import React, { useState, useEffect } from 'react';
 import { Edit2, Save, X, Trash2, ExternalLink, Plus } from 'lucide-react';
 import Header from '../Header';
 
 // Utility functions
-const cleanString = (str) => {
-  return str.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+const cleanString = (str: string): string => {
+  return str.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
 };
 
-const isUrl = (str) => {
+const isUrl = (str: string): boolean => {
   try {
     new URL(str);
     return true;
@@ -18,7 +17,7 @@ const isUrl = (str) => {
   }
 };
 
-const parseJwt = (token) => {
+const parseJwt = (token: string): any => {
   try {
     const part = token.split('.')[1];
     return JSON.parse(atob(part));
@@ -27,8 +26,8 @@ const parseJwt = (token) => {
   }
 };
 
-// API functions
-const getNode = async (id) => {
+// Mock API functions
+const getNode = async (id: string): Promise<Response> => {
   const token = localStorage.getItem('token');
   const response = await fetch(`/api/nodes/${id}`, {
     headers: { Authorization: `Bearer ${token}` }
@@ -36,7 +35,7 @@ const getNode = async (id) => {
   return response;
 };
 
-const getRelations = async (id) => {
+const getRelations = async (id: string): Promise<Response> => {
   const token = localStorage.getItem('token');
   const response = await fetch(`/api/nodes/${id}/relationships`, {
     headers: { Authorization: `Bearer ${token}` }
@@ -44,7 +43,7 @@ const getRelations = async (id) => {
   return response;
 };
 
-const updateProperty = async (id, key, value) => {
+const updateProperty = async (id: string, key: string, value: any): Promise<Response> => {
   const token = localStorage.getItem('token');
   return await fetch(`/api/nodes/${id}/properties/${key}`, {
     method: 'PUT',
@@ -56,7 +55,7 @@ const updateProperty = async (id, key, value) => {
   });
 };
 
-const deleteProperty = async (id, key) => {
+const deleteProperty = async (id: string, key: string): Promise<Response> => {
   const token = localStorage.getItem('token');
   return await fetch(`/api/nodes/${id}/properties/${key}`, {
     method: 'DELETE',
@@ -64,7 +63,7 @@ const deleteProperty = async (id, key) => {
   });
 };
 
-const deleteNode = async (id) => {
+const deleteNode = async (id: string): Promise<Response> => {
   const token = localStorage.getItem('token');
   return await fetch(`/api/nodes/${id}`, {
     method: 'DELETE',
@@ -72,7 +71,7 @@ const deleteNode = async (id) => {
   });
 };
 
-const deleteRelation = async (sourceId, targetId, relType) => {
+const deleteRelation = async (sourceId: string, targetId: string, relType: string): Promise<Response> => {
   const token = localStorage.getItem('token');
   return await fetch(`/api/relationships`, {
     method: 'DELETE',
@@ -84,7 +83,7 @@ const deleteRelation = async (sourceId, targetId, relType) => {
   });
 };
 
-const updateLabels = async (id, labels) => {
+const updateLabels = async (id: string, labels: string[]): Promise<Response> => {
   const token = localStorage.getItem('token');
   return await fetch(`/api/nodes/${id}/labels`, {
     method: 'PUT',
@@ -97,7 +96,19 @@ const updateLabels = async (id, labels) => {
 };
 
 // Editable field component
-const EditableField = ({ value, onSave, multiline = false, canEdit, placeholder = 'Click to edit' }) => {
+const EditableField = ({ 
+  value, 
+  onSave, 
+  multiline = false, 
+  canEdit, 
+  placeholder = 'Click to edit' 
+}: {
+  value: string;
+  onSave: (value: string) => Promise<void>;
+  multiline?: boolean;
+  canEdit: boolean;
+  placeholder?: string;
+}) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value || '');
   const [isSaving, setIsSaving] = useState(false);
@@ -176,7 +187,19 @@ const EditableField = ({ value, onSave, multiline = false, canEdit, placeholder 
 };
 
 // Relationship display component
-const RelationshipSection = ({ title, relationships, currentNodeId, onDelete, canEdit }) => {
+const RelationshipSection = ({ 
+  title, 
+  relationships, 
+  currentNodeId, 
+  onDelete, 
+  canEdit 
+}: {
+  title: string;
+  relationships: any[];
+  currentNodeId: string;
+  onDelete: (rel: any) => void;
+  canEdit: boolean;
+}) => {
   if (!relationships || relationships.length === 0) return null;
 
   return (
@@ -210,13 +233,13 @@ const RelationshipSection = ({ title, relationships, currentNodeId, onDelete, ca
 };
 
 const NodeInfoPage = () => {
-  const [nodeData, setNodeData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [user, setUser] = useState(null);
-  const [alertMessage, setAlertMessage] = useState('');
+  const [nodeData, setNodeData] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState<{ username: string; role: string } | null>(null);
+  const [alertMessage, setAlertMessage] = useState<{ text: string; isError: boolean } | string>('');
 
-  const relationshipCategories = {
+  const relationshipCategories: Record<string, string[]> = {
     'Works': ['WROTE'],
     'Author': ['WROTE'],
     'Editions': ['EDITION_OF'],
@@ -289,12 +312,12 @@ const NodeInfoPage = () => {
     }
   };
 
-  const showAlert = (message, isError = true) => {
+  const showAlert = (message: string, isError: boolean = true) => {
     setAlertMessage({ text: message, isError });
     setTimeout(() => setAlertMessage(''), 5000);
   };
 
-  const handlePropertyUpdate = async (key, value) => {
+  const handlePropertyUpdate = async (key: string, value: string) => {
     try {
       const response = await updateProperty(nodeData.id, key, value);
       if (!response.ok) throw new Error('Failed to update property');
@@ -306,7 +329,7 @@ const NodeInfoPage = () => {
     }
   };
 
-  const handlePropertyDelete = async (key) => {
+  const handlePropertyDelete = async (key: string) => {
     if (!confirm(`Delete property "${cleanString(key)}"?`)) return;
     
     try {
@@ -319,7 +342,7 @@ const NodeInfoPage = () => {
     }
   };
 
-  const handleLabelsUpdate = async (labelsString) => {
+  const handleLabelsUpdate = async (labelsString: string) => {
     const labels = labelsString.split(',').map(l => l.trim()).filter(Boolean);
     try {
       const response = await updateLabels(nodeData.id, labels);
@@ -344,7 +367,7 @@ const NodeInfoPage = () => {
     }
   };
 
-  const handleDeleteRelationship = async (rel) => {
+  const handleDeleteRelationship = async (rel: any) => {
     if (!confirm('Delete this relationship?')) return;
     
     try {
@@ -359,9 +382,9 @@ const NodeInfoPage = () => {
     }
   };
 
-  const categorizeRelationships = (incoming, outgoing) => {
-    const categorized = {};
-    const uncategorized = { incoming: [], outgoing: [] };
+  const categorizeRelationships = (incoming: any[], outgoing: any[]) => {
+    const categorized: Record<string, any[]> = {};
+    const uncategorized: { incoming: any[]; outgoing: any[] } = { incoming: [], outgoing: [] };
 
     // Process all relationships
     [...incoming.map(r => ({...r, direction: 'incoming'})), 
@@ -385,7 +408,7 @@ const NodeInfoPage = () => {
     return { categorized, uncategorized };
   };
 
-  const renderPropertyValue = (value) => {
+  const renderPropertyValue = (value: any) => {
     if (Array.isArray(value)) {
       return value.map((item, idx) => (
         <div key={idx}>
@@ -470,8 +493,8 @@ const NodeInfoPage = () => {
                        !externalLinks.some(([k]) => k === key));
 
   return (
-    <main>
-    <Header />
+    <>
+      <Header />
       <div className="container-fluid" style={{ maxWidth: '1400px' }}>
         {alertMessage && (
           <div 
@@ -487,189 +510,188 @@ const NodeInfoPage = () => {
           </div>
         )}
 
-        <div className="row mt-4">
-          {/* Main content */}
-          <div className="col-lg-9">
-            {/* Title and labels */}
-            <div className="mb-4">
-              <h1 className="display-5 mb-2">{title}</h1>
-              <div className="d-flex align-items-center gap-2 flex-wrap">
-                <EditableField
-                  value={labels.join(', ')}
-                  onSave={handleLabelsUpdate}
-                  canEdit={canEdit}
-                  placeholder="Add labels"
-                />
-              </div>
+      <div className="row mt-4">
+        {/* Main content */}
+        <div className="col-lg-9">
+          {/* Title and labels */}
+          <div className="mb-4">
+            <h1 className="display-5 mb-2">{title}</h1>
+            <div className="d-flex align-items-center gap-2 flex-wrap">
+              <EditableField
+                value={labels.join(', ')}
+                onSave={handleLabelsUpdate}
+                canEdit={canEdit}
+                placeholder="Add labels"
+              />
             </div>
-
-            {/* Admin controls */}
-            {isAdmin && (
-              <div className="mb-4">
-                <button onClick={handleDeleteNode} className="btn btn-danger btn-sm">
-                  <Trash2 size={14} className="me-1" /> Delete Node
-                </button>
-              </div>
-            )}
-
-            {/* Main content sections */}
-            {mainContentProps.map(prop => {
-              const value = nodeData.properties[prop];
-              if (!value && !canEdit) return null;
-              
-              return (
-                <div key={prop} className="mb-4">
-                  <h3 className="h4 border-bottom pb-2 mb-3">{cleanString(prop)}</h3>
-                  <div className="content-section">
-                    <EditableField
-                      value={value}
-                      onSave={(v) => handlePropertyUpdate(prop, v)}
-                      canEdit={canEdit}
-                      multiline
-                      placeholder={`Add ${cleanString(prop).toLowerCase()}`}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-
-            {/* External links */}
-            {externalLinks.length > 0 && (
-              <div className="mb-4">
-                <h3 className="h4 border-bottom pb-2 mb-3">External Links</h3>
-                <ul className="list-unstyled">
-                  {externalLinks.map(([key, value]) => {
-                    const links = Array.isArray(value) ? value : [value];
-                    return links.map((link, idx) => (
-                      <li key={`${key}-${idx}`} className="mb-2">
-                        <a href={link} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
-                          <ExternalLink size={14} className="me-2" />
-                          {cleanString(key)}
-                        </a>
-                      </li>
-                    ));
-                  })}
-                </ul>
-              </div>
-            )}
-
-            {/* Uncategorized relationships */}
-            {(uncategorized.incoming.length > 0 || uncategorized.outgoing.length > 0) && (
-              <div className="mb-4">
-                <h3 className="h4 border-bottom pb-2 mb-3">Other Relationships</h3>
-                {uncategorized.incoming.map((rel, idx) => (
-                  <div key={`in-${idx}`} className="mb-2">
-                    <span className="badge bg-secondary me-2">← {rel.type}</span>
-                    <a href={`?id=${encodeURIComponent(rel.node.id)}`}>
-                      {rel.node.properties.display_name || rel.node.properties.name || rel.node.id}
-                    </a>
-                    {canEdit && (
-                      <button
-                        onClick={() => handleDeleteRelationship(rel)}
-                        className="btn btn-sm btn-outline-danger ms-2"
-                      >
-                        <Trash2 size={12} />
-                      </button>
-                    )}
-                  </div>
-                ))}
-                {uncategorized.outgoing.map((rel, idx) => (
-                  <div key={`out-${idx}`} className="mb-2">
-                    <span className="badge bg-primary me-2">{rel.type} →</span>
-                    <a href={`?id=${encodeURIComponent(rel.node.id)}`}>
-                      {rel.node.properties.display_name || rel.node.properties.name || rel.node.id}
-                    </a>
-                    {canEdit && (
-                      <button
-                        onClick={() => handleDeleteRelationship(rel)}
-                        className="btn btn-sm btn-outline-danger ms-2"
-                      >
-                        <Trash2 size={12} />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {canEdit && (
-              <div className="mt-4">
-                <a href={`/leabharlann/relationship/index.html?fromId=${encodeURIComponent(nodeData.id)}`} className="btn btn-primary">
-                  <Plus size={16} className="me-1" /> Create Relationship
-                </a>
-              </div>
-            )}
           </div>
 
-          {/* Sidebar */}
-          <div className="col-lg-3">
-            <div className="card sticky-top" style={{ top: '20px' }}>
-              <div className="card-body">
-                {/* Image */}
-                {nodeData.properties.img_link && (
-                  <div className="mb-3">
-                    <img
-                      src={Array.isArray(nodeData.properties.img_link) 
-                        ? nodeData.properties.img_link[0] 
-                        : nodeData.properties.img_link}
-                      alt={title}
-                      className="img-fluid rounded"
-                    />
-                  </div>
-                )}
+          {/* Admin controls */}
+          {isAdmin && (
+            <div className="mb-4">
+              <button onClick={handleDeleteNode} className="btn btn-danger btn-sm">
+                <Trash2 size={14} className="me-1" /> Delete Node
+              </button>
+            </div>
+          )}
 
-                {/* Categorized relationships */}
-                {Object.entries(categorized).map(([category, rels]) => (
-                  <RelationshipSection
-                    key={category}
-                    title={category}
-                    relationships={rels}
-                    currentNodeId={nodeData.id}
-                    onDelete={handleDeleteRelationship}
+          {/* Main content sections */}
+          {mainContentProps.map(prop => {
+            const value = nodeData.properties[prop];
+            if (!value && !canEdit) return null;
+            
+            return (
+              <div key={prop} className="mb-4">
+                <h3 className="h4 border-bottom pb-2 mb-3">{cleanString(prop)}</h3>
+                <div className="content-section">
+                  <EditableField
+                    value={value}
+                    onSave={(v) => handlePropertyUpdate(prop, v)}
                     canEdit={canEdit}
+                    multiline
+                    placeholder={`Add ${cleanString(prop).toLowerCase()}`}
                   />
-                ))}
-
-                {/* Infobox properties */}
-                {infoboxProps.length > 0 && (
-                  <div className="mb-3">
-                    <h5 className="border-bottom pb-2 mb-3">Details</h5>
-                    <table className="table table-sm table-borderless">
-                      <tbody>
-                        {infoboxProps.map(([key, value]) => (
-                          <tr key={key}>
-                            <td className="text-muted small" style={{ width: '40%' }}>
-                              {cleanString(key)}
-                            </td>
-                            <td className="small">
-                              <EditableField
-                                value={value}
-                                onSave={(v) => handlePropertyUpdate(key, v)}
-                                canEdit={canEdit}
-                                placeholder="Not set"
-                              />
-                              {canEdit && (
-                                <button
-                                  onClick={() => handlePropertyDelete(key)}
-                                  className="btn btn-sm btn-link text-danger p-0 ms-2"
-                                  title="Delete property"
-                                >
-                                  <Trash2 size={12} />
-                                </button>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                </div>
               </div>
+            );
+          })}
+
+          {/* External links */}
+          {externalLinks.length > 0 && (
+            <div className="mb-4">
+              <h3 className="h4 border-bottom pb-2 mb-3">External Links</h3>
+              <ul className="list-unstyled">
+                {externalLinks.map(([key, value]) => {
+                  const links = Array.isArray(value) ? value : [value];
+                  return links.map((link, idx) => (
+                    <li key={`${key}-${idx}`} className="mb-2">
+                      <a href={link} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
+                        <ExternalLink size={14} className="me-2" />
+                        {cleanString(key)}
+                      </a>
+                    </li>
+                  ));
+                })}
+              </ul>
+            </div>
+          )}
+
+          {/* Uncategorized relationships */}
+          {(uncategorized.incoming.length > 0 || uncategorized.outgoing.length > 0) && (
+            <div className="mb-4">
+              <h3 className="h4 border-bottom pb-2 mb-3">Other Relationships</h3>
+              {uncategorized.incoming.map((rel, idx) => (
+                <div key={`in-${idx}`} className="mb-2">
+                  <span className="badge bg-secondary me-2">← {rel.type}</span>
+                  <a href={`?id=${encodeURIComponent(rel.node.id)}`}>
+                    {rel.node.properties.display_name || rel.node.properties.name || rel.node.id}
+                  </a>
+                  {canEdit && (
+                    <button
+                      onClick={() => handleDeleteRelationship(rel)}
+                      className="btn btn-sm btn-outline-danger ms-2"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  )}
+                </div>
+              ))}
+              {uncategorized.outgoing.map((rel, idx) => (
+                <div key={`out-${idx}`} className="mb-2">
+                  <span className="badge bg-primary me-2">{rel.type} →</span>
+                  <a href={`?id=${encodeURIComponent(rel.node.id)}`}>
+                    {rel.node.properties.display_name || rel.node.properties.name || rel.node.id}
+                  </a>
+                  {canEdit && (
+                    <button
+                      onClick={() => handleDeleteRelationship(rel)}
+                      className="btn btn-sm btn-outline-danger ms-2"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {canEdit && (
+            <div className="mt-4">
+              <a href={`/leabharlann/relationship/index.html?fromId=${encodeURIComponent(nodeData.id)}`} className="btn btn-primary">
+                <Plus size={16} className="me-1" /> Create Relationship
+              </a>
+            </div>
+          )}
+        </div>
+
+        {/* Sidebar */}
+        <div className="col-lg-3">
+          <div className="card sticky-top" style={{ top: '20px' }}>
+            <div className="card-body">
+              {/* Image */}
+              {nodeData.properties.img_link && (
+                <div className="mb-3">
+                  <img
+                    src={Array.isArray(nodeData.properties.img_link) 
+                      ? nodeData.properties.img_link[0] 
+                      : nodeData.properties.img_link}
+                    alt={title}
+                    className="img-fluid rounded"
+                  />
+                </div>
+              )}
+
+              {/* Categorized relationships */}
+              {Object.entries(categorized).map(([category, rels]) => (
+                <RelationshipSection
+                  key={category}
+                  title={category}
+                  relationships={rels}
+                  currentNodeId={nodeData.id}
+                  onDelete={handleDeleteRelationship}
+                  canEdit={canEdit}
+                />
+              ))}
+
+              {/* Infobox properties */}
+              {infoboxProps.length > 0 && (
+                <div className="mb-3">
+                  <h5 className="border-bottom pb-2 mb-3">Details</h5>
+                  <table className="table table-sm table-borderless">
+                    <tbody>
+                      {infoboxProps.map(([key, value]) => (
+                        <tr key={key}>
+                          <td className="text-muted small" style={{ width: '40%' }}>
+                            {cleanString(key)}
+                          </td>
+                          <td className="small">
+                            <EditableField
+                              value={value}
+                              onSave={(v) => handlePropertyUpdate(key, v)}
+                              canEdit={canEdit}
+                              placeholder="Not set"
+                            />
+                            {canEdit && (
+                              <button
+                                onClick={() => handlePropertyDelete(key)}
+                                className="btn btn-sm btn-link text-danger p-0 ms-2"
+                                title="Delete property"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
-    </main>
+    </>
   );
 };
 
