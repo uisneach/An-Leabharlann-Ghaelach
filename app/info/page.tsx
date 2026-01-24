@@ -26,6 +26,22 @@ const getRelations = async (id: string): Promise<Response> => {
   return await fetch(`/api/nodes/${id}/relationships`);
 };
 
+interface Node {
+  id: string;
+  properties: Record<string, any>;
+  labels: string[];
+  incoming: Relationship[];
+  outgoing: Relationship[];
+}
+
+interface Relationship {
+  type: string;
+  node: {
+    id: string;
+    properties: Record<string, any>;
+  };
+}
+
 // Relationship display component
 const RelationshipSection = ({ 
   title, 
@@ -33,7 +49,7 @@ const RelationshipSection = ({
   currentNodeId 
 }: {
   title: string;
-  relationships: any[];
+  relationships: (Relationship & { direction: 'incoming' | 'outgoing' })[];
   currentNodeId: string;
 }) => {
   if (!relationships || relationships.length === 0) return null;
@@ -60,7 +76,7 @@ const RelationshipSection = ({
 };
 
 const NodeInfoPage = () => {
-  const [nodeData, setNodeData] = useState<any>(null);
+  const [nodeData, setNodeData] = useState<Node | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -110,9 +126,9 @@ const NodeInfoPage = () => {
     }
   };
 
-  const categorizeRelationships = (incoming: any[], outgoing: any[]) => {
-    const categorized: Record<string, any[]> = {};
-    const uncategorized: { incoming: any[]; outgoing: any[] } = { incoming: [], outgoing: [] };
+  const categorizeRelationships = (incoming: Relationship[], outgoing: Relationship[]) => {
+    const categorized: Record<string, (Relationship & { direction: 'incoming' | 'outgoing' })[]> = {};
+    const uncategorized: { incoming: (Relationship & { direction: 'incoming' })[]; outgoing: (Relationship & { direction: 'outgoing' })[] } = { incoming: [], outgoing: [] };
 
     // Process all relationships
     [...incoming.map(r => ({...r, direction: 'incoming' as const})), 
@@ -138,7 +154,7 @@ const NodeInfoPage = () => {
 
   const renderPropertyValue = (value: any) => {
     if (Array.isArray(value)) {
-      return value.map((item, idx) => (
+      return value.map((item: any, idx: number) => (
         <div key={idx}>
           {isUrl(item) ? (
             <a href={item} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
@@ -185,12 +201,15 @@ const NodeInfoPage = () => {
 
   if (!nodeData) {
     return (
-      <div className="container mt-5 text-center">
-        <div className="p-5">
-          <h2 className="text-muted mb-3">No Node Selected</h2>
-          <p className="text-muted">Please select a node to view its details.</p>
+      <main>
+        <Header />
+        <div className="container mt-5 text-center">
+          <div className="p-5">
+            <h2 className="text-muted mb-3">No Node Selected</h2>
+            <p className="text-muted">Please select a node to view its details.</p>
+          </div>
         </div>
-      </div>
+      </main>
     );
   }
 
@@ -255,7 +274,7 @@ const NodeInfoPage = () => {
                 <ul className="list-unstyled">
                   {externalLinks.map(([key, value]) => {
                     const links = Array.isArray(value) ? value : [value];
-                    return links.map((link, idx) => (
+                    return links.map((link: any, idx: number) => (
                       <li key={`${key}-${idx}`} className="mb-2">
                         <a href={link} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
                           <ExternalLink size={14} className="me-2" />
