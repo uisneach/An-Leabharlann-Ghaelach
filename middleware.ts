@@ -70,15 +70,6 @@ export function middleware(request: NextRequest) {
   // Enable browser XSS protection (legacy, but doesn't hurt)
   response.headers.set('X-XSS-Protection', '1; mode=block');
   
-  // Force HTTPS connections (HSTS)
-  // Only set this if you're SURE you want HTTPS-only for a year
-  if (!isDevelopment) {
-    response.headers.set(
-      'Strict-Transport-Security',
-      'max-age=31536000; includeSubDomains; preload'
-    );
-  }
-  
   // Content Security Policy (CSP)
   // This is a strict policy - adjust based on your needs
   const cspDirectives = [
