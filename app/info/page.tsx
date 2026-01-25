@@ -29,19 +29,30 @@ const getRelations = async (id: string): Promise<Response> => {
 };
 
 interface Node {
-  id: string;
-  properties: Record<string, any>;
-  labels: string[];
-  incoming: Relationship[];
+  id?: string;
+  nodeId: string;
+  display_name?: string;
+  title?: string;
+  name?: string;
+  createdBy?: string;
+  img_link?: string | string[];
+  [key: string]: any; // Allow for any other properties
+}
+
+interface ApiNodeResponse {
+  success: boolean;
+  node: Node;
+}
+
+interface ApiRelationshipsResponse {
+  success: boolean;
   outgoing: Relationship[];
+  incoming: Relationship[];
 }
 
 interface Relationship {
   type: string;
-  node: {
-    id: string;
-    properties: Record<string, any>;
-  };
+  node: Node;
 }
 
 // Relationship display component
@@ -62,11 +73,10 @@ const RelationshipSection = ({
       <ul className="list-unstyled">
         {relationships.map((rel, idx) => {
           const node = rel.node;
-          const label = node.properties?.display_name || node.properties?.name || 
-                       node.properties?.title || node.id;
+          const label = node.display_name || node.name || node.title || node.nodeId;
           return (
             <li key={idx} className="mb-2">
-              <a href={`?id=${encodeURIComponent(node.id)}`} className="text-decoration-none">
+              <a href={`?id=${encodeURIComponent(node.nodeId)}`} className="text-decoration-none">
                 {label}
               </a>
             </li>
@@ -79,6 +89,7 @@ const RelationshipSection = ({
 
 const NodeInfoPage = () => {
   const [nodeData, setNodeData] = useState<Node | null>(null);
+  const [relationships, setRelationships] = useState<{ incoming: Relationship[], outgoing: Relationship[] }>({ incoming: [], outgoing: [] });
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -111,16 +122,19 @@ const NodeInfoPage = () => {
       const nodeRes = await getNode(id);
       if (!nodeRes.ok) throw new Error('Failed to load node');
 
-      const data = await nodeRes.json();
+      const nodeResponse: ApiNodeResponse = await nodeRes.json();
+      const data = nodeResponse.node;
       
       const relRes = await getRelations(id);
       if (!relRes.ok) throw new Error('Failed to load relationships');
       
-      const relData = await relRes.json();
-      data.outgoing = relData.outgoing || [];
-      data.incoming = relData.incoming || [];
-
+      const relData: ApiRelationshipsResponse = await relRes.json();
+      
       setNodeData(data);
+      setRelationships({
+        outgoing: relData.outgoing || [],
+        incoming: relData.incoming || []
+      });
       setLoading(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -186,59 +200,74 @@ const NodeInfoPage = () => {
 
   if (loading) {
     return (
-      <div className="container mt-5 text-center">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
+      <>
+        <Header />
+        <div className="container mt-5 text-center">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   if (error) {
     return (
-      <div className="container mt-5">
-        <div className="alert alert-danger" role="alert">
-          <h4 className="alert-heading">Error</h4>
-          <p>{error}</p>
+      <>
+        <Header />
+        <div className="container mt-5">
+          <div className="alert alert-danger" role="alert">
+            <h4 className="alert-heading">Error</h4>
+            <p>{error}</p>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   if (!nodeData) {
     return (
-      <div className="container mt-5 text-center">
-        <div className="p-5">
-          <h2 className="text-muted mb-3">No Node Selected</h2>
-          <p className="text-muted">Please select a node to view its details.</p>
+      <>
+        <Header />
+        <div className="container mt-5 text-center">
+          <div className="p-5">
+            <h2 className="text-muted mb-3">No Node Selected</h2>
+            <p className="text-muted">Please select a node to view its details.</p>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
-  const title = nodeData.display_name || nodeData.properties?.name || 
-                nodeData.properties?.title || nodeData.id;
-  const labels = nodeData.labels?.filter(l => l !== 'Entity') || [];
+  const title = nodeData.display_name || nodeData.name || nodeData.title || nodeData.nodeId;
+  const labels = nodeData.labels?.filter((l: string) => l !== 'Entity') || [];
 
   const { categorized, uncategorized } = categorizeRelationships(
-    nodeData.incoming || [], 
-    nodeData.outgoing || []
+    relationships.incoming || [], 
+    relationships.outgoing || []
   );
 
   // Separate properties into sections
   const mainContentProps = ['description', 'contents', 'analysis', 'summary', 'biography'];
-  const externalLinks = Object.entries(nodeData.properties || {})
-    .filter(([key, value]) => {
+  
+  // Get all properties except special ones
+  const allProps = Object.entries(nodeData).filter(([key]) => 
+    key !== 'nodeId' && key !== 'createdBy' && key !== 'labels'
+  );
+  
+  const externalLinks = allProps.filter(([key, value]) => {
       if (Array.isArray(value)) return value.some(v => isUrl(v));
       return typeof value === 'string' && isUrl(value);
     });
 
-  const infoboxProps = Object.entries(nodeData.properties || {})
-    .filter(([key]) => !mainContentProps.includes(key) && 
-                       key !== 'img_link' && 
-                       key !== 'nodeId' && 
-                       key !== 'createdBy' &&
-                       !externalLinks.some(([k]) => k === key));
+  const infoboxProps = allProps.filter(([key]) => 
+    !mainContentProps.includes(key) && 
+    key !== 'img_link' && 
+    key !== 'display_name' &&
+    key !== 'name' &&
+    key !== 'title' &&
+    !externalLinks.some(([k]) => k === key)
+  );
 
   return (
     <>
@@ -251,20 +280,20 @@ const NodeInfoPage = () => {
             <div className="mb-4">
               <h1 className="display-5 mb-2">{title}</h1>
               <div className="d-flex align-items-center gap-2 flex-wrap">
-                <span>{labels.join(', ')}</span>
+                <span className="text-muted">{labels.join(', ')}</span>
               </div>
             </div>
 
             {/* Main content sections */}
             {mainContentProps.map(prop => {
-              const value = nodeData.properties?.[prop];
+              const value = nodeData[prop];
               if (!value) return null;
               
               return (
                 <div key={prop} className="mb-4">
                   <h3 className="h4 border-bottom pb-2 mb-3">{cleanString(prop)}</h3>
                   <div className="content-section">
-                    <span>{value}</span>
+                    <p>{value}</p>
                   </div>
                 </div>
               );
@@ -297,16 +326,16 @@ const NodeInfoPage = () => {
                 {uncategorized.incoming.map((rel, idx) => (
                   <div key={`in-${idx}`} className="mb-2">
                     <span className="badge bg-secondary me-2">← {rel.type}</span>
-                    <a href={`?id=${encodeURIComponent(rel.node.id)}`}>
-                      {rel.node.properties?.display_name || rel.node.properties?.name || rel.node.id}
+                    <a href={`?id=${encodeURIComponent(rel.node.nodeId)}`}>
+                      {rel.node.display_name || rel.node.name || rel.node.nodeId}
                     </a>
                   </div>
                 ))}
                 {uncategorized.outgoing.map((rel, idx) => (
                   <div key={`out-${idx}`} className="mb-2">
                     <span className="badge bg-primary me-2">{rel.type} →</span>
-                    <a href={`?id=${encodeURIComponent(rel.node.id)}`}>
-                      {rel.node.properties?.display_name || rel.node.properties?.name || rel.node.id}
+                    <a href={`?id=${encodeURIComponent(rel.node.nodeId)}`}>
+                      {rel.node.display_name || rel.node.name || rel.node.nodeId}
                     </a>
                   </div>
                 ))}
@@ -319,12 +348,12 @@ const NodeInfoPage = () => {
             <div className="card sticky-top" style={{ top: '20px' }}>
               <div className="card-body">
                 {/* Image */}
-                {nodeData.properties?.img_link && (
+                {nodeData.img_link && (
                   <div className="mb-3">
                     <img
-                      src={Array.isArray(nodeData.properties.img_link) 
-                        ? nodeData.properties.img_link[0] 
-                        : nodeData.properties.img_link}
+                      src={Array.isArray(nodeData.img_link) 
+                        ? nodeData.img_link[0] 
+                        : nodeData.img_link}
                       alt={title}
                       className="img-fluid rounded"
                     />
@@ -337,7 +366,7 @@ const NodeInfoPage = () => {
                     key={category}
                     title={category}
                     relationships={rels}
-                    currentNodeId={nodeData.id}
+                    currentNodeId={nodeData.nodeId}
                   />
                 ))}
 
