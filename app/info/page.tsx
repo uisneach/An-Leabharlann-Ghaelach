@@ -19,12 +19,12 @@ const isUrl = (str: string): boolean => {
 
 // API functions
 const getNode = async (id: string): Promise<Response> => {
-  const apiBaseUrl = process.env.API_BASE_URL || '/api';
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
   return await fetch(`${apiBaseUrl}/nodes/${id}`);
 };
 
 const getRelations = async (id: string): Promise<Response> => {
-  const apiBaseUrl = process.env.API_BASE_URL || '/api';
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
   return await fetch(`${apiBaseUrl}/nodes/${id}/relationships`);
 };
 
