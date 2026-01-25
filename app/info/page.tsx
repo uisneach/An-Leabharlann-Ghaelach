@@ -19,11 +19,13 @@ const isUrl = (str: string): boolean => {
 
 // API functions
 const getNode = async (id: string): Promise<Response> => {
-  return await fetch(`/api/nodes/${id}`);
+  const apiBaseUrl = process.env.API_BASE_URL || '/api';
+  return await fetch(`${apiBaseUrl}/nodes/${id}`);
 };
 
 const getRelations = async (id: string): Promise<Response> => {
-  return await fetch(`/api/nodes/${id}/relationships`);
+  const apiBaseUrl = process.env.API_BASE_URL || '/api';
+  return await fetch(`${apiBaseUrl}/nodes/${id}/relationships`);
 };
 
 interface Node {
@@ -60,8 +62,8 @@ const RelationshipSection = ({
       <ul className="list-unstyled">
         {relationships.map((rel, idx) => {
           const node = rel.node;
-          const label = node.properties.display_name || node.properties.name || 
-                       node.properties.title || node.id;
+          const label = node.properties?.display_name || node.properties?.name || 
+                       node.properties?.title || node.id;
           return (
             <li key={idx} className="mb-2">
               <a href={`?id=${encodeURIComponent(node.id)}`} className="text-decoration-none">
@@ -214,24 +216,24 @@ const NodeInfoPage = () => {
     );
   }
 
-  const title = nodeData.properties.display_name || nodeData.properties.name || 
-                nodeData.properties.title || nodeData.id;
-  const labels = nodeData.labels.filter(l => l !== 'Entity');
+  const title = nodeData.display_name || nodeData.properties?.name || 
+                nodeData.properties?.title || nodeData.id;
+  const labels = nodeData.labels?.filter(l => l !== 'Entity') || [];
 
   const { categorized, uncategorized } = categorizeRelationships(
-    nodeData.incoming, 
-    nodeData.outgoing
+    nodeData.incoming || [], 
+    nodeData.outgoing || []
   );
 
   // Separate properties into sections
   const mainContentProps = ['description', 'contents', 'analysis', 'summary', 'biography'];
-  const externalLinks = Object.entries(nodeData.properties)
+  const externalLinks = Object.entries(nodeData.properties || {})
     .filter(([key, value]) => {
       if (Array.isArray(value)) return value.some(v => isUrl(v));
       return typeof value === 'string' && isUrl(value);
     });
 
-  const infoboxProps = Object.entries(nodeData.properties)
+  const infoboxProps = Object.entries(nodeData.properties || {})
     .filter(([key]) => !mainContentProps.includes(key) && 
                        key !== 'img_link' && 
                        key !== 'nodeId' && 
@@ -255,7 +257,7 @@ const NodeInfoPage = () => {
 
             {/* Main content sections */}
             {mainContentProps.map(prop => {
-              const value = nodeData.properties[prop];
+              const value = nodeData.properties?.[prop];
               if (!value) return null;
               
               return (
@@ -296,7 +298,7 @@ const NodeInfoPage = () => {
                   <div key={`in-${idx}`} className="mb-2">
                     <span className="badge bg-secondary me-2">← {rel.type}</span>
                     <a href={`?id=${encodeURIComponent(rel.node.id)}`}>
-                      {rel.node.properties.display_name || rel.node.properties.name || rel.node.id}
+                      {rel.node.properties?.display_name || rel.node.properties?.name || rel.node.id}
                     </a>
                   </div>
                 ))}
@@ -304,7 +306,7 @@ const NodeInfoPage = () => {
                   <div key={`out-${idx}`} className="mb-2">
                     <span className="badge bg-primary me-2">{rel.type} →</span>
                     <a href={`?id=${encodeURIComponent(rel.node.id)}`}>
-                      {rel.node.properties.display_name || rel.node.properties.name || rel.node.id}
+                      {rel.node.properties?.display_name || rel.node.properties?.name || rel.node.id}
                     </a>
                   </div>
                 ))}
@@ -317,7 +319,7 @@ const NodeInfoPage = () => {
             <div className="card sticky-top" style={{ top: '20px' }}>
               <div className="card-body">
                 {/* Image */}
-                {nodeData.properties.img_link && (
+                {nodeData.properties?.img_link && (
                   <div className="mb-3">
                     <img
                       src={Array.isArray(nodeData.properties.img_link) 

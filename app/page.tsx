@@ -20,7 +20,8 @@ export default function Home() {
       setLoadingLabels(true);
       setErrorLabels(null);
       try {
-        const res = await fetch('https://leabharlann.uisneac.com/api/labels');
+        const apiBaseUrl = process.env.API_BASE_URL || '/api';
+        const res = await fetch(`${apiBaseUrl}/labels`);
         if (!res.ok) {
           throw new Error(`Failed to load labels: ${res.status} ${res.statusText}`);
         }

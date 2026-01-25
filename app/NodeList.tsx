@@ -39,7 +39,8 @@ export default function NodeList({ label, onRemove, isDefault, totalColumns }: N
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`/api/nodes/get?label=${encodeURIComponent(label)}&limit=0`);
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
+        const res = await fetch(`${apiBaseUrl}/nodes/get?label=${encodeURIComponent(label)}&limit=0`);
         if (!res.ok) {
           throw new Error(`Failed to load ${label} nodes: ${res.status} ${res.statusText}`);
         }
