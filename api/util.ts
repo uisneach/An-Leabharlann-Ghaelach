@@ -12,7 +12,7 @@
  * Future additions can be added here to save function count.
  */
 
-import { getDriver, runQuery } from '../../lib/neo4j';
+import { getDriver, runQuery } from '../lib/neo4j';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
