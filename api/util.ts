@@ -12,9 +12,9 @@
  * Future additions can be added here to save function count.
  */
 
-import { getDriver, runQuery } from '../lib/neo4j';
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { getDriver, runQuery } from '../lib/neo4j.js';
+import { NextResponse } from 'next/server.js';
+import type { NextRequest } from 'next/server.js';
 
 // ============================================
 // MAIN HANDLER - Routes to action functions
