@@ -29,9 +29,9 @@ const getRelations = async (id: string): Promise<Response> => {
 };
 
 interface Node {
-  id?: string;
+  id: string;
   nodeId: string;
-  labels?: string[];
+  labels: string[];
   properties: {
     display_name?: string;
     title?: string;
@@ -45,6 +45,11 @@ interface Node {
 interface Relationship {
   type: string;
   node: Node;
+}
+
+interface NodeData extends Node {
+  outgoing: Relationship[];
+  incoming: Relationship[];
 }
 
 // Special relationships configuration
@@ -86,8 +91,7 @@ const specialRels = {
 };
 
 const NodeInfoPage = () => {
-  const [nodeData, setNodeData] = useState<Node | null>(null);
-  const [relationships, setRelationships] = useState<{ incoming: Relationship[], outgoing: Relationship[] }>({ incoming: [], outgoing: [] });
+  const [nodeData, setNodeData] = useState<NodeData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -117,21 +121,40 @@ const NodeInfoPage = () => {
 
     try {
       const nodeRes = await getNode(id);
-      if (!nodeRes.ok) throw new Error('Failed to load node');
+      
+      if (nodeRes.status === 403) {
+        setError('Access denied: This node cannot be accessed');
+        setLoading(false);
+        return;
+      }
+      
+      if (!nodeRes.ok) {
+        const errorData = await nodeRes.json();
+        throw new Error(errorData.error || 'Failed to load node');
+      }
 
-      const data = await nodeRes.json();
+      const nodeResponseData = await nodeRes.json();
+      
+      // New API structure: { success, id, nodeId, labels, properties }
+      const node: Node = {
+        id: nodeResponseData.id,
+        nodeId: nodeResponseData.nodeId,
+        labels: nodeResponseData.labels || [],
+        properties: nodeResponseData.properties || {}
+      };
       
       const relRes = await getRelations(id);
       if (!relRes.ok) throw new Error('Failed to load relationships');
       
       const relData = await relRes.json();
-
-      setNodeData(data.node);
-      console.log(relData);
-      setRelationships({
+      
+      const fullData: NodeData = {
+        ...node,
         outgoing: relData.outgoing || [],
         incoming: relData.incoming || []
-      });
+      };
+      
+      setNodeData(fullData);
       setLoading(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -233,19 +256,19 @@ const NodeInfoPage = () => {
     );
   }
 
-  const title = nodeData.display_name || nodeData.name || nodeData.title || String(nodeData.nodeId) || nodeData.nodeId;
+  const title = nodeData.properties.display_name || nodeData.properties.name || nodeData.properties.title || String(nodeData.properties.nodeId) || nodeData.nodeId;
   const labels = nodeData.labels?.filter((l: string) => l !== 'Entity') || [];
 
   const { categorized, uncategorized } = categorizeRelationships(
-    relationships.incoming || [], 
-    relationships.outgoing || []
+    nodeData.incoming || [], 
+    nodeData.outgoing || []
   );
 
   // Separate properties into sections
   const mainContentProps = ['description', 'contents', 'analysis', 'summary', 'biography', 'works'];
   
   // Get all properties except special ones
-  const allProps = Object.entries(nodeData).filter(([key]) => 
+  const allProps = Object.entries(nodeData.properties).filter(([key]) => 
     key !== 'nodeId' && key !== 'createdBy'
   );
   
@@ -282,13 +305,13 @@ const NodeInfoPage = () => {
             {isAuthenticated && (
               <div className="mb-3">
                 <a 
-                  href={`/edit?id=${encodeURIComponent(nodeData.nodeId || nodeData.id || '')}`}
+                  href={`/edit?id=${encodeURIComponent(nodeData.nodeId)}`}
                   className="btn btn-primary me-2"
                 >
                   Edit Node
                 </a>
                 <a 
-                  href={`/leabharlann/relationship/index.html?fromId=${encodeURIComponent(nodeData.nodeId || nodeData.id || '')}`}
+                  href={`/leabharlann/relationship/index.html?fromId=${encodeURIComponent(nodeData.nodeId)}`}
                   className="btn btn-primary"
                 >
                   Create Relationship
@@ -299,7 +322,7 @@ const NodeInfoPage = () => {
             {/* Main content sections */}
             <div id="propertiesDisplay">
               {mainContentProps.map(prop => {
-                const value = nodeData[prop];
+                const value = nodeData.properties[prop];
                 if (!value) return null;
                 
                 return (
@@ -340,16 +363,16 @@ const NodeInfoPage = () => {
                 {uncategorized.incoming.map((rel, idx) => (
                   <div key={`in-${idx}`} className="mb-2">
                     <span className="badge bg-secondary me-2">← {rel.type}</span>
-                    <a href={`?id=${encodeURIComponent(rel.node.nodeId || rel.node.id || '')}`}>
-                      {rel.node.display_name || rel.node.name || rel.node.nodeId}
+                    <a href={`?id=${encodeURIComponent(rel.node.nodeId)}`}>
+                      {rel.node.properties.display_name || rel.node.properties.name || rel.node.nodeId}
                     </a>
                   </div>
                 ))}
                 {uncategorized.outgoing.map((rel, idx) => (
                   <div key={`out-${idx}`} className="mb-2">
                     <span className="badge bg-primary me-2">{rel.type} →</span>
-                    <a href={`?id=${encodeURIComponent(rel.node.nodeId || rel.node.id || '')}`}>
-                      {rel.node.display_name || rel.node.name || rel.node.nodeId}
+                    <a href={`?id=${encodeURIComponent(rel.node.nodeId)}`}>
+                      {rel.node.properties.display_name || rel.node.properties.name || rel.node.nodeId}
                     </a>
                   </div>
                 ))}
@@ -362,12 +385,12 @@ const NodeInfoPage = () => {
             <div className="card sticky-top infobox" style={{ top: '20px' }}>
               <div className="card-body">
                 {/* Image */}
-                {nodeData.img_link && (
+                {nodeData.properties.img_link && (
                   <div className="mb-3">
                     <img
-                      src={Array.isArray(nodeData.img_link) 
-                        ? nodeData.img_link[0] 
-                        : nodeData.img_link}
+                      src={Array.isArray(nodeData.properties.img_link) 
+                        ? nodeData.properties.img_link[0] 
+                        : nodeData.properties.img_link}
                       alt={title}
                       className="img-fluid rounded"
                       style={{ width: '100%', maxHeight: '60vh', objectFit: 'contain' }}
@@ -382,10 +405,10 @@ const NodeInfoPage = () => {
                     <ul className="rels-list">
                       {rels.map((rel, idx) => {
                         const node = rel.node;
-                        const label = node.display_name || node.name || node.title || node.nodeId;
+                        const label = node.properties.display_name || node.properties.name || node.properties.title || node.nodeId;
                         return (
                           <li key={idx} className="mb-2">
-                            <a href={`?id=${encodeURIComponent(node.nodeId || node.id || '')}`} className="text-decoration-none">
+                            <a href={`?id=${encodeURIComponent(node.nodeId)}`} className="text-decoration-none">
                               {label}
                             </a>
                           </li>

@@ -25,6 +25,11 @@ function getNodeId(request: NextRequest): string | null {
   }
 }
 
+// Forbidden labels - nodes with these labels cannot be retrieved
+const FORBIDDEN_LABELS = ['User'];
+// Forbidden properties - these properties will be filtered out from responses
+const FORBIDDEN_PROPERTIES = ['password', 'passwordHash', 'salt', 'token', 'refreshToken'];
+
 export async function GET(request: NextRequest) {
   try {
     const nodeId = getNodeId(request);
@@ -38,7 +43,7 @@ export async function GET(request: NextRequest) {
     
     const cypher = `
       MATCH (n {nodeId: $nodeId})
-      RETURN n
+      RETURN n, labels(n) AS labels
     `;
     
     const results = await runQuery(cypher, { nodeId });
@@ -52,9 +57,38 @@ export async function GET(request: NextRequest) {
       );
     }
     
+    const node = results[0].n;
+    const labels = results[0].labels || [];
+    
+    // Check if node has any forbidden labels
+    const hasForbiddenLabel = labels.some((label: string) => 
+      FORBIDDEN_LABELS.includes(label)
+    );
+    
+    if (hasForbiddenLabel) {
+      return NextResponse.json(
+        { 
+          error: 'Access denied: This node cannot be accessed' 
+        },
+        { status: 403 }
+      );
+    }
+    
+    // Filter out forbidden properties
+    const properties = node.properties || {};
+    const filteredProperties: Record<string, any> = {};
+    
+    Object.entries(properties).forEach(([key, value]) => {
+      if (!FORBIDDEN_PROPERTIES.includes(key)) {
+        filteredProperties[key] = value;
+      }
+    });
+    
     return NextResponse.json({
       success: true,
-      node: results[0].n
+      nodeId: nodeId,
+      labels: labels,
+      properties: filteredProperties
     });
     
   } catch (error) {
