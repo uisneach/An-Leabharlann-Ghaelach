@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
       success: true,
       nodeId: nodeId,
       labels: labels,
-      properties: properties
+      properties: node
     });
     
   } catch (error) {
