@@ -340,7 +340,7 @@ const NodeInfoPage = () => {
                     const links = Array.isArray(value) ? value : [value];
                     return links.map((link: any, idx: number) => (
                       <li key={`${key}-${idx}`} className="mb-2">
-                        <a href={String(link)} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
+                        <a href={String(link)} target="_blank" rel="noopener noreferrer" className="text-decoration-none flex flex-row">
                           <ExternalLink size={14} className="me-2" />
                           {cleanString(key)}
                         </a>

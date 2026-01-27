@@ -2,6 +2,12 @@ import { runQuery } from '../../../lib/neo4j.js';
 import { NextResponse } from 'next/server.js';
 import type { NextRequest } from 'next/server.js';
 
+// Forbidden labels - relationships to nodes with these labels will be filtered out
+const FORBIDDEN_LABELS = ['User'];
+
+// Forbidden properties - these properties will be filtered out from node data
+const FORBIDDEN_PROPERTIES = ['password', 'passwordHash', 'salt', 'token', 'refreshToken'];
+
 // GET ONLY - Retrieve all relationships connected to a given node
 // organized into outgoing and incoming relationships
 export async function GET(request: NextRequest) {
@@ -18,16 +24,51 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Enhanced Cypher query that processes relationships on the database side
     const cypher = `
-      MATCH (from)-[r]->(to)
-      WHERE from.nodeId = $nodeId OR to.nodeId = $nodeId
-      RETURN r, from, to, type(r) AS type
+      MATCH (n {nodeId: $nodeId})
+      
+      // Outgoing relationships
+      OPTIONAL MATCH (n)-[outRel]->(target)
+      WHERE NOT ANY(label IN labels(target) WHERE label IN $forbiddenLabels)
+      WITH n, collect(CASE 
+        WHEN outRel IS NOT NULL THEN {
+          type: type(outRel),
+          node: {
+            nodeId: target.nodeId,
+            labels: labels(target),
+            properties: properties(target)
+          }
+        }
+        ELSE null
+      END) AS outgoingRaw
+      
+      // Incoming relationships (separate OPTIONAL MATCH to avoid cartesian product)
+      OPTIONAL MATCH (source)-[inRel]->(n)
+      WHERE NOT ANY(label IN labels(source) WHERE label IN $forbiddenLabels)
+      WITH outgoingRaw, collect(CASE 
+        WHEN inRel IS NOT NULL THEN {
+          type: type(inRel),
+          node: {
+            nodeId: source.nodeId,
+            labels: labels(source),
+            properties: properties(source)
+          }
+        }
+        ELSE null
+      END) AS incomingRaw
+      
+      RETURN 
+        [r IN outgoingRaw WHERE r IS NOT NULL] AS outgoing,
+        [r IN incomingRaw WHERE r IS NOT NULL] AS incoming
     `;
     
-    const results = await runQuery(cypher, { nodeId });
-
-    console.log(results);
+    const results = await runQuery(cypher, { 
+      nodeId,
+      forbiddenLabels: FORBIDDEN_LABELS
+    });
     
+    // Handle case where node doesn't exist
     if (results.length === 0) {
       return NextResponse.json({
         success: true,
@@ -36,39 +77,37 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Organize relationships into outgoing and incoming
-    const outgoing: any[] = [];
-    const incoming: any[] = [];
+    const result = results[0];
+    let outgoing = result.outgoing || [];
+    let incoming = result.incoming || [];
 
-    results.forEach(result => {
-      const fromNodeId = result.from.properties?.nodeId || result.from.identity;
-      const toNodeId = result.to.properties?.nodeId || result.to.identity;
+    // Filter forbidden properties from node data
+    const filterProperties = (nodeData: any) => {
+      if (!nodeData || !nodeData.properties) return nodeData;
       
-      // If current node is the source, it's an outgoing relationship
-      if (fromNodeId === nodeId) {
-        outgoing.push({
-          type: result.type,
-          node: {
-            id: toNodeId,
-            nodeId: toNodeId,
-            labels: result.to.labels || [],
-            properties: result.to.properties || {}
-          }
-        });
-      } 
-      // If current node is the target, it's an incoming relationship
-      else if (toNodeId === nodeId) {
-        incoming.push({
-          type: result.type,
-          node: {
-            id: fromNodeId,
-            nodeId: fromNodeId,
-            labels: result.from.labels || [],
-            properties: result.from.properties || {}
-          }
-        });
-      }
-    });
+      const filteredProps: Record<string, any> = {};
+      Object.entries(nodeData.properties).forEach(([key, value]) => {
+        if (!FORBIDDEN_PROPERTIES.includes(key)) {
+          filteredProps[key] = value;
+        }
+      });
+      
+      return {
+        ...nodeData,
+        properties: filteredProps
+      };
+    };
+
+    // Apply property filtering to all relationships
+    outgoing = outgoing.map((rel: any) => ({
+      type: rel.type,
+      node: filterProperties(rel.node)
+    }));
+
+    incoming = incoming.map((rel: any) => ({
+      type: rel.type,
+      node: filterProperties(rel.node)
+    }));
 
     return NextResponse.json({
       success: true,
