@@ -95,8 +95,10 @@ header .btn {
   color: black;
 }
 
-
-
+.flex-row {
+  display: flex;
+  flex-direction: row;
+}
 
 #content, #welcome-message {
   margin: 1rem auto;

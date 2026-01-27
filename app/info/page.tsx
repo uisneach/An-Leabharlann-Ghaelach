@@ -256,6 +256,7 @@ const NodeInfoPage = () => {
   const title = nodeData.properties.display_name || nodeData.properties.name || nodeData.properties.title || String(nodeData.properties.nodeId) || nodeData.nodeId;
   const labels = nodeData.labels?.filter((l: string) => l !== 'Entity') || [];
 
+  console.log(nodeData);
   const { categorized, uncategorized } = categorizeRelationships(
     nodeData.incoming || [], 
     nodeData.outgoing || []
@@ -286,18 +287,15 @@ const NodeInfoPage = () => {
   return (
     <>
       <Header />
-      <div id="content" className="container-fluid" style={{ maxWidth: '1400px' }}>
-        <div className="row mt-4">
+      <div id="content" className="container-fluid" style={{ maxWidth: '1400px', width: "90%" }}>
+        {/* Title and labels */}
+        <div id="title-container" className="mb-4">
+            <h1 className="page-title">{title}</h1>
+            <h3 className="page-subtitle">{labels.join(', ')}</h3>
+        </div>
+        <div className="mt-4 flex flex-row gap-4">
           {/* Main content */}
-          <div className="col-lg-8">
-            {/* Title and labels */}
-            <div id="title-container" className="mb-4">
-              <div>
-                <h1 className="page-title">{title}</h1>
-                <h3 className="page-subtitle">{labels.join(', ')}</h3>
-              </div>
-            </div>
-
+          <div className="col-lg-8 flex-1 basis-3/4 min-w-0">
             {/* Edit button for authenticated users */}
             {isAuthenticated && (
               <div className="mb-3">
@@ -378,7 +376,7 @@ const NodeInfoPage = () => {
           </div>
 
           {/* Sidebar */}
-          <aside className="col-lg-4">
+          <aside className="col-lg-4 flex-0 basis-1/4 min-w-0 max-w-sm">
             <div className="card sticky-top infobox" style={{ top: '20px' }}>
               <div className="card-body">
                 {/* Image */}

@@ -25,6 +25,8 @@ export async function GET(request: NextRequest) {
     `;
     
     const results = await runQuery(cypher, { nodeId });
+
+    console.log(results);
     
     if (results.length === 0) {
       return NextResponse.json({
