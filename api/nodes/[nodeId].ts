@@ -78,17 +78,17 @@ export async function GET(request: NextRequest) {
     const properties = node.properties || {};
     const filteredProperties: Record<string, any> = {};
     
-    Object.entries(properties).forEach(([key, value]) => {
+    /*Object.entries(properties).forEach(([key, value]) => {
       if (!FORBIDDEN_PROPERTIES.includes(key)) {
         filteredProperties[key] = value;
       }
-    });
+    });*/
     
     return NextResponse.json({
       success: true,
       nodeId: nodeId,
       labels: labels,
-      properties: filteredProperties
+      properties: properties
     });
     
   } catch (error) {

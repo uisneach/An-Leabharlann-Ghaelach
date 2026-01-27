@@ -29,7 +29,6 @@ const getRelations = async (id: string): Promise<Response> => {
 };
 
 interface Node {
-  id: string;
   nodeId: string;
   labels: string[];
   properties: {
@@ -135,9 +134,7 @@ const NodeInfoPage = () => {
 
       const nodeResponseData = await nodeRes.json();
       
-      // New API structure: { success, id, nodeId, labels, properties }
       const node: Node = {
-        id: nodeResponseData.id,
         nodeId: nodeResponseData.nodeId,
         labels: nodeResponseData.labels || [],
         properties: nodeResponseData.properties || {}
