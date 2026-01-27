@@ -5,9 +5,13 @@ const defaultLabels = ['Author', 'Text', 'Edition'];
 
 interface Node {
   nodeId: string;
-  title?: string;
-  name?: string;
-  display_name?: string;
+  properties: {
+    title?: string;
+    name?: string;
+    display_name?: string;
+    nodeId?: string | number;
+    [key: string]: any;
+  };
   [key: string]: any;
 }
 
@@ -56,8 +60,13 @@ export default function NodeList({ label, onRemove, isDefault, totalColumns }: N
   }, [label]);
 
   const getTitle = (item: Node) => {
-    // Properties are directly on the item, not nested
-    return (item.display_name || item.name || item.title || item.nodeId || '').trim().toLowerCase();
+    // Ensure we convert to string before calling trim()
+    const title = item.properties.display_name || 
+                  item.properties.name || 
+                  item.properties.title || 
+                  item.properties.nodeId || 
+                  '';
+    return String(title).trim().toLowerCase();
   };
 
   const sortedNodes = [...nodes].sort((a, b) => 
@@ -103,12 +112,13 @@ export default function NodeList({ label, onRemove, isDefault, totalColumns }: N
       </div>
       <ul id={`${label}-list`} className="node-list">
         {sortedNodes.map((item) => {
-          // Properties are directly on item, not nested under item.properties
-          const title = item.display_name || item.name || item.title || item.nodeId || 'Unknown';
-          
+          const title = item.properties.display_name || 
+                       item.properties.name || 
+                       item.properties.title || 
+                       String(item.properties.nodeId || item.nodeId || 'Unknown');
           return (
-            <li key={item.nodeId}>
-              <a href={`/info?id=${encodeURIComponent(item.nodeId)}`}>{title}</a>
+            <li key={item.properties.nodeId}>
+              <a href={`/info?id=${encodeURIComponent(item.properties.nodeId)}`}>{title}</a>
             </li>
           );
         })}

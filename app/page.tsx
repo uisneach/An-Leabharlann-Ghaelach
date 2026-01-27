@@ -20,8 +20,8 @@ export default function Home() {
       setLoadingLabels(true);
       setErrorLabels(null);
       try {
-        const apiBaseUrl = process.env.API_BASE_URL || '/api';
-        const res = await fetch(`${apiBaseUrl}/labels`);
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
+        const res = await fetch(`${apiBaseUrl}/util?action=labels`);
         if (!res.ok) {
           throw new Error(`Failed to load labels: ${res.status} ${res.statusText}`);
         }

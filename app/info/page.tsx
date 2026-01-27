@@ -31,23 +31,15 @@ const getRelations = async (id: string): Promise<Response> => {
 interface Node {
   id?: string;
   nodeId: string;
-  display_name?: string;
-  title?: string;
-  name?: string;
-  createdBy?: string;
-  img_link?: string | string[];
-  [key: string]: any; // Allow for any other properties
-}
-
-interface ApiNodeResponse {
-  success: boolean;
-  node: Node;
-}
-
-interface ApiRelationshipsResponse {
-  success: boolean;
-  outgoing: Relationship[];
-  incoming: Relationship[];
+  labels?: string[];
+  properties: {
+    display_name?: string;
+    title?: string;
+    name?: string;
+    nodeId?: string | number;
+    img_link?: string | string[];
+    [key: string]: any;
+  };
 }
 
 interface Relationship {
@@ -55,36 +47,42 @@ interface Relationship {
   node: Node;
 }
 
-// Relationship display component
-const RelationshipSection = ({ 
-  title, 
-  relationships, 
-  currentNodeId 
-}: {
-  title: string;
-  relationships: (Relationship & { direction: 'incoming' | 'outgoing' })[];
-  currentNodeId: string;
-}) => {
-  if (!relationships || relationships.length === 0) return null;
-
-  return (
-    <div className="mb-4">
-      <h5 className="border-bottom pb-2 mb-3">{title}</h5>
-      <ul className="list-unstyled">
-        {relationships.map((rel, idx) => {
-          const node = rel.node;
-          const label = node.display_name || node.name || node.title || node.nodeId;
-          return (
-            <li key={idx} className="mb-2">
-              <a href={`?id=${encodeURIComponent(node.nodeId)}`} className="text-decoration-none">
-                {label}
-              </a>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  );
+// Special relationships configuration
+const specialRels = {
+  incoming: {
+    'EDITION_OF': 'Editions',
+    'VERSION_OF': 'Versions',
+    'DERIVED_FROM': 'Main Text',
+    'TRANSLATION_OF': 'Translations',
+    'TRANSLATED': 'Translators',
+    'PUBLISHED': 'Publisher',
+    'PUBLISHES': 'Publisher',
+    'WROTE': 'Author',
+    'DISPLAYS': 'Displayed On',
+    'PUBLISHED_IN': 'Published',
+    'HOSTS': 'Hosted By',
+    'COMMENTARY_ON': 'Commentary',
+    'NEXT_IN_SERIES': 'Previous in Series',
+    'ISSUE_OF': 'Issues',
+    'EDITED': 'Editor'
+  },
+  outgoing: {
+    'PUBLISHED_BY': 'Publishers',
+    'PUBLISHED': 'Published',
+    'PUBLISHES': 'Publishes',
+    'EDITION_OF': 'Source Text',
+    'VERSION_OF': 'A Version Of',
+    'DERIVED_FROM': 'Derived From',
+    'WROTE': 'Works',
+    'PUBLISHED_IN': 'Published In',
+    'TRANSLATED': 'Translated',
+    'DISPLAYS': 'Displays',
+    'HOSTS': 'Hosts',
+    'COMMENTARY_ON': 'Commentary On',
+    'NEXT_IN_SERIES': 'Next in Series',
+    'ISSUE_OF': 'Parent Journal',
+    'EDITED': 'Editions'
+  }
 };
 
 const NodeInfoPage = () => {
@@ -92,18 +90,17 @@ const NodeInfoPage = () => {
   const [relationships, setRelationships] = useState<{ incoming: Relationship[], outgoing: Relationship[] }>({ incoming: [], outgoing: [] });
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const relationshipCategories: Record<string, string[]> = {
-    'Works': ['WROTE'],
-    'Author': ['WROTE'],
-    'Editions': ['EDITION_OF'],
-    'Source Text': ['EDITION_OF'],
-    'Translations': ['TRANSLATION_OF'],
-    'Publisher': ['PUBLISHED', 'PUBLISHES', 'PUBLISHED_BY'],
-    'Published In': ['PUBLISHED_IN'],
-    'Commentary': ['COMMENTARY_ON'],
-    'Series': ['NEXT_IN_SERIES'],
-  };
+  useEffect(() => {
+    setIsAuthenticated(!!localStorage.getItem('token'));
+  }, []);
+
+  useEffect(() => {
+    const handleAuthChange = () => setIsAuthenticated(!!localStorage.getItem('token'));
+    document.addEventListener('authChange', handleAuthChange);
+    return () => document.removeEventListener('authChange', handleAuthChange);
+  }, []);
 
   useEffect(() => {
     loadNodeData();
@@ -122,15 +119,15 @@ const NodeInfoPage = () => {
       const nodeRes = await getNode(id);
       if (!nodeRes.ok) throw new Error('Failed to load node');
 
-      const nodeResponse: ApiNodeResponse = await nodeRes.json();
-      const data = nodeResponse.node;
+      const data = await nodeRes.json();
       
       const relRes = await getRelations(id);
       if (!relRes.ok) throw new Error('Failed to load relationships');
       
-      const relData: ApiRelationshipsResponse = await relRes.json();
-      
-      setNodeData(data);
+      const relData = await relRes.json();
+
+      setNodeData(data.node);
+      console.log(relData);
       setRelationships({
         outgoing: relData.outgoing || [],
         incoming: relData.incoming || []
@@ -144,28 +141,25 @@ const NodeInfoPage = () => {
 
   const categorizeRelationships = (incoming: Relationship[], outgoing: Relationship[]) => {
     const categorized: Record<string, (Relationship & { direction: 'incoming' | 'outgoing' })[]> = {};
-    const uncategorized: { incoming: (Relationship & { direction: 'incoming' })[]; outgoing: (Relationship & { direction: 'outgoing' })[] } = { incoming: [], outgoing: [] };
+    const uncategorized: { incoming: Relationship[], outgoing: Relationship[] } = { incoming: [], outgoing: [] };
 
-    // Process all relationships
-    [...incoming.map(r => ({...r, direction: 'incoming' as const})), 
-     ...outgoing.map(r => ({...r, direction: 'outgoing' as const}))].forEach(rel => {
-      let found = false;
-      
-      for (const [category, types] of Object.entries(relationshipCategories)) {
-        if (types.includes(rel.type)) {
-          if (!categorized[category]) categorized[category] = [];
-          categorized[category].push(rel);
-          found = true;
-          break;
-        }
+    incoming.forEach(rel => {
+      const header = specialRels.incoming[rel.type as keyof typeof specialRels.incoming];
+      if (header) {
+        if (!categorized[header]) categorized[header] = [];
+        categorized[header].push({ ...rel, direction: 'incoming' });
+      } else {
+        uncategorized.incoming.push(rel);
       }
-      
-      if (!found) {
-        if (rel.direction === 'incoming') {
-          uncategorized.incoming.push(rel);
-        } else {
-          uncategorized.outgoing.push(rel);
-        }
+    });
+
+    outgoing.forEach(rel => {
+      const header = specialRels.outgoing[rel.type as keyof typeof specialRels.outgoing];
+      if (header) {
+        if (!categorized[header]) categorized[header] = [];
+        categorized[header].push({ ...rel, direction: 'outgoing' });
+      } else {
+        uncategorized.outgoing.push(rel);
       }
     });
 
@@ -176,12 +170,12 @@ const NodeInfoPage = () => {
     if (Array.isArray(value)) {
       return value.map((item: any, idx: number) => (
         <div key={idx}>
-          {isUrl(item) ? (
-            <a href={item} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
-              {item} <ExternalLink size={12} className="ms-1" />
+          {isUrl(String(item)) ? (
+            <a href={String(item)} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
+              {String(item)} <ExternalLink size={12} className="ms-1" />
             </a>
           ) : (
-            <span>{item}</span>
+            <span>{String(item)}</span>
           )}
         </div>
       ));
@@ -195,7 +189,7 @@ const NodeInfoPage = () => {
       );
     }
     
-    return value;
+    return String(value);
   };
 
   if (loading) {
@@ -239,7 +233,7 @@ const NodeInfoPage = () => {
     );
   }
 
-  const title = nodeData.display_name || nodeData.name || nodeData.title || nodeData.nodeId;
+  const title = nodeData.display_name || nodeData.name || nodeData.title || String(nodeData.nodeId) || nodeData.nodeId;
   const labels = nodeData.labels?.filter((l: string) => l !== 'Entity') || [];
 
   const { categorized, uncategorized } = categorizeRelationships(
@@ -248,17 +242,17 @@ const NodeInfoPage = () => {
   );
 
   // Separate properties into sections
-  const mainContentProps = ['description', 'contents', 'analysis', 'summary', 'biography'];
+  const mainContentProps = ['description', 'contents', 'analysis', 'summary', 'biography', 'works'];
   
   // Get all properties except special ones
   const allProps = Object.entries(nodeData).filter(([key]) => 
-    key !== 'nodeId' && key !== 'createdBy' && key !== 'labels'
+    key !== 'nodeId' && key !== 'createdBy'
   );
   
-  const externalLinks = allProps.filter(([key, value]) => {
-      if (Array.isArray(value)) return value.some(v => isUrl(v));
-      return typeof value === 'string' && isUrl(value);
-    });
+  const externalLinks = allProps.filter(([_, value]) => {
+    if (Array.isArray(value)) return value.some(v => isUrl(String(v)));
+    return typeof value === 'string' && isUrl(value);
+  });
 
   const infoboxProps = allProps.filter(([key]) => 
     !mainContentProps.includes(key) && 
@@ -272,43 +266,63 @@ const NodeInfoPage = () => {
   return (
     <>
       <Header />
-      <div className="container-fluid" style={{ maxWidth: '1400px' }}>
+      <div id="content" className="container-fluid" style={{ maxWidth: '1400px' }}>
         <div className="row mt-4">
           {/* Main content */}
-          <div className="col-lg-9">
+          <div className="col-lg-8">
             {/* Title and labels */}
-            <div className="mb-4">
-              <h1 className="display-5 mb-2">{title}</h1>
-              <div className="d-flex align-items-center gap-2 flex-wrap">
-                <span className="text-muted">{labels.join(', ')}</span>
+            <div id="title-container" className="mb-4">
+              <div>
+                <h1 className="page-title">{title}</h1>
+                <h3 className="page-subtitle">{labels.join(', ')}</h3>
               </div>
             </div>
 
+            {/* Edit button for authenticated users */}
+            {isAuthenticated && (
+              <div className="mb-3">
+                <a 
+                  href={`/edit?id=${encodeURIComponent(nodeData.nodeId || nodeData.id || '')}`}
+                  className="btn btn-primary me-2"
+                >
+                  Edit Node
+                </a>
+                <a 
+                  href={`/leabharlann/relationship/index.html?fromId=${encodeURIComponent(nodeData.nodeId || nodeData.id || '')}`}
+                  className="btn btn-primary"
+                >
+                  Create Relationship
+                </a>
+              </div>
+            )}
+
             {/* Main content sections */}
-            {mainContentProps.map(prop => {
-              const value = nodeData[prop];
-              if (!value) return null;
-              
-              return (
-                <div key={prop} className="mb-4">
-                  <h3 className="h4 border-bottom pb-2 mb-3">{cleanString(prop)}</h3>
-                  <div className="content-section">
-                    <p>{value}</p>
+            <div id="propertiesDisplay">
+              {mainContentProps.map(prop => {
+                const value = nodeData[prop];
+                if (!value) return null;
+                
+                return (
+                  <div key={prop} className="mb-4">
+                    <h3 className="section-header">{cleanString(prop)}</h3>
+                    <div className="content-section">
+                      <p>{String(value)}</p>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
 
             {/* External links */}
             {externalLinks.length > 0 && (
               <div className="mb-4">
-                <h3 className="h4 border-bottom pb-2 mb-3">External Links</h3>
+                <h3 className="section-header">External Links</h3>
                 <ul className="list-unstyled">
                   {externalLinks.map(([key, value]) => {
                     const links = Array.isArray(value) ? value : [value];
                     return links.map((link: any, idx: number) => (
                       <li key={`${key}-${idx}`} className="mb-2">
-                        <a href={link} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
+                        <a href={String(link)} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
                           <ExternalLink size={14} className="me-2" />
                           {cleanString(key)}
                         </a>
@@ -321,12 +335,12 @@ const NodeInfoPage = () => {
 
             {/* Uncategorized relationships */}
             {(uncategorized.incoming.length > 0 || uncategorized.outgoing.length > 0) && (
-              <div className="mb-4">
-                <h3 className="h4 border-bottom pb-2 mb-3">Other Relationships</h3>
+              <div className="rels-section mb-4">
+                <h3 className="section-header">Other Relationships</h3>
                 {uncategorized.incoming.map((rel, idx) => (
                   <div key={`in-${idx}`} className="mb-2">
                     <span className="badge bg-secondary me-2">← {rel.type}</span>
-                    <a href={`?id=${encodeURIComponent(rel.node.nodeId)}`}>
+                    <a href={`?id=${encodeURIComponent(rel.node.nodeId || rel.node.id || '')}`}>
                       {rel.node.display_name || rel.node.name || rel.node.nodeId}
                     </a>
                   </div>
@@ -334,7 +348,7 @@ const NodeInfoPage = () => {
                 {uncategorized.outgoing.map((rel, idx) => (
                   <div key={`out-${idx}`} className="mb-2">
                     <span className="badge bg-primary me-2">{rel.type} →</span>
-                    <a href={`?id=${encodeURIComponent(rel.node.nodeId)}`}>
+                    <a href={`?id=${encodeURIComponent(rel.node.nodeId || rel.node.id || '')}`}>
                       {rel.node.display_name || rel.node.name || rel.node.nodeId}
                     </a>
                   </div>
@@ -344,8 +358,8 @@ const NodeInfoPage = () => {
           </div>
 
           {/* Sidebar */}
-          <div className="col-lg-3">
-            <div className="card sticky-top" style={{ top: '20px' }}>
+          <aside className="col-lg-4">
+            <div className="card sticky-top infobox" style={{ top: '20px' }}>
               <div className="card-body">
                 {/* Image */}
                 {nodeData.img_link && (
@@ -356,31 +370,42 @@ const NodeInfoPage = () => {
                         : nodeData.img_link}
                       alt={title}
                       className="img-fluid rounded"
+                      style={{ width: '100%', maxHeight: '60vh', objectFit: 'contain' }}
                     />
                   </div>
                 )}
 
                 {/* Categorized relationships */}
                 {Object.entries(categorized).map(([category, rels]) => (
-                  <RelationshipSection
-                    key={category}
-                    title={category}
-                    relationships={rels}
-                    currentNodeId={nodeData.nodeId}
-                  />
+                  <div key={category} className="rels-section mb-4">
+                    <h3 className="section-header">{category}</h3>
+                    <ul className="rels-list">
+                      {rels.map((rel, idx) => {
+                        const node = rel.node;
+                        const label = node.display_name || node.name || node.title || node.nodeId;
+                        return (
+                          <li key={idx} className="mb-2">
+                            <a href={`?id=${encodeURIComponent(node.nodeId || node.id || '')}`} className="text-decoration-none">
+                              {label}
+                            </a>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
                 ))}
 
                 {/* Infobox properties */}
                 {infoboxProps.length > 0 && (
                   <div className="mb-3">
-                    <h5 className="border-bottom pb-2 mb-3">Details</h5>
-                    <table className="table table-sm table-borderless">
+                    <h4 className="section-header">Details</h4>
+                    <table className="table table-sm table-borderless" id="info-table">
                       <tbody>
                         {infoboxProps.map(([key, value]) => (
                           <tr key={key}>
-                            <td className="text-muted small" style={{ width: '40%' }}>
+                            <th className="text-muted small" style={{ width: '40%' }}>
                               {cleanString(key)}
-                            </td>
+                            </th>
                             <td className="small">
                               {renderPropertyValue(value)}
                             </td>
@@ -392,7 +417,7 @@ const NodeInfoPage = () => {
                 )}
               </div>
             </div>
-          </div>
+          </aside>
         </div>
       </div>
     </>
