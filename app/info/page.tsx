@@ -331,25 +331,25 @@ const NodeInfoPage = () => {
               })}
             </div>
 
-            {/* External links */}
-            {externalLinks.length > 0 && (
-              <div className="mb-4">
-                <h3 className="section-header">External Links</h3>
-                <ul className="list-unstyled">
-                  {externalLinks.map(([key, value]) => {
-                    const links = Array.isArray(value) ? value : [value];
-                    return links.map((link: any, idx: number) => (
-                      <li key={`${key}-${idx}`} className="mb-2">
-                        <a href={String(link)} target="_blank" rel="noopener noreferrer" className="text-decoration-none flex flex-row">
-                          <ExternalLink size={14} className="me-2" />
-                          {cleanString(key)}
+            {/* Categorized relationships */}
+            {Object.entries(categorized).map(([category, rels]) => (
+              <div key={category} className="rels-section mb-4">
+                <h3 className="section-header">{category}</h3>
+                <ul className="rels-list">
+                  {rels.map((rel, idx) => {
+                    const node = rel.node;
+                    const label = node.properties.display_name || node.properties.name || node.properties.title || node.nodeId;
+                    return (
+                      <li key={idx} className="mb-2">
+                        <a href={`?id=${encodeURIComponent(node.nodeId)}`} className="text-decoration-none">
+                          {label}
                         </a>
                       </li>
-                    ));
+                    );
                   })}
                 </ul>
               </div>
-            )}
+            ))}
 
             {/* Uncategorized relationships */}
             {(uncategorized.incoming.length > 0 || uncategorized.outgoing.length > 0) && (
@@ -392,27 +392,7 @@ const NodeInfoPage = () => {
                     />
                   </div>
                 )}
-
-                {/* Categorized relationships */}
-                {Object.entries(categorized).map(([category, rels]) => (
-                  <div key={category} className="rels-section mb-4">
-                    <h3 className="section-header">{category}</h3>
-                    <ul className="rels-list">
-                      {rels.map((rel, idx) => {
-                        const node = rel.node;
-                        const label = node.properties.display_name || node.properties.name || node.properties.title || node.nodeId;
-                        return (
-                          <li key={idx} className="mb-2">
-                            <a href={`?id=${encodeURIComponent(node.nodeId)}`} className="text-decoration-none">
-                              {label}
-                            </a>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                ))}
-
+                
                 {/* Infobox properties */}
                 {infoboxProps.length > 0 && (
                   <div className="mb-3">
@@ -433,6 +413,27 @@ const NodeInfoPage = () => {
                     </table>
                   </div>
                 )}
+
+                {/* External links */}
+                {externalLinks.length > 0 && (
+                  <div className="mb-4">
+                    <h3 className="section-header">External Links</h3>
+                    <ul className="list-unstyled">
+                      {externalLinks.map(([key, value]) => {
+                        const links = Array.isArray(value) ? value : [value];
+                        return links.map((link: any, idx: number) => (
+                          <li key={`${key}-${idx}`} className="mb-2">
+                            <a href={String(link)} target="_blank" rel="noopener noreferrer" className="text-decoration-none flex flex-row">
+                              <ExternalLink size={14} className="me-2" />
+                              {cleanString(key)}
+                            </a>
+                          </li>
+                        ));
+                      })}
+                    </ul>
+                  </div>
+                )}
+
               </div>
             </div>
           </aside>
