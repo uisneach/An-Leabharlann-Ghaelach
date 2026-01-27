@@ -112,13 +112,15 @@ export default function NodeList({ label, onRemove, isDefault, totalColumns }: N
       </div>
       <ul id={`${label}-list`} className="node-list">
         {sortedNodes.map((item) => {
+          console.log(item);
           const title = item.properties.display_name || 
                        item.properties.name || 
                        item.properties.title || 
                        String(item.properties.nodeId || item.nodeId || 'Unknown');
+          const nodeId = item.properties.nodeId || -1;
           return (
-            <li key={item.properties.nodeId}>
-              <a href={`/info?id=${encodeURIComponent(item.properties.nodeId)}`}>{title}</a>
+            <li key={nodeId}>
+              <a href={`/info?id=${encodeURIComponent(nodeId)}`}>{title}</a>
             </li>
           );
         })}
