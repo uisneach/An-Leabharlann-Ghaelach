@@ -94,7 +94,7 @@ const Header: React.FC = () => {
     }
 
     try {
-      const response = await fetch('/api/login', {
+      const response = await fetch(process.env.NEXT_PUBLIC_API_BASE_URL + '/api/users/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: loginUsername, password: loginPassword })
@@ -154,7 +154,7 @@ const Header: React.FC = () => {
       if (response.ok) {
         setRegisterAlert('Account created successfully. Logging in...');
 
-        const loginResponse = await fetch('/api/login', {
+        const loginResponse = await fetch('/api/users/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username: registerUsername, password: registerPassword })

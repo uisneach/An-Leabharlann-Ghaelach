@@ -234,8 +234,9 @@ td {
   padding: 1.5rem;
 }
 
-.form-label {
+label {
   font-weight: 500;
+  margin-right: 1rem;
 }
 
 .text-danger {
