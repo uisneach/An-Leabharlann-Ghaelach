@@ -94,14 +94,18 @@ const Header: React.FC = () => {
     }
 
     try {
-      const response = await fetch(process.env.NEXT_PUBLIC_API_BASE_URL + '/users/login', {
+      // Updated: Use new consolidated auth API with action parameter
+      const response = await fetch('/api/auth?action=login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: loginUsername, password: loginPassword })
       });
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data?.error?.message || 'Login failed');
+      
+      if (!response.ok) {
+        throw new Error(data?.error || 'Login failed');
+      }
 
       if (data.token) localStorage.setItem('token', data.token);
       if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
@@ -143,7 +147,8 @@ const Header: React.FC = () => {
     }
 
     try {
-      const response = await fetch(process.env.NEXT_PUBLIC_API_BASE_URL + '/register', {
+      // Updated: Use new consolidated auth API with action parameter
+      const response = await fetch('/api/auth?action=register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: registerUsername, password: registerPassword })
@@ -154,7 +159,8 @@ const Header: React.FC = () => {
       if (response.ok) {
         setRegisterAlert('Account created successfully. Logging in...');
 
-        const loginResponse = await fetch(process.env.NEXT_PUBLIC_API_BASE_URL + '/users/login', {
+        // Updated: Auto-login after registration using new auth API
+        const loginResponse = await fetch('/api/auth?action=login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username: registerUsername, password: registerPassword })
@@ -163,7 +169,7 @@ const Header: React.FC = () => {
         const loginData = await loginResponse.json();
 
         if (!loginResponse.ok || !loginData.token) {
-          throw new Error(loginData.error?.message || 'Login failed after registration');
+          throw new Error(loginData.error || 'Login failed after registration');
         }
 
         localStorage.setItem('token', loginData.token);
@@ -175,7 +181,7 @@ const Header: React.FC = () => {
         setConfirmPassword('');
         checkAuthStatus();
       } else {
-        throw new Error(data.error?.message || 'Registration failed');
+        throw new Error(data.error || 'Registration failed');
       }
     } catch (error) {
       setRegisterAlert(error instanceof Error ? error.message : 'Registration failed');
@@ -199,11 +205,14 @@ const Header: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
+      // Updated: Use new consolidated utility API with action parameter
+      const response = await fetch(`/api/util?action=search&q=${encodeURIComponent(searchQuery)}`);
+      
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        throw new Error(data?.error?.message || 'Search failed');
+        throw new Error(data?.error || 'Search failed');
       }
+      
       const results = await response.json();
       setSearchResults(results);
       setIsSearchModalOpen(true);
