@@ -93,13 +93,13 @@ export default function NodeList({ label, onRemove, isDefault, totalColumns }: N
 
   return (
     <div className="col-md-4" id={`col-${label}`}>
-      <div className="d-flex justify-content-between align-items-center">
+      <div id="node-list-label-container">
         <h2 className="section-title">
           {label}s <a href={`/label/?label=${label}`} className="ms-2 text-decoration-none" style={{ fontSize: '16px' }}>See All→</a>
         </h2>
         <div>
           {isAuthenticated && (
-            <a href={`/leabharlann/create/index.html?label=${encodeURIComponent(label)}`} className="btn btn-sm btn-primary create-btn">+</a>
+            <a href={`/create?label=${encodeURIComponent(label)}`} className="btn btn-sm btn-primary create-btn">+</a>
           )}
           <button 
             className="btn btn-sm btn-danger remove-btn ms-2" 

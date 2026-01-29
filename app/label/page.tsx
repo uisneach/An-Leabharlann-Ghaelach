@@ -93,7 +93,7 @@ const NodesPage = () => {
     <div>
       <Header />
       
-      <div className="container mt-4">
+      <div className="container mt-4" id="label-list-container">
         <h2 id="page-title">
           {loading ? 'Loading Nodes...' : error ? 'Error' : `All ${label}s`}
         </h2>
@@ -104,7 +104,7 @@ const NodesPage = () => {
           <ul className="list-group" style={{ marginBottom: '2rem' }}>
             {nodes.map((node, index) => (
               <li key={index} className="list-group-item">
-                <a href={`/leabharlann/info/index.html?label=${encodeURIComponent(label)}&id=${encodeURIComponent(node.id)}`}>
+                <a href={`/info?nodeId=${encodeURIComponent(node.id)}`}>
                   {node.properties.display_name || node.properties.name || node.properties.title || node.id}
                 </a>
               </li>
