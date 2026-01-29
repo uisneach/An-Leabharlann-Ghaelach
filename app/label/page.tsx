@@ -3,10 +3,32 @@
 import { useState, useEffect } from 'react';
 import Header from '../Header';
 
+// Type definitions
+interface NodeProperties {
+  name?: string;
+  title?: string;
+  display_name?: string;
+  [key: string]: any;
+}
+
+interface Node {
+  id: string;
+  labels: string[];
+  properties: NodeProperties;
+}
+
+interface NodesApiResponse {
+  success: boolean;
+  label: string;
+  nodes: Node[];
+  count: number;
+  limit: number | null;
+}
+
 // API utility functions
-const getNodesByLabel = async (label) => {
+const getNodesByLabel = async (label: string) => {
   const token = localStorage.getItem('token');
-  const headers = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
   if (token) {
@@ -17,10 +39,10 @@ const getNodesByLabel = async (label) => {
 
 // Main Nodes Page Component
 const NodesPage = () => {
-  const [nodes, setNodes] = useState([]);
-  const [label, setLabel] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [nodes, setNodes] = useState<Node[]>([]);
+  const [label, setLabel] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
     loadNodesFromURL();
@@ -40,13 +62,13 @@ const NodesPage = () => {
     await loadNodes(labelParam);
   };
 
-  const loadNodes = async (label) => {
+  const loadNodes = async (label: string) => {
     try {
       setLoading(true);
       const response = await getNodesByLabel(label);
       if (!response.ok) throw new Error('Failed to load nodes');
       
-      const data = await response.json();
+      const data: NodesApiResponse = await response.json();
       
       // Handle the new API response format
       let nodesData = data.nodes || [];
@@ -61,7 +83,7 @@ const NodesPage = () => {
       setError('');
     } catch (error) {
       console.error('Load nodes error:', error);
-      setError(error.message);
+      setError(error instanceof Error ? error.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
