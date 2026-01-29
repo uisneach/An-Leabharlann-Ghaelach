@@ -2,6 +2,7 @@
 
 import { useState, FormEvent, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '../AuthContext';
 import Header from '../Header';
 
 // Type definitions
@@ -66,6 +67,8 @@ const searchWithLabel = async (query: string, label: string) => {
 // Main Create Node Page Component
 const CreateNodePage = () => {
   const router = useRouter();
+  const { isAuthenticated, username, checkAuthStatus } = useAuth();
+  
   const [nodeLabels, setNodeLabels] = useState<string>('');
   const [properties, setProperties] = useState<Property[]>([{ name: '', value: '' }]);
   const [error, setError] = useState<string>('');
@@ -162,7 +165,8 @@ const CreateNodePage = () => {
       <Header 
         isAuthenticated={isAuthenticated}
         username={username}
-        onAuthChange={checkAuthStatus} />
+        onAuthChange={checkAuthStatus} 
+      />
       
       <div className="container mt-4">
         <h1>Create Node</h1>
@@ -179,7 +183,8 @@ const CreateNodePage = () => {
               placeholder="e.g., Author, Edition"
               value={nodeLabels}
               onChange={(e) => setNodeLabels(e.target.value)}
-              required />
+              required 
+            />
           </div>
           
           <div className="mb-3">
@@ -200,7 +205,8 @@ const CreateNodePage = () => {
                         className="form-control"
                         placeholder="e.g., name, title"
                         value={prop.name}
-                        onChange={(e) => handlePropertyChange(index, 'name', e.target.value)} />
+                        onChange={(e) => handlePropertyChange(index, 'name', e.target.value)} 
+                      />
                     </td>
                     <td>
                       <input
@@ -208,7 +214,8 @@ const CreateNodePage = () => {
                         className="form-control"
                         placeholder="e.g., Jane Doe, The Iliad"
                         value={prop.value}
-                        onChange={(e) => handlePropertyChange(index, 'value', e.target.value)} />
+                        onChange={(e) => handlePropertyChange(index, 'value', e.target.value)} 
+                      />
                     </td>
                   </tr>
                 ))}
@@ -217,7 +224,8 @@ const CreateNodePage = () => {
             <button
               type="button"
               className="btn btn-secondary mb-3"
-              onClick={handleAddProperty} >
+              onClick={handleAddProperty}
+            >
               Add Property
             </button>
           </div>
@@ -231,13 +239,15 @@ const CreateNodePage = () => {
           <button
             type="submit"
             className="btn btn-primary"
-            disabled={loading} >
+            disabled={loading}
+          >
             {loading ? 'Creating...' : 'Create Node'}
           </button>
           <button
             type="button"
             className="btn btn-link"
-            onClick={handleCancel} >
+            onClick={handleCancel}
+          >
             Cancel
           </button>
         </form>

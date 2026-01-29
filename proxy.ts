@@ -17,14 +17,13 @@ export function proxy(request: NextRequest) {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.log('Edge Proxy Hit');
   console.log('Method:', method);
-  console.log('Path:', pathname);
   console.log('Full URL:', href);
   console.log('Origin:', origin || '(no origin header)');
   console.log('User-Agent:', request.headers.get('user-agent'));
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   
   const response = NextResponse.next();
-  const isDevelopment = process.env.NODE_ENV === 'development';
+  const isDevelopment = process.env.NEXT_PUBLIC_NODE_ENV === 'development';
 
   // ============================================
   // CORS LOGIC
