@@ -68,8 +68,7 @@ export default function Home() {
             id="add-label-select" 
             className="form-select w-auto d-inline-block" 
             value={selectedLabel} 
-            onChange={(e) => setSelectedLabel(e.target.value)}
-          >
+            onChange={(e) => setSelectedLabel(e.target.value)}>
             <option value="">Select a label</option>
             {availableLabels.map((label) => (
               <option key={label} value={label}>

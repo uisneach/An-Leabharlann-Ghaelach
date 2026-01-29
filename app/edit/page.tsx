@@ -116,44 +116,6 @@ interface NodeData extends Node {
   incoming: Relationship[];
 }
 
-// Special relationships configuration
-const specialRels = {
-  incoming: {
-    'EDITION_OF': 'Editions',
-    'VERSION_OF': 'Versions',
-    'DERIVED_FROM': 'Main Text',
-    'TRANSLATION_OF': 'Translations',
-    'TRANSLATED': 'Translators',
-    'PUBLISHED': 'Publisher',
-    'PUBLISHES': 'Publisher',
-    'WROTE': 'Author',
-    'DISPLAYS': 'Displayed On',
-    'PUBLISHED_IN': 'Published',
-    'HOSTS': 'Hosted By',
-    'COMMENTARY_ON': 'Commentary',
-    'NEXT_IN_SERIES': 'Previous in Series',
-    'ISSUE_OF': 'Issues',
-    'EDITED': 'Editor'
-  },
-  outgoing: {
-    'PUBLISHED_BY': 'Publishers',
-    'PUBLISHED': 'Published',
-    'PUBLISHES': 'Publishes',
-    'EDITION_OF': 'Source Text',
-    'VERSION_OF': 'A Version Of',
-    'DERIVED_FROM': 'Derived From',
-    'WROTE': 'Works',
-    'PUBLISHED_IN': 'Published In',
-    'TRANSLATED': 'Translated',
-    'DISPLAYS': 'Displays',
-    'HOSTS': 'Hosts',
-    'COMMENTARY_ON': 'Commentary On',
-    'NEXT_IN_SERIES': 'Next in Series',
-    'ISSUE_OF': 'Parent Journal',
-    'EDITED': 'Editions'
-  }
-};
-
 const EditPage = () => {
   const [nodeData, setNodeData] = useState<NodeData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -320,33 +282,6 @@ const EditPage = () => {
     }
   };
 
-  const categorizeRelationships = (incoming: Relationship[], outgoing: Relationship[]) => {
-    const categorized: Record<string, Array<Relationship & { direction: 'incoming' | 'outgoing' }>> = {};
-    const uncategorized: { incoming: Relationship[], outgoing: Relationship[] } = { incoming: [], outgoing: [] };
-
-    incoming.forEach(rel => {
-      const header = specialRels.incoming[rel.type as keyof typeof specialRels.incoming];
-      if (header) {
-        if (!categorized[header]) categorized[header] = [];
-        categorized[header].push({ ...rel, direction: 'incoming' });
-      } else {
-        uncategorized.incoming.push(rel);
-      }
-    });
-
-    outgoing.forEach(rel => {
-      const header = specialRels.outgoing[rel.type as keyof typeof specialRels.outgoing];
-      if (header) {
-        if (!categorized[header]) categorized[header] = [];
-        categorized[header].push({ ...rel, direction: 'outgoing' });
-      } else {
-        uncategorized.outgoing.push(rel);
-      }
-    });
-
-    return { categorized, uncategorized };
-  };
-
   if (loading) {
     return (
       <>
@@ -390,7 +325,6 @@ const EditPage = () => {
 
   const title = nodeData.properties.display_name || nodeData.properties.name || nodeData.properties.title || String(nodeData.properties.nodeId) || nodeData.nodeId;
   const labels = nodeData.labels?.filter((l: string) => l !== 'Entity') || [];
-  const { categorized, uncategorized } = categorizeRelationships(nodeData.incoming || [], nodeData.outgoing || []);
 
   return (
     <>
@@ -576,70 +510,94 @@ const EditPage = () => {
           <div className="mt-5">
             <h3 className="h4 border-bottom pb-2 mb-3">Manage Relationships</h3>
             
-            {/* Categorized relationships */}
-            {Object.entries(categorized).map(([category, rels]) => (
-              <div key={category} className="rels-section mb-4">
-                <h4 className="h5">{category}</h4>
-                <ul className="rels-list list-unstyled">
-                  {rels.map((rel, idx) => {
-                    const node = rel.node;
-                    const label = node.properties.display_name || node.properties.name || node.properties.title || node.nodeId;
-                    return (
-                      <li key={idx} className="mb-2">
-                        <a href={`/info?id=${encodeURIComponent(node.nodeId || node.id)}`}>
-                          {label}
-                        </a>
-                        <button 
-                          className="btn btn-sm btn-danger ms-2"
-                          onClick={() => {
-                            const sourceId = rel.direction === 'outgoing' ? nodeData.id : node.id;
-                            const targetId = rel.direction === 'outgoing' ? node.id : nodeData.id;
-                            handleDeleteRelationship(sourceId, targetId, rel.type);
-                          }}
-                        >
-                          Delete
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            ))}
-
-            {/* Uncategorized relationships */}
-            {(uncategorized.incoming.length > 0 || uncategorized.outgoing.length > 0) && (
-              <div className="rels-section mb-4">
-                <h4 className="h5">Other Relationships</h4>
-                {uncategorized.incoming.map((rel, idx) => (
-                  <div key={`in-${idx}`} className="mb-2">
-                    <span className="badge bg-secondary me-2">← {rel.type}</span>
-                    <a href={`/info?id=${encodeURIComponent(rel.node.nodeId || rel.node.id)}`}>
-                      {rel.node.properties.display_name || rel.node.properties.name || rel.node.nodeId}
-                    </a>
-                    <button 
-                      className="btn btn-sm btn-danger ms-2"
-                      onClick={() => handleDeleteRelationship(rel.node.id, nodeData.id, rel.type)}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                ))}
-                {uncategorized.outgoing.map((rel, idx) => (
-                  <div key={`out-${idx}`} className="mb-2">
-                    <span className="badge bg-primary me-2">{rel.type} →</span>
-                    <a href={`/info?id=${encodeURIComponent(rel.node.nodeId || rel.node.id)}`}>
-                      {rel.node.properties.display_name || rel.node.properties.name || rel.node.nodeId}
-                    </a>
-                    <button 
-                      className="btn btn-sm btn-danger ms-2"
-                      onClick={() => handleDeleteRelationship(nodeData.id, rel.node.id, rel.type)}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+            {/* Get all unique relationship types */}
+            {(() => {
+              const allRelTypes = new Map<string, { incoming: Relationship[], outgoing: Relationship[] }>();
+              
+              // Group incoming relationships by type
+              (nodeData.incoming || []).forEach(rel => {
+                if (!allRelTypes.has(rel.type)) {
+                  allRelTypes.set(rel.type, { incoming: [], outgoing: [] });
+                }
+                allRelTypes.get(rel.type)!.incoming.push(rel);
+              });
+              
+              // Group outgoing relationships by type
+              (nodeData.outgoing || []).forEach(rel => {
+                if (!allRelTypes.has(rel.type)) {
+                  allRelTypes.set(rel.type, { incoming: [], outgoing: [] });
+                }
+                allRelTypes.get(rel.type)!.outgoing.push(rel);
+              });
+              
+              return Array.from(allRelTypes.entries()).map(([relType, { incoming, outgoing }]) => (
+                <div key={relType} className="rels-section mb-4">
+                  <h4 className="h5">{cleanString(relType)}</h4>
+                  
+                  {/* Incoming relationships */}
+                  {incoming.length > 0 && (
+                    <div className="mb-3">
+                      <h5 className="h6 text-muted">Incoming</h5>
+                      <ul className="rels-list list-unstyled">
+                        {incoming.map((rel, idx) => {
+                          const fromNode = rel.node;
+                          const fromLabel = fromNode.properties.display_name || fromNode.properties.name || fromNode.properties.title || fromNode.nodeId;
+                          const toLabel = title;
+                          return (
+                            <li key={idx} className="mb-2">
+                              <a href={`/info?id=${encodeURIComponent(fromNode.nodeId || fromNode.id)}`}>
+                                ({fromLabel})
+                              </a>
+                              {' '}==[{relType}]==&gt;{' '}
+                              <a href={`/info?id=${encodeURIComponent(nodeData.nodeId || nodeData.id)}`}>
+                                ({toLabel})
+                              </a>
+                              <button 
+                                className="btn btn-sm btn-danger ms-2"
+                                onClick={() => handleDeleteRelationship(fromNode.id, nodeData.id, relType)}
+                              >
+                                Delete
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {/* Outgoing relationships */}
+                  {outgoing.length > 0 && (
+                    <div className="mb-3">
+                      <h5 className="h6 text-muted">Outgoing</h5>
+                      <ul className="rels-list list-unstyled">
+                        {outgoing.map((rel, idx) => {
+                          const toNode = rel.node;
+                          const fromLabel = title;
+                          const toLabel = toNode.properties.display_name || toNode.properties.name || toNode.properties.title || toNode.nodeId;
+                          return (
+                            <li key={idx} className="mb-2">
+                              <a href={`/info?id=${encodeURIComponent(nodeData.nodeId || nodeData.id)}`}>
+                                ({fromLabel})
+                              </a>
+                              {' '}==[{relType}]==&gt;{' '}
+                              <a href={`/info?id=${encodeURIComponent(toNode.nodeId || toNode.id)}`}>
+                                ({toLabel})
+                              </a>
+                              <button 
+                                className="btn btn-sm btn-danger ms-2"
+                                onClick={() => handleDeleteRelationship(nodeData.id, toNode.id, relType)}
+                              >
+                                Delete
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              ));
+            })()}
 
             <a 
               href={`/leabharlann/relationship/index.html?fromId=${encodeURIComponent(nodeData.id)}`} 

@@ -95,7 +95,7 @@ export default function NodeList({ label, onRemove, isDefault, totalColumns }: N
     <div className="col-md-4" id={`col-${label}`}>
       <div className="d-flex justify-content-between align-items-center">
         <h2 className="section-title">
-          {label}s <a href={`/leabharlann/label/index.html?label=${label}`} className="ms-2 text-decoration-none" style={{ fontSize: '16px' }}>See All→</a>
+          {label}s <a href={`/label/?label=${label}`} className="ms-2 text-decoration-none" style={{ fontSize: '16px' }}>See All→</a>
         </h2>
         <div>
           {isAuthenticated && (
