@@ -252,7 +252,7 @@ const Header: React.FC = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyPress={(e) => handleKeyPress(e, handleSearch)}
           />
-          <button className="btn" onClick={handleSearch}>Search</button>
+          <button className="btn btn-white" id="search-btn" onClick={handleSearch}>Search</button>
         </div>
         <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
           <li style={{ position: 'relative' }}>
@@ -310,14 +310,13 @@ const Header: React.FC = () => {
                   />
                 </div>
                 {loginError && <div className="text-danger mb-3">{loginError}</div>}
-                <button className="btn btn-primary" onClick={handleLogin}>Log In</button>
+                <button className="btn btn-primary btn-blue" onClick={handleLogin}>Log In</button>
                 <button
-                  className="btn btn-link"
+                  className="btn btn-link btn-blue"
                   onClick={() => {
                     setIsLoginModalOpen(false);
                     setIsRegisterModalOpen(true);
-                  }}
-                >
+                  }}>
                   Register
                 </button>
               </div>
