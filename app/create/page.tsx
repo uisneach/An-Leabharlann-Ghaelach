@@ -159,7 +159,10 @@ const CreateNodePage = () => {
 
   return (
     <div>
-      <Header />
+      <Header 
+        isAuthenticated={isAuthenticated}
+        username={username}
+        onAuthChange={checkAuthStatus} />
       
       <div className="container mt-4">
         <h1>Create Node</h1>

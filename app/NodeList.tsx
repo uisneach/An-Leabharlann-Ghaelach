@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
+import { useAuth } from './AuthContext';
 
 const defaultLabels = ['Author', 'Text', 'Edition'];
 
@@ -26,17 +27,9 @@ export default function NodeList({ label, onRemove, isDefault, totalColumns }: N
   const [nodes, setNodes] = useState<Node[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    setIsAuthenticated(!!localStorage.getItem('token'));
-  }, []);
-
-  useEffect(() => {
-    const handleAuthChange = () => setIsAuthenticated(!!localStorage.getItem('token'));
-    document.addEventListener('authChange', handleAuthChange);
-    return () => document.removeEventListener('authChange', handleAuthChange);
-  }, []);
+  
+  // Get auth state from context
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     async function fetchNodes() {

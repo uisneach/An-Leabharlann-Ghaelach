@@ -22,12 +22,16 @@ interface RegisterErrors {
   confirmPassword?: string;
 }
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  isAuthenticated: boolean;
+  username: string;
+  onAuthChange: () => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange }) => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState<boolean>(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState<boolean>(false);
-  const [username, setUsername] = useState<string>('');
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   
   const [loginUsername, setLoginUsername] = useState<string>('');
@@ -53,38 +57,6 @@ const Header: React.FC = () => {
     }
   };
 
-  const checkAuthStatus = (): void => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setIsAuthenticated(false);
-      setUsername('');
-      return;
-    }
-
-    try {
-      const payload = parseJwt(token);
-      if (payload && payload.exp && Date.now() >= payload.exp * 1000) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
-        setIsAuthenticated(false);
-        setUsername('');
-      } else {
-        setIsAuthenticated(true);
-        setUsername(payload.username || payload.sub || 'User');
-      }
-    } catch (e) {
-      console.error('Auth check error:', e);
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
-      setIsAuthenticated(false);
-      setUsername('');
-    }
-  };
-
-  useEffect(() => {
-    checkAuthStatus();
-  }, []);
-
   const handleLogin = async (): Promise<void> => {
     setLoginError('');
 
@@ -94,7 +66,6 @@ const Header: React.FC = () => {
     }
 
     try {
-      // Updated: Use new consolidated auth API with action parameter
       const response = await fetch('/api/auth?action=login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -110,12 +81,12 @@ const Header: React.FC = () => {
       if (data.token) localStorage.setItem('token', data.token);
       if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
 
-      const payload = parseJwt(data.token);
-      setUsername(payload.username || loginUsername);
-      setIsAuthenticated(true);
       setIsLoginModalOpen(false);
       setLoginUsername('');
       setLoginPassword('');
+      
+      // Trigger auth check in parent
+      onAuthChange();
     } catch (err) {
       setLoginError(err instanceof Error ? err.message : 'Login failed');
     }
@@ -147,7 +118,6 @@ const Header: React.FC = () => {
     }
 
     try {
-      // Updated: Use new consolidated auth API with action parameter
       const response = await fetch('/api/auth?action=register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -159,7 +129,7 @@ const Header: React.FC = () => {
       if (response.ok) {
         setRegisterAlert('Account created successfully. Logging in...');
 
-        // Updated: Auto-login after registration using new auth API
+        // Auto-login after registration
         const loginResponse = await fetch('/api/auth?action=login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -179,7 +149,9 @@ const Header: React.FC = () => {
         setRegisterUsername('');
         setRegisterPassword('');
         setConfirmPassword('');
-        checkAuthStatus();
+        
+        // Trigger auth check in parent
+        onAuthChange();
       } else {
         throw new Error(data.error || 'Registration failed');
       }
@@ -191,9 +163,10 @@ const Header: React.FC = () => {
   const handleLogout = (): void => {
     localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
-    setIsAuthenticated(false);
-    setUsername('');
     setIsDropdownOpen(false);
+    
+    // Trigger auth check in parent
+    onAuthChange();
   };
 
   const handleSearch = async (): Promise<void> => {
@@ -205,25 +178,30 @@ const Header: React.FC = () => {
     }
 
     try {
-      // Updated: Use new consolidated utility API with action parameter
       const response = await fetch(`/api/util?action=search&q=${encodeURIComponent(searchQuery)}`);
       
       if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data?.error || 'Search failed');
+        throw new Error(`Search failed: ${response.status} ${response.statusText}`);
       }
       
-      const results = await response.json();
-      setSearchResults(results);
+      const data = await response.json();
+      setSearchResults(data.results || []);
       setIsSearchModalOpen(true);
-    } catch (err) {
-      setSearchError(err instanceof Error ? err.message : 'Search failed');
+    } catch (error) {
+      setSearchError(error instanceof Error ? error.message : 'Search failed');
     }
   };
 
   const escapeHtml = (str: string): string => {
-    return String(str).replace(/[&<>"']/g, (m) => {
-      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' } as Record<string, string>)[m];
+    return str.replace(/[&<>"']/g, (match) => {
+      const escapeMap: { [key: string]: string } = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return escapeMap[match];
     });
   };
 

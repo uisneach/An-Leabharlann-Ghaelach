@@ -4,6 +4,7 @@
   --background: #ffffff;
   --foreground: #171717;
   --button-bg-blue: #0d6efd;
+  --dim-white: #f8f9fa;
 }
 
 @theme inline {
@@ -94,7 +95,7 @@ header .form-control {
   margin-right: 1rem;
 }
 header .btn-white {
-  background-color: #f8f9fa;
+  background-color: var(--dim-white);
   color: black;
 }
 header .btn-blue {
@@ -290,7 +291,7 @@ img {
   border-radius: 4px;
 }
 .btn-link { background: none; color: #0d6efd; }
-.nav-link { color: white; cursor: pointer; position: relative; }
+.nav-link { color: var(--dim-white); cursor: pointer; position: relative; }
 .dropdown-menu { position: absolute; right: 0; top: 100%; background: white; border: 1px solid #ccc; border-radius: 4px; min-width: 150px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 1000; }
 .dropdown-item { display: block; padding: 0.5rem 1rem; color: #333; text-decoration: none; cursor: pointer; }
 .dropdown-item:hover { background: #f8f9fa; }

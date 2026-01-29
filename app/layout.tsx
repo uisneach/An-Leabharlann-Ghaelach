@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { AuthProvider } from "./AuthContext";
 import "./globals.css";
 
 const bunchlo = localFont({
@@ -44,13 +45,10 @@ export default function RootLayout({
     <head>
       <meta name="viewport" content="width=device-width, initial-scale=1" />
     </head>
-      <body
-        className={`
-          ${bunchlo.variable}
-          antialiased
-        `}
-      >
-        {children}
+      <body className={`${bunchlo.variable} antialiased`} >
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
