@@ -1,6 +1,8 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
+import { getNodesByLabel } from '@/lib/api';
+import { getNodeTitle, getNodeSortKey, sortNodes } from '@/lib/utils';
 
 const defaultLabels = ['Author', 'Text', 'Edition'];
 
@@ -28,7 +30,6 @@ export default function NodeList({ label, onRemove, isDefault, totalColumns }: N
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Get auth state from context
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
@@ -36,8 +37,7 @@ export default function NodeList({ label, onRemove, isDefault, totalColumns }: N
       setLoading(true);
       setError(null);
       try {
-        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
-        const res = await fetch(`${apiBaseUrl}/util?action=nodes&label=${encodeURIComponent(label)}&limit=0`);
+        const res = await getNodesByLabel(label, 0);
         if (!res.ok) {
           throw new Error(`Failed to load ${label} nodes: ${res.status} ${res.statusText}`);
         }
@@ -52,19 +52,7 @@ export default function NodeList({ label, onRemove, isDefault, totalColumns }: N
     fetchNodes();
   }, [label]);
 
-  const getTitle = (item: Node) => {
-    // Ensure we convert to string before calling trim()
-    const title = item.properties.display_name || 
-                  item.properties.name || 
-                  item.properties.title || 
-                  item.properties.nodeId || 
-                  '';
-    return String(title).trim().toLowerCase();
-  };
-
-  const sortedNodes = [...nodes].sort((a, b) => 
-    getTitle(a).localeCompare(getTitle(b), undefined, { sensitivity: 'base', numeric: false })
-  );
+  const sortedNodes = sortNodes(nodes);
 
   if (loading) {
     return (
@@ -105,12 +93,8 @@ export default function NodeList({ label, onRemove, isDefault, totalColumns }: N
       </div>
       <ul id={`${label}-list`} className="node-list">
         {sortedNodes.map((item) => {
-          console.log(item);
-          const title = item.properties.display_name || 
-                       item.properties.name || 
-                       item.properties.title || 
-                       String(item.properties.nodeId || item.nodeId || 'Unknown');
-          const nodeId = item.properties.nodeId || -1;
+          const title = getNodeTitle(item);
+          const nodeId = item.properties.nodeId || item.nodeId || -1;
           return (
             <li key={nodeId}>
               <a href={`/info?id=${encodeURIComponent(nodeId)}`}>{title}</a>

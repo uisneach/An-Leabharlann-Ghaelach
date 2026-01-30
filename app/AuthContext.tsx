@@ -1,12 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-
-interface JwtPayload {
-  username?: string;
-  sub?: string;
-  exp?: number;
-}
+import { parseJwt, isTokenExpired, getLocalStorage, clearAuthTokens } from '@/lib/utils';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -20,17 +15,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [username, setUsername] = useState<string>('');
 
-  const parseJwt = (token: string): JwtPayload => {
-    try {
-      const part = token.split('.')[1];
-      return JSON.parse(atob(part));
-    } catch (e) {
-      return {};
-    }
-  };
-
   const checkAuthStatus = (): void => {
-    const token = localStorage.getItem('token');
+    const token = getLocalStorage('token');
     if (!token) {
       setIsAuthenticated(false);
       setUsername('');
@@ -38,20 +24,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const payload = parseJwt(token);
-      if (payload && payload.exp && Date.now() >= payload.exp * 1000) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
+      if (isTokenExpired(token)) {
+        clearAuthTokens();
         setIsAuthenticated(false);
         setUsername('');
       } else {
+        const payload = parseJwt(token);
         setIsAuthenticated(true);
         setUsername(payload.username || payload.sub || 'User');
       }
     } catch (e) {
       console.error('Auth check error:', e);
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
+      clearAuthTokens();
       setIsAuthenticated(false);
       setUsername('');
     }

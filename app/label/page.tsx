@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Header from '../Header';
+import { getNodesByLabel } from '@/lib/api';
+import { sortNodes, getNodeTitle } from '@/lib/utils';
 
 // Type definitions
 interface NodeProperties {
@@ -24,18 +26,6 @@ interface NodesApiResponse {
   count: number;
   limit: number | null;
 }
-
-// API utility functions
-const getNodesByLabel = async (label: string) => {
-  const token = localStorage.getItem('token');
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-  return fetch(process.env.NEXT_PUBLIC_API_BASE_URL + `/util?action=nodes&label=${encodeURIComponent(label)}`, { headers });
-};
 
 // Main Nodes Page Component
 const NodesPage = () => {
@@ -65,7 +55,7 @@ const NodesPage = () => {
   const loadNodes = async (label: string) => {
     try {
       setLoading(true);
-      const response = await getNodesByLabel(label);
+      const response = await getNodesByLabel(label, 0); // 0 = no limit
       if (!response.ok) throw new Error('Failed to load nodes');
       
       const data: NodesApiResponse = await response.json();
@@ -73,11 +63,8 @@ const NodesPage = () => {
       // Handle the new API response format
       let nodesData = data.nodes || [];
       
-      nodesData.sort((a, b) => {
-        const nameA = a.properties.name || a.properties.title || a.id;
-        const nameB = b.properties.name || b.properties.title || b.id;
-        return nameA.localeCompare(nameB);
-      });
+      // Sort nodes alphabetically
+      nodesData = sortNodes(nodesData);
       
       setNodes(nodesData);
       setError('');
@@ -105,7 +92,7 @@ const NodesPage = () => {
             {nodes.map((node, index) => (
               <li key={index} className="list-group-item">
                 <a href={`/info?nodeId=${encodeURIComponent(node.id)}`}>
-                  {node.properties.display_name || node.properties.name || node.properties.title || node.id}
+                  {getNodeTitle(node)}
                 </a>
               </li>
             ))}

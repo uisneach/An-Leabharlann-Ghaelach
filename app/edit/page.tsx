@@ -1,96 +1,18 @@
 'use client'
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../AuthContext';
 import Header from '../Header';
-
-// Utility functions
-const cleanString = (str: string): string => {
-  return str.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
-};
-
-// API functions
-const getNode = async (id: string): Promise<Response> => {
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
-  return await fetch(`${apiBaseUrl}/nodes/${id}`);
-};
-
-const getRelations = async (id: string): Promise<Response> => {
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
-  return await fetch(`${apiBaseUrl}/nodes/${id}/relationships`);
-};
-
-const deleteNode = async (id: string): Promise<Response> => {
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
-  const token = localStorage.getItem('token');
-  return await fetch(`${apiBaseUrl}/nodes/${id}`, {
-    method: 'DELETE',
-    headers: {
-      'Authorization': `Bearer ${token}`
-    }
-  });
-};
-
-const deleteProperty = async (id: string, key: string): Promise<Response> => {
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
-  const token = localStorage.getItem('token');
-  return await fetch(`${apiBaseUrl}/nodes/${id}/properties/${key}`, {
-    method: 'DELETE',
-    headers: {
-      'Authorization': `Bearer ${token}`
-    }
-  });
-};
-
-const deleteRelation = async (sourceId: string, targetId: string, relType: string): Promise<Response> => {
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
-  const token = localStorage.getItem('token');
-  return await fetch(`${apiBaseUrl}/relationships`, {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    },
-    body: JSON.stringify({ sourceId, targetId, type: relType })
-  });
-};
-
-const setProperties = async (id: string, properties: Record<string, any>): Promise<Response> => {
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
-  const token = localStorage.getItem('token');
-  return await fetch(`${apiBaseUrl}/nodes/${id}/properties`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    },
-    body: JSON.stringify(properties)
-  });
-};
-
-const addLabels = async (id: string, labels: string[]): Promise<Response> => {
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
-  const token = localStorage.getItem('token');
-  return await fetch(`${apiBaseUrl}/nodes/${id}/labels`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    },
-    body: JSON.stringify({ labels })
-  });
-};
-
-const deleteLabels = async (id: string, labels: string[]): Promise<Response> => {
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
-  const token = localStorage.getItem('token');
-  return await fetch(`${apiBaseUrl}/nodes/${id}/labels`, {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    },
-    body: JSON.stringify({ labels })
-  });
-};
+import {
+  getNode,
+  getRelations,
+  deleteNode,
+  deleteProperty,
+  deleteRelation,
+  setProperties,
+  addLabels,
+  deleteLabels
+} from '../lib/api';
+import { cleanString } from '../lib/util';
 
 interface Node {
   id: string;
@@ -117,27 +39,21 @@ interface NodeData extends Node {
 }
 
 const EditPage = () => {
+  const { isAuthenticated, username, checkAuthStatus } = useAuth();
   const [nodeData, setNodeData] = useState<NodeData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [editingSection, setEditingSection] = useState<'properties' | 'labels' | null>(null);
   const [editedProperties, setEditedProperties] = useState<Record<string, any>>({});
   const [editedLabels, setEditedLabels] = useState<string[]>([]);
-  const [alertMessage, setAlertMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
+    if (!isAuthenticated) {
       window.location.href = '/';
       return;
     }
     loadNodeData();
-  }, []);
-
-  const showTimedAlert = (message: string) => {
-    setAlertMessage(message);
-    setTimeout(() => setAlertMessage(null), 5000);
-  };
+  }, [isAuthenticated]);
 
   const loadNodeData = async () => {
     const params = new URLSearchParams(window.location.search);
@@ -154,6 +70,7 @@ const EditPage = () => {
       if (nodeRes.status === 401) {
         localStorage.removeItem('token');
         localStorage.removeItem('refreshToken');
+        checkAuthStatus();
         window.location.href = '/';
         return;
       }
@@ -213,7 +130,7 @@ const EditPage = () => {
   };
 
   const handleDeleteRelationship = async (sourceId: string, targetId: string, relType: string) => {
-    if (!confirm('Are you sure you want to delete this relationship?')) return;
+    if (!confirm(`Are you sure you want to delete this ${relType} relationship?`)) return;
     
     try {
       const response = await deleteRelation(sourceId, targetId, relType);
@@ -230,226 +147,260 @@ const EditPage = () => {
   const handleSaveProperties = async () => {
     if (!nodeData) return;
     
-    const invalidProp = Object.keys(editedProperties).some(key => {
-      return /[^a-zA-Z0-9_]/.test(key) || key === 'nodeId' || key === 'createdBy';
-    });
-    
-    if (invalidProp) {
-      showTimedAlert('Property names can only contain letters, numbers, underscores, and cannot be nodeId or createdBy');
-      return;
-    }
-    
     try {
       const response = await setProperties(nodeData.id, editedProperties);
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data?.error?.message || 'Failed to update properties');
+        throw new Error(data?.error?.message || 'Failed to save properties');
       }
-      setEditingSection(null);
       await loadNodeData();
-      showTimedAlert('Properties updated successfully!');
+      setEditingSection(null);
+      showTimedAlert('Properties updated successfully');
     } catch (err) {
-      showTimedAlert(err instanceof Error ? err.message : 'Failed to update properties');
+      showTimedAlert(err instanceof Error ? err.message : 'Failed to save properties');
     }
   };
 
   const handleSaveLabels = async () => {
     if (!nodeData) return;
     
-    const invalidLabel = editedLabels.some(label => !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(label));
-    
-    if (invalidLabel) {
-      showTimedAlert('Labels must be valid identifiers (start with letter/underscore, followed by letters/numbers/underscores)');
-      return;
-    }
+    const currentLabels = nodeData.labels.filter(l => l !== 'Entity');
+    const labelsToAdd = editedLabels.filter(l => !currentLabels.includes(l));
+    const labelsToRemove = currentLabels.filter(l => !editedLabels.includes(l));
     
     try {
-      const currentLabels = nodeData.labels.filter(l => l !== 'Entity');
-      const currentSet = new Set(currentLabels);
-      const editedSet = new Set(editedLabels);
+      if (labelsToAdd.length > 0) {
+        const addRes = await addLabels(nodeData.id, labelsToAdd);
+        if (!addRes.ok) {
+          const data = await addRes.json();
+          throw new Error(data?.error?.message || 'Failed to add labels');
+        }
+      }
       
-      const toAdd = editedLabels.filter(l => !currentSet.has(l));
-      const toRemove = currentLabels.filter(l => !editedSet.has(l));
+      if (labelsToRemove.length > 0) {
+        const delRes = await deleteLabels(nodeData.id, labelsToRemove);
+        if (!delRes.ok) {
+          const data = await delRes.json();
+          throw new Error(data?.error?.message || 'Failed to remove labels');
+        }
+      }
       
-      if (toAdd.length > 0) await addLabels(nodeData.id, toAdd);
-      if (toRemove.length > 0) await deleteLabels(nodeData.id, toRemove);
-      
-      setEditingSection(null);
       await loadNodeData();
-      showTimedAlert('Labels updated successfully!');
+      setEditingSection(null);
+      showTimedAlert('Labels updated successfully');
     } catch (err) {
-      showTimedAlert(err instanceof Error ? err.message : 'Failed to update labels');
+      showTimedAlert(err instanceof Error ? err.message : 'Failed to save labels');
     }
   };
 
   if (loading) {
     return (
       <>
-        <Header />
-        <div className="container mt-5 text-center">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Loading...</span>
-          </div>
+        <Header 
+          isAuthenticated={isAuthenticated}
+          username={username}
+          onAuthChange={checkAuthStatus}
+        />
+        <div className="container mt-4">
+          <p>Loading...</p>
         </div>
       </>
     );
   }
 
-  if (error) {
+  if (error || !nodeData) {
     return (
       <>
-        <Header />
-        <div className="container mt-5">
-          <div className="alert alert-danger" role="alert">
-            <h4 className="alert-heading">Error</h4>
-            <p>{error}</p>
+        <Header 
+          isAuthenticated={isAuthenticated}
+          username={username}
+          onAuthChange={checkAuthStatus}
+        />
+        <div className="container mt-4">
+          <div className="alert alert-danger">
+            {error || 'Node not found'}
           </div>
+          <a href="/" className="btn btn-primary">Back to Home</a>
         </div>
       </>
     );
   }
 
-  if (!nodeData) {
-    return (
-      <>
-        <Header />
-        <div className="container mt-5 text-center">
-          <div className="p-5">
-            <h2 className="text-muted mb-3">No Node Selected</h2>
-            <p className="text-muted">Please select a node to edit.</p>
-          </div>
-        </div>
-      </>
-    );
-  }
+  const title = nodeData.properties.display_name || 
+                nodeData.properties.name || 
+                nodeData.properties.title || 
+                nodeData.nodeId || 
+                'Unknown';
 
-  const title = nodeData.properties.display_name || nodeData.properties.name || nodeData.properties.title || String(nodeData.properties.nodeId) || nodeData.nodeId;
-  const labels = nodeData.labels?.filter((l: string) => l !== 'Entity') || [];
+  const canEdit = isAuthenticated && (!nodeData.properties.createdBy || nodeData.properties.createdBy === username);
 
   return (
     <>
-      <Header />
-      <div id="content" className="container" style={{ maxWidth: '900px' }}>
+      <Header 
+        isAuthenticated={isAuthenticated}
+        username={username}
+        onAuthChange={checkAuthStatus}
+      />
+      
+      <div className="container mt-4">
         {alertMessage && (
-          <div className="alert alert-success alert-dismissible fade show mt-3" role="alert">
+          <div className="alert alert-info alert-dismissible fade show" role="alert">
             {alertMessage}
-            <button type="button" className="btn-close" onClick={() => setAlertMessage(null)}></button>
+            <button 
+              type="button" 
+              className="btn-close" 
+              onClick={() => setAlertMessage(null)}
+            ></button>
           </div>
         )}
-        
-        <div className="mt-4">
-          {/* Title */}
-          <div id="title-container" className="mb-4">
-            <h1 className="page-title">Edit: {title}</h1>
-            <h3 className="page-subtitle">{labels.join(', ')}</h3>
-          </div>
 
-          {/* Action buttons */}
-          <div className="mb-4">
-            <a href={`/info?id=${encodeURIComponent(nodeData.nodeId || nodeData.id)}`} className="btn btn-secondary me-2">
-              Back to View
-            </a>
-            <button className="btn btn-danger" onClick={handleDeleteNode}>
-              Delete Node
-            </button>
-          </div>
-
-          {/* Edit Section Selector */}
-          {!editingSection && (
-            <div className="mb-4">
-              <h3 className="h5 mb-3">What would you like to edit?</h3>
-              <button className="btn btn-primary me-2" onClick={() => setEditingSection('properties')}>
-                Edit Properties
-              </button>
-              <button className="btn btn-primary me-2" onClick={() => setEditingSection('labels')}>
-                Edit Labels
-              </button>
+        <div id="node-info">
+          <div className="d-flex justify-content-between align-items-start mb-4">
+            <div>
+              <h1 className="mb-2">{title}</h1>
+              <p className="text-muted">
+                Labels: {nodeData.labels.join(', ')} | Node ID: {nodeData.nodeId || nodeData.id}
+              </p>
             </div>
-          )}
+            {canEdit && (
+              <button 
+                className="btn btn-danger"
+                onClick={handleDeleteNode}
+              >
+                Delete Node
+              </button>
+            )}
+          </div>
 
-          {/* Edit Properties Form */}
-          {editingSection === 'properties' && (
-            <div className="mb-4">
-              <h3 className="h5 mb-3">Edit Properties</h3>
-              <table className="table table-bordered">
+          {/* Properties Section */}
+          <div className="mb-4">
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h3 className="h4">Properties</h3>
+              {canEdit && editingSection !== 'properties' && (
+                <button 
+                  className="btn btn-sm btn-primary"
+                  onClick={() => setEditingSection('properties')}
+                >
+                  Edit Properties
+                </button>
+              )}
+            </div>
+            
+            {editingSection !== 'properties' ? (
+              <table className="table table-striped">
                 <thead>
                   <tr>
-                    <th>Property</th>
-                    <th>Value</th>
-                    <th>Actions</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Value</th>
                   </tr>
                 </thead>
-                <tbody id="properties">
-                  {Object.entries(editedProperties)
-                    .filter(([key]) => key !== 'nodeId' && key !== 'createdBy')
+                <tbody>
+                  {Object.entries(nodeData.properties)
+                    .filter(([key]) => key !== 'nodeId')
                     .map(([key, value]) => (
                       <tr key={key}>
-                        <td>
-                          <input 
-                            type="text" 
-                            className="form-control" 
-                            value={key}
-                            onChange={(e) => {
-                              const newProps = { ...editedProperties };
-                              delete newProps[key];
-                              newProps[e.target.value] = value;
-                              setEditedProperties(newProps);
-                            }}
-                          />
-                        </td>
-                        <td>
-                          <input 
-                            type="text" 
-                            className="form-control" 
-                            value={Array.isArray(value) ? value.join(', ') : String(value)}
-                            onChange={(e) => {
-                              setEditedProperties({
-                                ...editedProperties,
-                                [key]: e.target.value
-                              });
-                            }}
-                          />
-                        </td>
-                        <td>
-                          <button 
-                            className="btn btn-sm btn-danger"
-                            onClick={() => handleDeleteProperty(key)}
-                          >
-                            Delete
-                          </button>
-                        </td>
+                        <td><strong>{cleanString(key)}</strong></td>
+                        <td>{Array.isArray(value) ? value.join(', ') : String(value)}</td>
                       </tr>
                     ))}
                 </tbody>
               </table>
-              <button 
-                className="btn btn-secondary me-2"
-                onClick={() => {
-                  const newKey = prompt('Enter property name:');
-                  if (newKey) {
-                    setEditedProperties({
-                      ...editedProperties,
-                      [newKey]: ''
-                    });
-                  }
-                }}
-              >
-                Add Property
-              </button>
-              <button className="btn btn-primary me-2" onClick={handleSaveProperties}>
-                Save Changes
-              </button>
-              <button 
-                className="btn btn-link" 
-                onClick={() => {
-                  setEditingSection(null);
-                  setEditedProperties({ ...nodeData.properties });
-                }}
-              >
-                Cancel
-              </button>
+            ) : (
+              <div className="mb-4">
+                <h3 className="h5 mb-3">Edit Properties</h3>
+                <table className="table table-bordered">
+                  <thead>
+                    <tr>
+                      <th scope="col">Name</th>
+                      <th scope="col">Value</th>
+                      <th scope="col">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(editedProperties)
+                      .filter(([key]) => key !== 'nodeId')
+                      .map(([key, value]) => (
+                        <tr key={key}>
+                          <td><strong>{cleanString(key)}</strong></td>
+                          <td>
+                            <input 
+                              type="text" 
+                              className="form-control" 
+                              value={Array.isArray(value) ? value.join(', ') : String(value)}
+                              onChange={(e) => {
+                                setEditedProperties({
+                                  ...editedProperties,
+                                  [key]: e.target.value
+                                });
+                              }}
+                            />
+                          </td>
+                          <td>
+                            <button 
+                              className="btn btn-sm btn-danger"
+                              onClick={() => handleDeleteProperty(key)}
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+                <button 
+                  className="btn btn-secondary me-2"
+                  onClick={() => {
+                    const newKey = prompt('Enter property name:');
+                    if (newKey) {
+                      setEditedProperties({
+                        ...editedProperties,
+                        [newKey]: ''
+                      });
+                    }
+                  }}
+                >
+                  Add Property
+                </button>
+                <button className="btn btn-primary me-2" onClick={handleSaveProperties}>
+                  Save Changes
+                </button>
+                <button 
+                  className="btn btn-link" 
+                  onClick={() => {
+                    setEditingSection(null);
+                    setEditedProperties({ ...nodeData.properties });
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Labels Section */}
+          <div className="mb-4">
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h3 className="h4">Labels</h3>
+              {canEdit && editingSection !== 'labels' && (
+                <button 
+                  className="btn btn-sm btn-primary"
+                  onClick={() => setEditingSection('labels')}
+                >
+                  Edit Labels
+                </button>
+              )}
             </div>
-          )}
+
+            {editingSection !== 'labels' ? (
+              <div className="labels-display">
+                {nodeData.labels.filter(l => l !== 'Entity').map((label, idx) => (
+                  <span key={idx} className="badge bg-primary me-2">
+                    {label}
+                  </span>
+                ))}
+              </div>
+            ) : null}
+          </div>
 
           {/* Edit Labels Form */}
           {editingSection === 'labels' && (
@@ -552,12 +503,14 @@ const EditPage = () => {
                               <a href={`/info?id=${encodeURIComponent(nodeData.nodeId || nodeData.id)}`}>
                                 ({toLabel})
                               </a>
-                              <button 
-                                className="btn btn-sm btn-danger ms-2"
-                                onClick={() => handleDeleteRelationship(fromNode.id, nodeData.id, relType)}
-                              >
-                                Delete
-                              </button>
+                              {canEdit && (
+                                <button 
+                                  className="btn btn-sm btn-danger ms-2"
+                                  onClick={() => handleDeleteRelationship(fromNode.id, nodeData.id, relType)}
+                                >
+                                  Delete
+                                </button>
+                              )}
                             </li>
                           );
                         })}
@@ -583,12 +536,14 @@ const EditPage = () => {
                               <a href={`/info?id=${encodeURIComponent(toNode.nodeId || toNode.id)}`}>
                                 ({toLabel})
                               </a>
-                              <button 
-                                className="btn btn-sm btn-danger ms-2"
-                                onClick={() => handleDeleteRelationship(nodeData.id, toNode.id, relType)}
-                              >
-                                Delete
-                              </button>
+                              {canEdit && (
+                                <button 
+                                  className="btn btn-sm btn-danger ms-2"
+                                  onClick={() => handleDeleteRelationship(nodeData.id, toNode.id, relType)}
+                                >
+                                  Delete
+                                </button>
+                              )}
                             </li>
                           );
                         })}
@@ -599,12 +554,14 @@ const EditPage = () => {
               ));
             })()}
 
-            <a 
-              href={`/leabharlann/relationship/index.html?fromId=${encodeURIComponent(nodeData.id)}`} 
-              className="btn btn-primary"
-            >
-              Create New Relationship
-            </a>
+            {canEdit && (
+              <a 
+                href={`/leabharlann/relationship/index.html?fromId=${encodeURIComponent(nodeData.id)}`} 
+                className="btn btn-primary"
+              >
+                Create New Relationship
+              </a>
+            )}
           </div>
         </div>
       </div>

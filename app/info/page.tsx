@@ -2,31 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { ExternalLink } from 'lucide-react';
 import Header from '../Header';
-
-// Utility functions
-const cleanString = (str: string): string => {
-  return str.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
-};
-
-const isUrl = (str: string): boolean => {
-  try {
-    new URL(str);
-    return true;
-  } catch {
-    return false;
-  }
-};
-
-// API functions
-const getNode = async (id: string): Promise<Response> => {
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
-  return await fetch(`${apiBaseUrl}/nodes/${id}`);
-};
-
-const getRelations = async (id: string): Promise<Response> => {
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
-  return await fetch(`${apiBaseUrl}/nodes/${id}/relationships`);
-};
+import { getNode, getNodeRelationships } from '@/lib/api';
+import { 
+  cleanString, 
+  isUrl, 
+  categorizeRelationships,
+  getNodeTitle
+} from '@/lib/utils';
 
 interface Node {
   nodeId: string;
@@ -50,44 +32,6 @@ interface NodeData extends Node {
   outgoing: Relationship[];
   incoming: Relationship[];
 }
-
-// Special relationships configuration
-const specialRels = {
-  incoming: {
-    'EDITION_OF': 'Editions',
-    'VERSION_OF': 'Versions',
-    'DERIVED_FROM': 'Main Text',
-    'TRANSLATION_OF': 'Translations',
-    'TRANSLATED': 'Translators',
-    'PUBLISHED': 'Publisher',
-    'PUBLISHES': 'Publisher',
-    'WROTE': 'Author',
-    'DISPLAYS': 'Displayed On',
-    'PUBLISHED_IN': 'Published',
-    'HOSTS': 'Hosted By',
-    'COMMENTARY_ON': 'Commentary',
-    'NEXT_IN_SERIES': 'Previous in Series',
-    'ISSUE_OF': 'Issues',
-    'EDITED': 'Editor'
-  },
-  outgoing: {
-    'PUBLISHED_BY': 'Publishers',
-    'PUBLISHED': 'Published',
-    'PUBLISHES': 'Publishes',
-    'EDITION_OF': 'Source Text',
-    'VERSION_OF': 'A Version Of',
-    'DERIVED_FROM': 'Derived From',
-    'WROTE': 'Works',
-    'PUBLISHED_IN': 'Published In',
-    'TRANSLATED': 'Translated',
-    'DISPLAYS': 'Displays',
-    'HOSTS': 'Hosts',
-    'COMMENTARY_ON': 'Commentary On',
-    'NEXT_IN_SERIES': 'Next in Series',
-    'ISSUE_OF': 'Parent Journal',
-    'EDITED': 'Editions'
-  }
-};
 
 const NodeInfoPage = () => {
   const [nodeData, setNodeData] = useState<NodeData | null>(null);
@@ -140,7 +84,7 @@ const NodeInfoPage = () => {
         properties: nodeResponseData.properties || {}
       };
       
-      const relRes = await getRelations(id);
+      const relRes = await getNodeRelationships(id);
       if (!relRes.ok) throw new Error('Failed to load relationships');
       
       const relData = await relRes.json();
@@ -157,33 +101,6 @@ const NodeInfoPage = () => {
       setError(err instanceof Error ? err.message : 'An error occurred');
       setLoading(false);
     }
-  };
-
-  const categorizeRelationships = (incoming: Relationship[], outgoing: Relationship[]) => {
-    const categorized: Record<string, (Relationship & { direction: 'incoming' | 'outgoing' })[]> = {};
-    const uncategorized: { incoming: Relationship[], outgoing: Relationship[] } = { incoming: [], outgoing: [] };
-
-    incoming.forEach(rel => {
-      const header = specialRels.incoming[rel.type as keyof typeof specialRels.incoming];
-      if (header) {
-        if (!categorized[header]) categorized[header] = [];
-        categorized[header].push({ ...rel, direction: 'incoming' });
-      } else {
-        uncategorized.incoming.push(rel);
-      }
-    });
-
-    outgoing.forEach(rel => {
-      const header = specialRels.outgoing[rel.type as keyof typeof specialRels.outgoing];
-      if (header) {
-        if (!categorized[header]) categorized[header] = [];
-        categorized[header].push({ ...rel, direction: 'outgoing' });
-      } else {
-        uncategorized.outgoing.push(rel);
-      }
-    });
-
-    return { categorized, uncategorized };
   };
 
   const renderPropertyValue = (value: any) => {
@@ -253,10 +170,9 @@ const NodeInfoPage = () => {
     );
   }
 
-  const title = nodeData.properties.display_name || nodeData.properties.name || nodeData.properties.title || String(nodeData.properties.nodeId) || nodeData.nodeId;
+  const title = getNodeTitle(nodeData);
   const labels = nodeData.labels?.filter((l: string) => l !== 'Entity') || [];
 
-  console.log(nodeData);
   const { categorized, uncategorized } = categorizeRelationships(
     nodeData.incoming || [], 
     nodeData.outgoing || []
@@ -338,7 +254,7 @@ const NodeInfoPage = () => {
                 <ul className="rels-list">
                   {rels.map((rel, idx) => {
                     const node = rel.node;
-                    const label = node.properties.display_name || node.properties.name || node.properties.title || node.nodeId;
+                    const label = getNodeTitle(node);
                     return (
                       <li key={idx} className="mb-2">
                         <a href={`?id=${encodeURIComponent(node.nodeId)}`} className="text-decoration-none">
@@ -359,7 +275,7 @@ const NodeInfoPage = () => {
                   <div key={`in-${idx}`} className="mb-2">
                     <span className="badge bg-secondary me-2">← {rel.type}</span>
                     <a href={`?id=${encodeURIComponent(rel.node.nodeId)}`}>
-                      {rel.node.properties.display_name || rel.node.properties.name || rel.node.nodeId}
+                      {getNodeTitle(rel.node)}
                     </a>
                   </div>
                 ))}
@@ -367,7 +283,7 @@ const NodeInfoPage = () => {
                   <div key={`out-${idx}`} className="mb-2">
                     <span className="badge bg-primary me-2">{rel.type} →</span>
                     <a href={`?id=${encodeURIComponent(rel.node.nodeId)}`}>
-                      {rel.node.properties.display_name || rel.node.properties.name || rel.node.nodeId}
+                      {getNodeTitle(rel.node)}
                     </a>
                   </div>
                 ))}

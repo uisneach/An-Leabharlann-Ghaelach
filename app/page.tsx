@@ -6,6 +6,7 @@ import NodeList from "./NodeList";
 import Header from "./Header";
 import React, { useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
+import { getAllLabels } from '@/lib/api';
 
 const defaultLabels = ['Author', 'Text', 'Edition'];
 
@@ -24,8 +25,7 @@ export default function Home() {
       setLoadingLabels(true);
       setErrorLabels(null);
       try {
-        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
-        const res = await fetch(`${apiBaseUrl}/util?action=labels`);
+        const res = await getAllLabels();
         if (!res.ok) {
           throw new Error(`Failed to load labels: ${res.status} ${res.statusText}`);
         }

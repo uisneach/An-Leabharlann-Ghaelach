@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
-
-interface JwtPayload {
-  username?: string;
-  sub?: string;
-  exp?: number;
-}
+import { login, register, searchNodes } from '@/lib/api';
+import { 
+  escapeHtml, 
+  handleEnterKey, 
+  validateUsername, 
+  validatePassword,
+  setLocalStorage,
+  clearAuthTokens,
+  getNodeTitle
+} from '@/lib/utils';
 
 interface Node {
   id: string;
@@ -48,15 +52,6 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
   const [searchResults, setSearchResults] = useState<Node[]>([]);
   const [searchError, setSearchError] = useState<string>('');
 
-  const parseJwt = (token: string): JwtPayload => {
-    try {
-      const part = token.split('.')[1];
-      return JSON.parse(atob(part));
-    } catch (e) {
-      return {};
-    }
-  };
-
   const handleLogin = async (): Promise<void> => {
     setLoginError('');
 
@@ -66,26 +61,20 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
     }
 
     try {
-      const response = await fetch('/api/auth?action=login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: loginUsername, password: loginPassword })
-      });
-
+      const response = await login(loginUsername, loginPassword);
       const data = await response.json();
       
       if (!response.ok) {
         throw new Error(data?.error || 'Login failed');
       }
 
-      if (data.token) localStorage.setItem('token', data.token);
-      if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
+      if (data.token) setLocalStorage('token', data.token);
+      if (data.refreshToken) setLocalStorage('refreshToken', data.refreshToken);
 
       setIsLoginModalOpen(false);
       setLoginUsername('');
       setLoginPassword('');
       
-      // Trigger auth check in parent
       onAuthChange();
     } catch (err) {
       setLoginError(err instanceof Error ? err.message : 'Login failed');
@@ -99,14 +88,18 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
     let valid = true;
     const errors: RegisterErrors = {};
 
-    if (!/^[a-zA-Z0-9_]{3,20}$/.test(registerUsername)) {
-      errors.username = 'Username must be 3-20 characters, alphanumeric and underscores only.';
+    const usernameValidation = validateUsername(registerUsername);
+    if (!usernameValidation.valid) {
+      errors.username = usernameValidation.error;
       valid = false;
     }
-    if (registerPassword.length < 8) {
-      errors.password = 'Password must be at least 8 characters long.';
+
+    const passwordValidation = validatePassword(registerPassword);
+    if (!passwordValidation.valid) {
+      errors.password = passwordValidation.error;
       valid = false;
     }
+
     if (registerPassword !== confirmPassword) {
       errors.confirmPassword = 'Passwords do not match.';
       valid = false;
@@ -118,39 +111,28 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
     }
 
     try {
-      const response = await fetch('/api/auth?action=register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: registerUsername, password: registerPassword })
-      });
-
+      const response = await register(registerUsername, registerPassword);
       const data = await response.json();
 
       if (response.ok) {
         setRegisterAlert('Account created successfully. Logging in...');
 
         // Auto-login after registration
-        const loginResponse = await fetch('/api/auth?action=login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: registerUsername, password: registerPassword })
-        });
-
+        const loginResponse = await login(registerUsername, registerPassword);
         const loginData = await loginResponse.json();
 
         if (!loginResponse.ok || !loginData.token) {
           throw new Error(loginData.error || 'Login failed after registration');
         }
 
-        localStorage.setItem('token', loginData.token);
-        if (loginData.refreshToken) localStorage.setItem('refreshToken', loginData.refreshToken);
+        setLocalStorage('token', loginData.token);
+        if (loginData.refreshToken) setLocalStorage('refreshToken', loginData.refreshToken);
 
         setIsRegisterModalOpen(false);
         setRegisterUsername('');
         setRegisterPassword('');
         setConfirmPassword('');
         
-        // Trigger auth check in parent
         onAuthChange();
       } else {
         throw new Error(data.error || 'Registration failed');
@@ -161,11 +143,8 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
   };
 
   const handleLogout = (): void => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('refreshToken');
+    clearAuthTokens();
     setIsDropdownOpen(false);
-    
-    // Trigger auth check in parent
     onAuthChange();
   };
 
@@ -178,7 +157,7 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
     }
 
     try {
-      const response = await fetch(`/api/util?action=search&q=${encodeURIComponent(searchQuery)}`);
+      const response = await searchNodes(searchQuery);
       
       if (!response.ok) {
         throw new Error(`Search failed: ${response.status} ${response.statusText}`);
@@ -189,26 +168,6 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
       setIsSearchModalOpen(true);
     } catch (error) {
       setSearchError(error instanceof Error ? error.message : 'Search failed');
-    }
-  };
-
-  const escapeHtml = (str: string): string => {
-    return str.replace(/[&<>"']/g, (match) => {
-      const escapeMap: { [key: string]: string } = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#039;'
-      };
-      return escapeMap[match];
-    });
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent, action: () => void): void => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      action();
     }
   };
 
@@ -228,7 +187,7 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
             placeholder="Search the database…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyPress={(e) => handleKeyPress(e, handleSearch)}
+            onKeyPress={(e) => handleEnterKey(e, handleSearch)}
           />
           <button className="btn btn-white" id="search-btn" onClick={handleSearch}>Search</button>
         </div>
@@ -272,7 +231,7 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
                     className="form-control"
                     value={loginUsername}
                     onChange={(e) => setLoginUsername(e.target.value)}
-                    onKeyPress={(e) => handleKeyPress(e, handleLogin)}
+                    onKeyPress={(e) => handleEnterKey(e, handleLogin)}
                     required
                   />
                 </div>
@@ -283,7 +242,7 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
                     className="form-control"
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
-                    onKeyPress={(e) => handleKeyPress(e, handleLogin)}
+                    onKeyPress={(e) => handleEnterKey(e, handleLogin)}
                     required
                   />
                 </div>
@@ -327,7 +286,7 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
                       setRegisterUsername(e.target.value);
                       setRegisterErrors({ ...registerErrors, username: '' });
                     }}
-                    onKeyPress={(e) => handleKeyPress(e, handleRegister)}
+                    onKeyPress={(e) => handleEnterKey(e, handleRegister)}
                     placeholder="Enter a unique username"
                     required
                   />
@@ -344,7 +303,7 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
                       setRegisterPassword(e.target.value);
                       setRegisterErrors({ ...registerErrors, password: '' });
                     }}
-                    onKeyPress={(e) => handleKeyPress(e, handleRegister)}
+                    onKeyPress={(e) => handleEnterKey(e, handleRegister)}
                     placeholder="Create a password"
                     required
                   />
@@ -361,7 +320,7 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
                       setConfirmPassword(e.target.value);
                       setRegisterErrors({ ...registerErrors, confirmPassword: '' });
                     }}
-                    onKeyPress={(e) => handleKeyPress(e, handleRegister)}
+                    onKeyPress={(e) => handleEnterKey(e, handleRegister)}
                     placeholder="Re-enter your password"
                     required
                   />
