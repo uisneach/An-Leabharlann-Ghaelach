@@ -38,6 +38,144 @@ interface NodeData extends Node {
   incoming: Relationship[];
 }
 
+// Properties that should use textarea instead of input
+const LONG_TEXT_PROPERTIES = ['description', 'contents', 'analysis', 'summary', 'biography', 'works'];
+
+// Component for editing a single property value (handles primitives and arrays)
+const PropertyValueEditor: React.FC<{
+  propertyKey: string;
+  value: any;
+  onChange: (newValue: any) => void;
+  onDelete?: () => void;
+}> = ({ propertyKey, value, onChange, onDelete }) => {
+  const isLongText = LONG_TEXT_PROPERTIES.includes(propertyKey);
+  const isArray = Array.isArray(value);
+  const [arrayValues, setArrayValues] = useState<string[]>(
+    isArray ? value.map(String) : []
+  );
+  const [singleValue, setSingleValue] = useState<string>(
+    !isArray ? String(value || '') : ''
+  );
+
+  // Sync changes back to parent
+  useEffect(() => {
+    if (isArray) {
+      onChange(arrayValues.filter(v => v.trim() !== ''));
+    } else {
+      onChange(singleValue);
+    }
+  }, [arrayValues, singleValue]);
+
+  const handleAddArrayItem = () => {
+    setArrayValues([...arrayValues, '']);
+  };
+
+  const handleRemoveArrayItem = (index: number) => {
+    setArrayValues(arrayValues.filter((_, i) => i !== index));
+  };
+
+  const handleArrayItemChange = (index: number, newValue: string) => {
+    const updated = [...arrayValues];
+    updated[index] = newValue;
+    setArrayValues(updated);
+  };
+
+  const toggleArrayMode = () => {
+    if (isArray) {
+      // Convert to single value (take first item or empty string)
+      const firstValue = arrayValues[0] || '';
+      setSingleValue(firstValue);
+      onChange(firstValue);
+    } else {
+      // Convert to array
+      const newArray = singleValue.trim() ? [singleValue] : [];
+      setArrayValues(newArray);
+      onChange(newArray);
+    }
+  };
+
+  if (isArray) {
+    return (
+      <div>
+        {arrayValues.map((item, idx) => (
+          <div key={idx} className="mb-2 d-flex gap-2">
+            {isLongText ? (
+              <textarea
+                className="form-control flex-grow-1"
+                rows={3}
+                value={item}
+                onChange={(e) => handleArrayItemChange(idx, e.target.value)}
+                placeholder={`${propertyKey} item ${idx + 1}`}
+              />
+            ) : (
+              <input
+                type="text"
+                className="form-control flex-grow-1"
+                value={item}
+                onChange={(e) => handleArrayItemChange(idx, e.target.value)}
+                placeholder={`${propertyKey} item ${idx + 1}`}
+              />
+            )}
+            <button
+              className="btn btn-sm btn-danger"
+              onClick={() => handleRemoveArrayItem(idx)}
+              title="Remove this item"
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+        <div className="d-flex gap-2 mt-2">
+          <button
+            className="btn btn-sm btn-secondary"
+            onClick={handleAddArrayItem}
+          >
+            + Add Item
+          </button>
+          <button
+            className="btn btn-sm btn-outline-secondary"
+            onClick={toggleArrayMode}
+            title="Convert to single value"
+          >
+            Convert to Single Value
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {isLongText ? (
+        <textarea
+          className="form-control"
+          rows={6}
+          value={singleValue}
+          onChange={(e) => setSingleValue(e.target.value)}
+          placeholder={`Enter ${propertyKey}`}
+        />
+      ) : (
+        <input
+          type="text"
+          className="form-control"
+          value={singleValue}
+          onChange={(e) => setSingleValue(e.target.value)}
+          placeholder={`Enter ${propertyKey}`}
+        />
+      )}
+      <div className="mt-2">
+        <button
+          className="btn btn-sm btn-outline-secondary"
+          onClick={toggleArrayMode}
+          title="Convert to list"
+        >
+          Convert to List
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const EditPage = () => {
   const { isAuthenticated, username, checkAuthStatus } = useAuth();
   const [nodeData, setNodeData] = useState<NodeData | null>(null);
@@ -162,8 +300,21 @@ const EditPage = () => {
       }
     }
     
+    // Clean up properties: remove empty strings from arrays, remove empty properties
+    const cleanedProperties: Record<string, any> = {};
+    for (const [key, value] of Object.entries(editedProperties)) {
+      if (Array.isArray(value)) {
+        const cleaned = value.filter(v => String(v).trim() !== '');
+        if (cleaned.length > 0) {
+          cleanedProperties[key] = cleaned;
+        }
+      } else if (String(value).trim() !== '') {
+        cleanedProperties[key] = value;
+      }
+    }
+    
     try {
-      const response = await updateNodeProperties(nodeData.id, editedProperties);
+      const response = await updateNodeProperties(nodeData.id, cleanedProperties);
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data?.error?.message || 'Failed to update properties');
@@ -205,6 +356,44 @@ const EditPage = () => {
     } catch (err) {
       showTimedAlert(err instanceof Error ? err.message : 'Failed to update labels');
     }
+  };
+
+  const handleAddProperty = () => {
+    const newKey = prompt('Enter property name:');
+    if (newKey && newKey.trim()) {
+      const validation = validatePropertyKey(newKey);
+      if (!validation.valid) {
+        alert(validation.error);
+        return;
+      }
+      setEditedProperties({
+        ...editedProperties,
+        [newKey]: ''
+      });
+    }
+  };
+
+  const handlePropertyKeyChange = (oldKey: string, newKey: string) => {
+    if (oldKey === newKey) return;
+    
+    const validation = validatePropertyKey(newKey);
+    if (!validation.valid) {
+      alert(validation.error);
+      return;
+    }
+    
+    const newProps = { ...editedProperties };
+    const value = newProps[oldKey];
+    delete newProps[oldKey];
+    newProps[newKey] = value;
+    setEditedProperties(newProps);
+  };
+
+  const handlePropertyValueChange = (key: string, newValue: any) => {
+    setEditedProperties({
+      ...editedProperties,
+      [key]: newValue
+    });
   };
 
   if (loading) {
@@ -312,83 +501,70 @@ const EditPage = () => {
           {editingSection === 'properties' && (
             <div className="mb-4">
               <h3 className="h5 mb-3">Edit Properties</h3>
-              <table className="table table-bordered">
-                <thead>
-                  <tr>
-                    <th>Property</th>
-                    <th>Value</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="properties">
-                  {Object.entries(editedProperties)
-                    .filter(([key]) => key !== 'nodeId' && key !== 'createdBy')
-                    .map(([key, value]) => (
-                      <tr key={key}>
-                        <td>
+              <div className="mb-3">
+                <small className="text-muted">
+                  Tip: Properties can be single values or lists. Use "Convert to List" to store multiple values for a property.
+                </small>
+              </div>
+              
+              {Object.entries(editedProperties)
+                .filter(([key]) => key !== 'nodeId' && key !== 'createdBy')
+                .map(([key, value]) => (
+                  <div key={key} className="card mb-3">
+                    <div className="card-body">
+                      <div className="mb-3">
+                        <label className="form-label fw-bold">Property Name</label>
+                        <div className="d-flex gap-2">
                           <input 
                             type="text" 
-                            className="form-control" 
+                            className="form-control flex-grow-1" 
                             value={key}
-                            onChange={(e) => {
-                              const newProps = { ...editedProperties };
-                              delete newProps[key];
-                              newProps[e.target.value] = value;
-                              setEditedProperties(newProps);
-                            }}
+                            onChange={(e) => handlePropertyKeyChange(key, e.target.value)}
                           />
-                        </td>
-                        <td>
-                          <input 
-                            type="text" 
-                            className="form-control" 
-                            value={Array.isArray(value) ? value.join(', ') : String(value)}
-                            onChange={(e) => {
-                              setEditedProperties({
-                                ...editedProperties,
-                                [key]: e.target.value
-                              });
-                            }}
-                          />
-                        </td>
-                        <td>
                           <button 
-                            className="btn btn-sm btn-danger"
+                            className="btn btn-danger"
                             onClick={() => handleDeleteProperty(key)}
+                            title="Delete this property"
                           >
-                            Delete
+                            Delete Property
                           </button>
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-              <button 
-                className="btn btn-secondary me-2"
-                onClick={() => {
-                  const newKey = prompt('Enter property name:');
-                  if (newKey) {
-                    setEditedProperties({
-                      ...editedProperties,
-                      [newKey]: ''
-                    });
-                  }
-                }}
-              >
-                Add Property
-              </button>
-              <button className="btn btn-primary me-2" onClick={handleSaveProperties}>
-                Save Changes
-              </button>
-              <button 
-                className="btn btn-link" 
-                onClick={() => {
-                  setEditingSection(null);
-                  setEditedProperties({ ...nodeData.properties });
-                }}
-              >
-                Cancel
-              </button>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <label className="form-label fw-bold">
+                          Value {Array.isArray(value) ? `(List with ${value.length} item${value.length !== 1 ? 's' : ''})` : '(Single Value)'}
+                        </label>
+                        <PropertyValueEditor
+                          propertyKey={key}
+                          value={value}
+                          onChange={(newValue) => handlePropertyValueChange(key, newValue)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              
+              <div className="d-flex gap-2 mt-3">
+                <button 
+                  className="btn btn-secondary"
+                  onClick={handleAddProperty}
+                >
+                  + Add New Property
+                </button>
+                <button className="btn btn-primary" onClick={handleSaveProperties}>
+                  Save All Changes
+                </button>
+                <button 
+                  className="btn btn-link" 
+                  onClick={() => {
+                    setEditingSection(null);
+                    setEditedProperties({ ...nodeData.properties });
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           )}
 
