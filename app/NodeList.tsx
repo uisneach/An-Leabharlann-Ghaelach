@@ -23,9 +23,10 @@ interface NodeListProps {
   onRemove: () => void;
   isDefault: boolean;
   totalColumns: number;
+  isAuthenticated: boolean;
 }
 
-export default function NodeList({ label, onRemove, isDefault, totalColumns }: NodeListProps) {
+export default function NodeList({ label, onRemove, isDefault, totalColumns, isAuthenticated }: NodeListProps) {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
