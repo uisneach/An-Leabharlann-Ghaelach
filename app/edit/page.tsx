@@ -1,5 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../AuthContext';
 import Header from '../Header';
 import { 
   getNode, 
@@ -38,6 +39,7 @@ interface NodeData extends Node {
 }
 
 const EditPage = () => {
+  const { isAuthenticated, username, checkAuthStatus } = useAuth();
   const [nodeData, setNodeData] = useState<NodeData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,13 +49,12 @@ const EditPage = () => {
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
+    if (!isAuthenticated) {
       window.location.href = '/';
       return;
     }
     loadNodeData();
-  }, []);
+  }, [isAuthenticated]);
 
   const showTimedAlert = (message: string) => {
     setAlertMessage(message);
@@ -75,6 +76,7 @@ const EditPage = () => {
       if (nodeRes.status === 401) {
         localStorage.removeItem('token');
         localStorage.removeItem('refreshToken');
+        checkAuthStatus();
         window.location.href = '/';
         return;
       }
@@ -208,7 +210,11 @@ const EditPage = () => {
   if (loading) {
     return (
       <>
-        <Header />
+        <Header 
+          isAuthenticated={isAuthenticated}
+          username={username}
+          onAuthChange={checkAuthStatus}
+        />
         <div className="container mt-5 text-center">
           <div className="spinner-border text-primary" role="status">
             <span className="visually-hidden">Loading...</span>
@@ -221,7 +227,11 @@ const EditPage = () => {
   if (error) {
     return (
       <>
-        <Header />
+        <Header 
+          isAuthenticated={isAuthenticated}
+          username={username}
+          onAuthChange={checkAuthStatus}
+        />
         <div className="container mt-5">
           <div className="alert alert-danger" role="alert">
             <h4 className="alert-heading">Error</h4>
@@ -235,7 +245,11 @@ const EditPage = () => {
   if (!nodeData) {
     return (
       <>
-        <Header />
+        <Header 
+          isAuthenticated={isAuthenticated}
+          username={username}
+          onAuthChange={checkAuthStatus}
+        />
         <div className="container mt-5 text-center">
           <div className="p-5">
             <h2 className="text-muted mb-3">No Node Selected</h2>
@@ -251,7 +265,11 @@ const EditPage = () => {
 
   return (
     <>
-      <Header />
+      <Header 
+        isAuthenticated={isAuthenticated}
+        username={username}
+        onAuthChange={checkAuthStatus}
+      />
       <div id="content" className="container" style={{ maxWidth: '900px' }}>
         {alertMessage && (
           <div className="alert alert-success alert-dismissible fade show mt-3" role="alert">

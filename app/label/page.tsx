@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react';
+import { useAuth } from '../AuthContext';
 import Header from '../Header';
 import { getNodesByLabel } from '@/lib/api';
 import { sortNodes, getNodeTitle } from '@/lib/utils';
@@ -29,6 +30,7 @@ interface NodesApiResponse {
 
 // Main Nodes Page Component
 const NodesPage = () => {
+  const { isAuthenticated, username, checkAuthStatus } = useAuth();
   const [nodes, setNodes] = useState<Node[]>([]);
   const [label, setLabel] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
@@ -78,7 +80,11 @@ const NodesPage = () => {
 
   return (
     <div>
-      <Header />
+      <Header 
+        isAuthenticated={isAuthenticated}
+        username={username}
+        onAuthChange={checkAuthStatus}
+      />
       
       <div className="container mt-4" id="label-list-container">
         <h2 id="page-title">

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import mermaid from 'mermaid'
+import { useAuth } from '../AuthContext'
 import Header from '../Header'
 
 mermaid.initialize({
@@ -10,6 +11,7 @@ mermaid.initialize({
 })
 
 export default function HowTo() {
+  const { isAuthenticated, username, checkAuthStatus } = useAuth();
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -23,7 +25,11 @@ export default function HowTo() {
 
   return (
     <div>
-      <Header/>
+      <Header 
+        isAuthenticated={isAuthenticated}
+        username={username}
+        onAuthChange={checkAuthStatus}
+      />
       <section ref={containerRef}>
         <style jsx global>{`
         body {

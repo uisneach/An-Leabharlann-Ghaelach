@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react';
 import { ExternalLink } from 'lucide-react';
+import { useAuth } from '../AuthContext';
 import Header from '../Header';
 import { getNode, getNodeRelationships } from '@/lib/api';
 import { 
@@ -34,20 +35,10 @@ interface NodeData extends Node {
 }
 
 const NodeInfoPage = () => {
+  const { isAuthenticated, username, checkAuthStatus } = useAuth();
   const [nodeData, setNodeData] = useState<NodeData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    setIsAuthenticated(!!localStorage.getItem('token'));
-  }, []);
-
-  useEffect(() => {
-    const handleAuthChange = () => setIsAuthenticated(!!localStorage.getItem('token'));
-    document.addEventListener('authChange', handleAuthChange);
-    return () => document.removeEventListener('authChange', handleAuthChange);
-  }, []);
 
   useEffect(() => {
     loadNodeData();
@@ -132,7 +123,11 @@ const NodeInfoPage = () => {
   if (loading) {
     return (
       <>
-        <Header />
+        <Header 
+          isAuthenticated={isAuthenticated}
+          username={username}
+          onAuthChange={checkAuthStatus}
+        />
         <div className="container mt-5 text-center">
           <div className="spinner-border text-primary" role="status">
             <span className="visually-hidden">Loading...</span>
@@ -145,7 +140,11 @@ const NodeInfoPage = () => {
   if (error) {
     return (
       <>
-        <Header />
+        <Header 
+          isAuthenticated={isAuthenticated}
+          username={username}
+          onAuthChange={checkAuthStatus}
+        />
         <div className="container mt-5">
           <div className="alert alert-danger" role="alert">
             <h4 className="alert-heading">Error</h4>
@@ -159,7 +158,11 @@ const NodeInfoPage = () => {
   if (!nodeData) {
     return (
       <>
-        <Header />
+        <Header 
+          isAuthenticated={isAuthenticated}
+          username={username}
+          onAuthChange={checkAuthStatus}
+        />
         <div className="container mt-5 text-center">
           <div className="p-5">
             <h2 className="text-muted mb-3">No Node Selected</h2>
@@ -202,7 +205,11 @@ const NodeInfoPage = () => {
 
   return (
     <>
-      <Header />
+      <Header 
+        isAuthenticated={isAuthenticated}
+        username={username}
+        onAuthChange={checkAuthStatus}
+      />
       <div id="content" className="container-fluid" style={{ maxWidth: '1400px', width: "90%" }}>
         {/* Title and labels */}
         <div id="title-container" className="mb-4">
