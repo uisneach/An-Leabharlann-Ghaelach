@@ -4,6 +4,8 @@ import { useState, FormEvent, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../AuthContext';
 import Header from '../Header';
+import { createNode, searchNodes } from '@/lib/api';
+import { validateLabel, validatePropertyKey } from '@/lib/utils';
 
 // Type definitions
 interface Property {
@@ -31,38 +33,6 @@ interface SearchResult {
     [key: string]: any;
   };
 }
-
-// API utility functions
-const createNode = async (labels: string[], properties: Record<string, any>) => {
-  const token = localStorage.getItem('token');
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-  
-  return fetch(process.env.NEXT_PUBLIC_API_BASE_URL + '/nodes/create', {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({ labels, properties })
-  });
-};
-
-const searchWithLabel = async (query: string, label: string) => {
-  const token = localStorage.getItem('token');
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-  
-  return fetch(
-    process.env.NEXT_PUBLIC_API_BASE_URL + `/util?action=search&q=${encodeURIComponent(query)}&label=${encodeURIComponent(label)}`,
-    { headers }
-  );
-};
 
 // Main Create Node Page Component
 const CreateNodePage = () => {
@@ -108,31 +78,30 @@ const CreateNodePage = () => {
       return;
     }
     
-    if (labels.some(label => !/^[A-Za-z_][A-Za-z0-9_]*$/.test(label))) {
-      setError('Labels must contain only letters, numbers, or underscores');
-      return;
+    // Validate each label
+    for (const label of labels) {
+      const validation = validateLabel(label);
+      if (!validation.valid) {
+        setError(validation.error || 'Invalid label format');
+        return;
+      }
     }
 
     // Collect properties (optional)
     const propsObject: Record<string, any> = {};
-    let invalidProp = false;
     
-    properties.forEach(prop => {
+    for (const prop of properties) {
       const name = prop.name.trim();
       const value = prop.value.trim();
       
       if (name) {
-        if (/[^a-zA-Z0-9_]/.test(name)) {
-          invalidProp = true;
+        const validation = validatePropertyKey(name);
+        if (!validation.valid) {
+          setError(validation.error || 'Invalid property key');
           return;
         }
         propsObject[name] = value || null;
       }
-    });
-    
-    if (invalidProp) {
-      setError('Property names must contain only letters, numbers, or underscores');
-      return;
     }
 
     try {
