@@ -30,8 +30,6 @@ export default function NodeList({ label, onRemove, isDefault, totalColumns, isA
   const [nodes, setNodes] = useState<Node[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     async function fetchNodes() {
