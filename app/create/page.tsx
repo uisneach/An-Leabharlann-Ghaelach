@@ -17,7 +17,7 @@ interface Property {
 }
 
 interface StagedRelationship {
-  id: string; // temporary ID for UI tracking
+  id: string;
   type: string;
   direction: 'outgoing' | 'incoming';
   targetNodeId: string;
@@ -39,24 +39,18 @@ const CreateNodePage = () => {
   const router = useRouter();
   const { isAuthenticated, username, checkAuthStatus } = useAuth();
   
-  // Node data
   const [labels, setLabels] = useState<string[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [relationships, setRelationships] = useState<StagedRelationship[]>([]);
   
-  // UI state
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<'labels' | 'properties' | 'relationships'>('labels');
   const [authChecked, setAuthChecked] = useState<boolean>(false);
   
-  // Label input
   const [newLabel, setNewLabel] = useState<string>('');
-  
-  // Property input
   const [newPropertyKey, setNewPropertyKey] = useState<string>('');
   
-  // Relationship input
   const [relType, setRelType] = useState<string>('');
   const [relDirection, setRelDirection] = useState<'outgoing' | 'incoming'>('outgoing');
   const [relSearchQuery, setRelSearchQuery] = useState<string>('');
@@ -64,7 +58,6 @@ const CreateNodePage = () => {
   const [relSearching, setRelSearching] = useState<boolean>(false);
 
   useEffect(() => {
-    // Wait a moment for auth state to initialize
     const timer = setTimeout(() => {
       setAuthChecked(true);
       if (!isAuthenticated) {
@@ -76,7 +69,6 @@ const CreateNodePage = () => {
   }, [isAuthenticated, router]);
 
   useEffect(() => {
-    // Load initial label from URL if present
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const label = params.get('label');
@@ -86,7 +78,6 @@ const CreateNodePage = () => {
     }
   }, []);
 
-  // --- Label Management ---
   const handleAddLabel = () => {
     const trimmed = newLabel.trim();
     if (!trimmed) return;
@@ -111,7 +102,6 @@ const CreateNodePage = () => {
     setLabels(labels.filter((_, i) => i !== index));
   };
 
-  // --- Property Management ---
   const handleAddProperty = () => {
     const trimmed = newPropertyKey.trim();
     if (!trimmed) return;
@@ -160,11 +150,9 @@ const CreateNodePage = () => {
     const prop = updated[index];
     
     if (prop.isArray) {
-      // Convert array to single value
       const firstValue = Array.isArray(prop.value) ? (prop.value[0] || '') : prop.value;
       updated[index] = { ...prop, value: firstValue, isArray: false };
     } else {
-      // Convert single value to array
       const arrayValue = prop.value ? [prop.value as string] : [];
       updated[index] = { ...prop, value: arrayValue, isArray: true };
     }
@@ -201,7 +189,6 @@ const CreateNodePage = () => {
     }
   };
 
-  // --- Relationship Management ---
   const handleSearchRelTarget = async () => {
     if (relSearchQuery.trim().length < 2) {
       setError('Please enter at least 2 characters to search');
@@ -260,18 +247,15 @@ const CreateNodePage = () => {
     setRelationships(relationships.filter(r => r.id !== id));
   };
 
-  // --- Form Submission ---
   const handleSubmit = async () => {
     setError('');
     
-    // Validation
     if (labels.length === 0) {
       setError('At least one label is required');
       setActiveTab('labels');
       return;
     }
     
-    // Validate all labels
     for (const label of labels) {
       const validation = validateLabel(label);
       if (!validation.valid) {
@@ -281,7 +265,6 @@ const CreateNodePage = () => {
       }
     }
     
-    // Validate all property keys
     for (const prop of properties) {
       const validation = validatePropertyKey(prop.key);
       if (!validation.valid) {
@@ -291,7 +274,6 @@ const CreateNodePage = () => {
       }
     }
     
-    // Build properties object
     const propsObject: Record<string, any> = {};
     for (const prop of properties) {
       if (prop.isArray && Array.isArray(prop.value)) {
@@ -310,7 +292,6 @@ const CreateNodePage = () => {
     try {
       setLoading(true);
       
-      // Step 1: Create the node
       const nodeResponse = await createNode(labels, propsObject);
       const nodeData = await nodeResponse.json();
       
@@ -320,7 +301,6 @@ const CreateNodePage = () => {
       
       const newNodeId = nodeData.node.id || nodeData.node.nodeId;
       
-      // Step 2: Create all relationships
       const relationshipPromises = relationships.map(async (rel) => {
         const fromId = rel.direction === 'outgoing' ? newNodeId : rel.targetNodeId;
         const toId = rel.direction === 'outgoing' ? rel.targetNodeId : newNodeId;
@@ -330,7 +310,6 @@ const CreateNodePage = () => {
       
       await Promise.all(relationshipPromises);
       
-      // Redirect to the new node's info page
       router.push(`/info?id=${encodeURIComponent(newNodeId)}`);
     } catch (err) {
       console.error('Create node error:', err);
@@ -351,9 +330,11 @@ const CreateNodePage = () => {
           username={username}
           onAuthChange={checkAuthStatus} 
         />
-        <div className="container mt-5 text-center">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Loading...</span>
+        <div id="create-page-container">
+          <div className="create-loading-container">
+            <div className="create-loading-spinner" role="status">
+              <span className="create-loading-text">Loading...</span>
+            </div>
           </div>
         </div>
       </div>
@@ -372,389 +353,342 @@ const CreateNodePage = () => {
         onAuthChange={checkAuthStatus} 
       />
       
-      <div className="container mt-4" style={{ maxWidth: '900px' }}>
-        <h1 className="mb-4">Create New Node</h1>
+      <div id="create-page-container">
+        <h1 className="create-page-title">Create New Node</h1>
         
         {error && (
-          <div className="alert alert-danger alert-dismissible fade show" role="alert">
+          <div className="create-alert create-alert-danger">
             {error}
-            <button type="button" className="btn-close" onClick={() => setError('')}></button>
+            <button type="button" className="create-alert-close" onClick={() => setError('')}>×</button>
           </div>
         )}
         
-        {/* Tab Navigation */}
-        <ul className="nav nav-tabs mb-4">
-          <li className="nav-item">
+        <ul className="create-tabs">
+          <li className="create-tab-item">
             <button 
-              className={`nav-link ${activeTab === 'labels' ? 'active' : ''}`}
+              className={`create-tab-button ${activeTab === 'labels' ? 'active' : ''}`}
               onClick={() => setActiveTab('labels')}
             >
-              Labels {labels.length > 0 && `(${labels.length})`}
+              Labels {labels.length > 0 && <span className="create-tab-badge">{labels.length}</span>}
             </button>
           </li>
-          <li className="nav-item">
+          <li className="create-tab-item">
             <button 
-              className={`nav-link ${activeTab === 'properties' ? 'active' : ''}`}
+              className={`create-tab-button ${activeTab === 'properties' ? 'active' : ''}`}
               onClick={() => setActiveTab('properties')}
             >
-              Properties {properties.length > 0 && `(${properties.length})`}
+              Properties {properties.length > 0 && <span className="create-tab-badge">{properties.length}</span>}
             </button>
           </li>
-          <li className="nav-item">
+          <li className="create-tab-item">
             <button 
-              className={`nav-link ${activeTab === 'relationships' ? 'active' : ''}`}
+              className={`create-tab-button ${activeTab === 'relationships' ? 'active' : ''}`}
               onClick={() => setActiveTab('relationships')}
             >
-              Relationships {relationships.length > 0 && `(${relationships.length})`}
+              Relationships {relationships.length > 0 && <span className="create-tab-badge">{relationships.length}</span>}
             </button>
           </li>
         </ul>
         
-        {/* Labels Tab */}
         {activeTab === 'labels' && (
-          <div>
-            <div className="mb-4">
-              <h3 className="h5 mb-3">Node Labels</h3>
-              <p className="text-muted small">
-                Labels categorize your node (e.g., Author, Text, Edition). At least one label is required.
-              </p>
-              
-              {/* Add Label Form */}
-              <div className="input-group mb-3">
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Enter label (e.g., Author, Text)"
-                  value={newLabel}
-                  onChange={(e) => setNewLabel(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleAddLabel()}
-                />
-                <button 
-                  className="btn btn-primary" 
-                  onClick={handleAddLabel}
-                >
-                  Add Label
-                </button>
-              </div>
-              
-              {/* Labels List */}
-              {labels.length > 0 && (
-                <div className="card">
-                  <ul className="list-group list-group-flush">
-                    {labels.map((label, index) => (
-                      <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
-                        <span className="badge bg-primary" style={{ fontSize: '1rem' }}>{label}</span>
-                        <button 
-                          className="btn btn-sm btn-danger"
-                          onClick={() => handleRemoveLabel(index)}
-                        >
-                          Remove
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              
-              {labels.length === 0 && (
-                <div className="alert alert-info">
-                  No labels added yet. Add at least one label to continue.
-                </div>
-              )}
+          <div className="create-tab-content active">
+            <h3 className="create-section-title">Node Labels</h3>
+            <p className="create-section-description">
+              Labels categorize your node (e.g., Author, Text, Edition). At least one label is required.
+            </p>
+            
+            <div className="create-input-group">
+              <input
+                type="text"
+                placeholder="Enter label (e.g., Author, Text)"
+                value={newLabel}
+                onChange={(e) => setNewLabel(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleAddLabel()}
+              />
+              <button className="create-add-button" onClick={handleAddLabel}>
+                Add Label
+              </button>
             </div>
+            
+            {labels.length > 0 && (
+              <div className="create-labels-list">
+                {labels.map((label, index) => (
+                  <div key={index} className="create-label-item">
+                    <span className="create-label-badge">{label}</span>
+                    <button className="create-remove-button" onClick={() => handleRemoveLabel(index)}>
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {labels.length === 0 && (
+              <div className="create-empty-state">
+                No labels added yet. Add at least one label to continue.
+              </div>
+            )}
           </div>
         )}
         
-        {/* Properties Tab */}
         {activeTab === 'properties' && (
-          <div>
-            <div className="mb-4">
-              <h3 className="h5 mb-3">Node Properties</h3>
-              <p className="text-muted small">
-                Properties store data about your node. They can be single values or lists.
-              </p>
-              
-              {/* Add Property Form */}
-              <div className="input-group mb-3">
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Property name (e.g., name, title, author)"
-                  value={newPropertyKey}
-                  onChange={(e) => setNewPropertyKey(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleAddProperty()}
-                />
-                <button 
-                  className="btn btn-primary" 
-                  onClick={handleAddProperty}
-                >
-                  Add Property
-                </button>
-              </div>
-              
-              {/* Properties List */}
-              {properties.length > 0 && (
-                <div className="mb-3">
-                  {properties.map((prop, propIndex) => (
-                    <div key={propIndex} className="card mb-3">
-                      <div className="card-body">
-                        {/* Property Key */}
-                        <div className="mb-3">
-                          <label className="form-label fw-bold">Property Name</label>
-                          <div className="d-flex gap-2">
-                            <input 
-                              type="text" 
-                              className="form-control flex-grow-1" 
-                              value={prop.key}
-                              onChange={(e) => handlePropertyKeyChange(propIndex, e.target.value)}
-                            />
-                            <button 
-                              className="btn btn-danger"
-                              onClick={() => handleRemoveProperty(propIndex)}
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </div>
-                        
-                        {/* Property Value */}
-                        <div>
-                          <label className="form-label fw-bold">
-                            Value {prop.isArray ? `(List with ${Array.isArray(prop.value) ? prop.value.length : 0} item${Array.isArray(prop.value) && prop.value.length !== 1 ? 's' : ''})` : '(Single Value)'}
-                          </label>
-                          
-                          {!prop.isArray ? (
-                            // Single value input
-                            <div>
-                              {LONG_TEXT_PROPERTIES.includes(prop.key) ? (
-                                <textarea
-                                  className="form-control"
-                                  rows={6}
-                                  value={prop.value as string}
-                                  onChange={(e) => handlePropertyValueChange(propIndex, e.target.value)}
-                                  placeholder={`Enter ${prop.key}`}
-                                />
-                              ) : (
-                                <input
-                                  type="text"
-                                  className="form-control"
-                                  value={prop.value as string}
-                                  onChange={(e) => handlePropertyValueChange(propIndex, e.target.value)}
-                                  placeholder={`Enter ${prop.key}`}
-                                />
-                              )}
-                              <button
-                                className="btn btn-sm btn-outline-secondary mt-2"
-                                onClick={() => handleTogglePropertyArray(propIndex)}
-                              >
-                                Convert to List
-                              </button>
-                            </div>
-                          ) : (
-                            // Array value inputs
-                            <div>
-                              {Array.isArray(prop.value) && prop.value.map((item, itemIndex) => (
-                                <div key={itemIndex} className="mb-2 d-flex gap-2">
-                                  {LONG_TEXT_PROPERTIES.includes(prop.key) ? (
-                                    <textarea
-                                      className="form-control flex-grow-1"
-                                      rows={3}
-                                      value={item}
-                                      onChange={(e) => handleArrayItemChange(propIndex, itemIndex, e.target.value)}
-                                      placeholder={`${prop.key} item ${itemIndex + 1}`}
-                                    />
-                                  ) : (
-                                    <input
-                                      type="text"
-                                      className="form-control flex-grow-1"
-                                      value={item}
-                                      onChange={(e) => handleArrayItemChange(propIndex, itemIndex, e.target.value)}
-                                      placeholder={`${prop.key} item ${itemIndex + 1}`}
-                                    />
-                                  )}
-                                  <button
-                                    className="btn btn-sm btn-danger"
-                                    onClick={() => handleRemoveArrayItem(propIndex, itemIndex)}
-                                  >
-                                    ✕
-                                  </button>
-                                </div>
-                              ))}
-                              <div className="d-flex gap-2 mt-2">
-                                <button
-                                  className="btn btn-sm btn-secondary"
-                                  onClick={() => handleAddArrayItem(propIndex)}
-                                >
-                                  + Add Item
-                                </button>
-                                <button
-                                  className="btn btn-sm btn-outline-secondary"
-                                  onClick={() => handleTogglePropertyArray(propIndex)}
-                                >
-                                  Convert to Single Value
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              
-              {properties.length === 0 && (
-                <div className="alert alert-info">
-                  No properties added yet. Properties are optional but recommended.
-                </div>
-              )}
+          <div className="create-tab-content active">
+            <h3 className="create-section-title">Node Properties</h3>
+            <p className="create-section-description">
+              Properties store data about your node. They can be single values or lists.
+            </p>
+            
+            <div className="create-input-group">
+              <input
+                type="text"
+                placeholder="Property name (e.g., name, title, author)"
+                value={newPropertyKey}
+                onChange={(e) => setNewPropertyKey(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleAddProperty()}
+              />
+              <button className="create-add-button" onClick={handleAddProperty}>
+                Add Property
+              </button>
             </div>
-          </div>
-        )}
-        
-        {/* Relationships Tab */}
-        {activeTab === 'relationships' && (
-          <div>
-            <div className="mb-4">
-              <h3 className="h5 mb-3">Node Relationships</h3>
-              <p className="text-muted small">
-                Connect this node to existing nodes in the database. Relationships are optional.
-              </p>
-              
-              {/* Add Relationship Form */}
-              <div className="card mb-3">
-                <div className="card-body">
-                  <div className="row mb-3">
-                    <div className="col-md-6">
-                      <label className="form-label">Relationship Type</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="e.g., WROTE, PUBLISHED_BY, EDITION_OF"
-                        value={relType}
-                        onChange={(e) => setRelType(e.target.value)}
-                      />
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label">Direction</label>
-                      <select 
-                        className="form-select"
-                        value={relDirection}
-                        onChange={(e) => setRelDirection(e.target.value as 'outgoing' | 'incoming')}
-                      >
-                        <option value="outgoing">Outgoing (New Node → Target)</option>
-                        <option value="incoming">Incoming (Target → New Node)</option>
-                      </select>
-                    </div>
+            
+            {properties.length > 0 && properties.map((prop, propIndex) => (
+              <div key={propIndex} className="create-property-card">
+                <div className="create-property-card-body">
+                  <div className="create-property-key-row">
+                    <input 
+                      type="text" 
+                      className="create-property-key-input" 
+                      value={prop.key}
+                      onChange={(e) => handlePropertyKeyChange(propIndex, e.target.value)}
+                      placeholder="Property name"
+                    />
+                    <button className="create-delete-button" onClick={() => handleRemoveProperty(propIndex)}>
+                      Delete
+                    </button>
                   </div>
                   
-                  <div className="mb-3">
-                    <label className="form-label">Search for Target Node</label>
-                    <div className="input-group">
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Search for a node..."
-                        value={relSearchQuery}
-                        onChange={(e) => setRelSearchQuery(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleSearchRelTarget()}
-                      />
-                      <button 
-                        className="btn btn-secondary" 
-                        onClick={handleSearchRelTarget}
-                        disabled={relSearching}
+                  <label className="create-value-label">
+                    Value <span className="create-value-label-badge">
+                      {prop.isArray ? `(List with ${Array.isArray(prop.value) ? prop.value.length : 0} item${Array.isArray(prop.value) && prop.value.length !== 1 ? 's' : ''})` : '(Single Value)'}
+                    </span>
+                  </label>
+                  
+                  {!prop.isArray ? (
+                    <div>
+                      {LONG_TEXT_PROPERTIES.includes(prop.key) ? (
+                        <textarea
+                          className="create-value-textarea"
+                          value={prop.value as string}
+                          onChange={(e) => handlePropertyValueChange(propIndex, e.target.value)}
+                          placeholder={`Enter ${prop.key}`}
+                        />
+                      ) : (
+                        <input
+                          type="text"
+                          className="create-value-input"
+                          value={prop.value as string}
+                          onChange={(e) => handlePropertyValueChange(propIndex, e.target.value)}
+                          placeholder={`Enter ${prop.key}`}
+                        />
+                      )}
+                      <button
+                        className="create-toggle-array-button"
+                        onClick={() => handleTogglePropertyArray(propIndex)}
                       >
-                        {relSearching ? 'Searching...' : 'Search'}
+                        Convert to List
                       </button>
                     </div>
-                  </div>
-                  
-                  {/* Search Results */}
-                  {relSearchResults.length > 0 && (
+                  ) : (
                     <div>
-                      <label className="form-label">Search Results</label>
-                      <div className="list-group">
-                        {relSearchResults.map((node) => {
-                          const displayLabel = node.properties.display_name 
-                            || node.properties.name 
-                            || node.properties.title 
-                            || node.id;
-                          const nodeLabels = (node.labels || []).filter(l => l !== 'Entity').join(', ');
-                          
-                          return (
-                            <button
-                              key={node.id}
-                              className="list-group-item list-group-item-action"
-                              onClick={() => handleAddRelationship(node)}
-                            >
-                              <div className="d-flex w-100 justify-content-between">
-                                <h6 className="mb-1">{displayLabel}</h6>
-                                <small className="text-muted">{nodeLabels}</small>
-                              </div>
-                            </button>
-                          );
-                        })}
+                      {Array.isArray(prop.value) && prop.value.map((item, itemIndex) => (
+                        <div key={itemIndex} className="create-array-item">
+                          {LONG_TEXT_PROPERTIES.includes(prop.key) ? (
+                            <textarea
+                              value={item}
+                              onChange={(e) => handleArrayItemChange(propIndex, itemIndex, e.target.value)}
+                              placeholder={`${prop.key} item ${itemIndex + 1}`}
+                            />
+                          ) : (
+                            <input
+                              type="text"
+                              value={item}
+                              onChange={(e) => handleArrayItemChange(propIndex, itemIndex, e.target.value)}
+                              placeholder={`${prop.key} item ${itemIndex + 1}`}
+                            />
+                          )}
+                          <button
+                            className="create-array-item-remove"
+                            onClick={() => handleRemoveArrayItem(propIndex, itemIndex)}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                      <div className="create-array-controls">
+                        <button
+                          className="create-add-item-button"
+                          onClick={() => handleAddArrayItem(propIndex)}
+                        >
+                          + Add Item
+                        </button>
+                        <button
+                          className="create-toggle-array-button"
+                          onClick={() => handleTogglePropertyArray(propIndex)}
+                        >
+                          Convert to Single Value
+                        </button>
                       </div>
                     </div>
                   )}
                 </div>
               </div>
-              
-              {/* Staged Relationships List */}
-              {relationships.length > 0 && (
-                <div>
-                  <h4 className="h6 mb-3">Staged Relationships</h4>
-                  <div className="list-group">
-                    {relationships.map((rel) => (
-                      <div key={rel.id} className="list-group-item">
-                        <div className="d-flex justify-content-between align-items-center">
-                          <div>
-                            {rel.direction === 'outgoing' ? (
-                              <span>
-                                <strong>(New Node)</strong> 
-                                <span className="mx-2">—[{rel.type}]→</span>
-                                <strong>{rel.targetNodeLabel}</strong>
-                              </span>
-                            ) : (
-                              <span>
-                                <strong>{rel.targetNodeLabel}</strong>
-                                <span className="mx-2">—[{rel.type}]→</span>
-                                <strong>(New Node)</strong>
-                              </span>
-                            )}
-                          </div>
-                          <button 
-                            className="btn btn-sm btn-danger"
-                            onClick={() => handleRemoveRelationship(rel.id)}
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {relationships.length === 0 && (
-                <div className="alert alert-info">
-                  No relationships staged. Relationships are optional.
-                </div>
-              )}
-            </div>
+            ))}
+            
+            {properties.length === 0 && (
+              <div className="create-empty-state">
+                No properties added yet. Properties are optional but recommended.
+              </div>
+            )}
           </div>
         )}
         
-        {/* Action Buttons */}
-        <div className="d-flex gap-2 mt-4 pt-3 border-top">
+        {activeTab === 'relationships' && (
+          <div className="create-tab-content active">
+            <h3 className="create-section-title">Node Relationships</h3>
+            <p className="create-section-description">
+              Connect this node to existing nodes in the database. Relationships are optional.
+            </p>
+            
+            <div className="create-rel-form-card">
+              <div className="create-rel-form-body">
+                <div className="create-rel-row">
+                  <div className="create-rel-col">
+                    <label className="create-rel-label">Relationship Type</label>
+                    <input
+                      type="text"
+                      className="create-rel-input"
+                      placeholder="e.g., WROTE, PUBLISHED_BY"
+                      value={relType}
+                      onChange={(e) => setRelType(e.target.value)}
+                    />
+                  </div>
+                  <div className="create-rel-col">
+                    <label className="create-rel-label">Direction</label>
+                    <select 
+                      className="create-rel-select"
+                      value={relDirection}
+                      onChange={(e) => setRelDirection(e.target.value as 'outgoing' | 'incoming')}
+                    >
+                      <option value="outgoing">Outgoing (New Node → Target)</option>
+                      <option value="incoming">Incoming (Target → New Node)</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="create-rel-label">Search for Target Node</label>
+                  <div className="create-search-group">
+                    <input
+                      type="text"
+                      placeholder="Search for a node..."
+                      value={relSearchQuery}
+                      onChange={(e) => setRelSearchQuery(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleSearchRelTarget()}
+                    />
+                    <button 
+                      className="create-search-button" 
+                      onClick={handleSearchRelTarget}
+                      disabled={relSearching}
+                    >
+                      {relSearching ? 'Searching...' : 'Search'}
+                    </button>
+                  </div>
+                </div>
+                
+                {relSearchResults.length > 0 && (
+                  <div style={{ marginTop: '1rem' }}>
+                    <label className="create-rel-label">Search Results</label>
+                    <div className="create-search-results">
+                      {relSearchResults.map((node) => {
+                        const displayLabel = node.properties.display_name 
+                          || node.properties.name 
+                          || node.properties.title 
+                          || node.id;
+                        const nodeLabels = (node.labels || []).filter(l => l !== 'Entity').join(', ');
+                        
+                        return (
+                          <button
+                            key={node.id}
+                            className="create-search-result-item"
+                            onClick={() => handleAddRelationship(node)}
+                          >
+                            <div className="create-search-result-header">
+                              <div>
+                                <div className="create-search-result-title">{displayLabel}</div>
+                                <div className="create-search-result-labels">{nodeLabels}</div>
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {relationships.length > 0 && (
+              <div>
+                <h4 className="create-staged-title">Staged Relationships</h4>
+                <div className="create-staged-list">
+                  {relationships.map((rel) => (
+                    <div key={rel.id} className="create-staged-item">
+                      <div className="create-staged-item-content">
+                        <div className="create-staged-rel-text">
+                          {rel.direction === 'outgoing' ? (
+                            <>
+                              <strong>(New Node)</strong>
+                              <span className="create-staged-rel-type">—[{rel.type}]→</span>
+                              <strong>{rel.targetNodeLabel}</strong>
+                            </>
+                          ) : (
+                            <>
+                              <strong>{rel.targetNodeLabel}</strong>
+                              <span className="create-staged-rel-type">—[{rel.type}]→</span>
+                              <strong>(New Node)</strong>
+                            </>
+                          )}
+                        </div>
+                        <button 
+                          className="create-remove-button"
+                          onClick={() => handleRemoveRelationship(rel.id)}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {relationships.length === 0 && (
+              <div className="create-empty-state">
+                No relationships staged. Relationships are optional.
+              </div>
+            )}
+          </div>
+        )}
+        
+        <div className="create-actions">
           <button
-            className="btn btn-primary btn-lg"
+            className="create-submit-button"
             onClick={handleSubmit}
             disabled={loading || labels.length === 0}
           >
             {loading ? (
               <>
-                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                <span className="create-spinner" role="status" aria-hidden="true"></span>
                 Creating...
               </>
             ) : (
@@ -762,7 +696,7 @@ const CreateNodePage = () => {
             )}
           </button>
           <button
-            className="btn btn-link"
+            className="create-cancel-button"
             onClick={handleCancel}
             disabled={loading}
           >

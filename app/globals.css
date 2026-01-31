@@ -589,3 +589,825 @@ img {
 #label-list-container {
   margin: 2rem auto;
 }
+
+
+/* --- Create Page --- */
+/* ==============================================
+   CREATE PAGE SPECIFIC STYLES
+   ============================================== 
+   
+   All styles are scoped to #create-page-container
+   to avoid conflicts with other pages.
+   
+   Usage: Wrap your create page content in:
+   <div id="create-page-container">...</div>
+*/
+
+#create-page-container {
+  max-width: 900px;
+  margin: 1rem auto;
+  padding: 1rem;
+  background: white;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+
+/* --- Page Title --- */
+#create-page-container .create-page-title {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  color: #212529;
+}
+
+/* --- Tab Navigation --- */
+#create-page-container .create-tabs {
+  display: flex;
+  border-bottom: 2px solid #dee2e6;
+  margin-bottom: 1.5rem;
+  list-style: none;
+  padding: 0;
+}
+
+#create-page-container .create-tab-item {
+  margin: 0;
+}
+
+#create-page-container .create-tab-button {
+  color: #495057;
+  background-color: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+#create-page-container .create-tab-button:hover {
+  color: #0d6efd;
+  border-bottom-color: #dee2e6;
+}
+
+#create-page-container .create-tab-button.active {
+  color: #0d6efd;
+  background-color: transparent;
+  border-bottom-color: #0d6efd;
+}
+
+#create-page-container .create-tab-badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background-color: #e9ecef;
+  color: #495057;
+  border-radius: 12px;
+}
+
+#create-page-container .create-tab-button.active .create-tab-badge {
+  background-color: #0d6efd;
+  color: white;
+}
+
+/* --- Tab Content --- */
+#create-page-container .create-tab-content {
+  display: none;
+}
+
+#create-page-container .create-tab-content.active {
+  display: block;
+}
+
+/* --- Section Headers --- */
+#create-page-container .create-section-title {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  color: #212529;
+}
+
+#create-page-container .create-section-description {
+  color: #6c757d;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+/* --- Input Groups (Add Label/Property) --- */
+#create-page-container .create-input-group {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1rem;
+}
+
+#create-page-container .create-input-group input {
+  flex: 1;
+  border: 1px solid #ced4da;
+  border-radius: 4px 0 0 4px;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  border-right: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+#create-page-container .create-input-group input:focus {
+  border-color: #0d6efd;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+  border-right: none;
+}
+
+#create-page-container .create-input-group .create-add-button {
+  border-radius: 0 4px 4px 0;
+  white-space: nowrap;
+  background-color: #0d6efd;
+  color: white;
+  border: 1px solid #0d6efd;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: background-color 0.15s ease;
+}
+
+#create-page-container .create-input-group .create-add-button:hover {
+  background-color: #0b5ed7;
+}
+
+#create-page-container .create-input-group .create-add-button:disabled {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+/* --- Labels List --- */
+#create-page-container .create-labels-list {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+#create-page-container .create-label-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+#create-page-container .create-label-item:last-child {
+  border-bottom: none;
+}
+
+#create-page-container .create-label-badge {
+  padding: 0.35rem 0.65rem;
+  font-weight: 500;
+  border-radius: 4px;
+  background-color: #0d6efd;
+  color: white;
+  font-size: 1rem;
+}
+
+#create-page-container .create-remove-button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-family: inherit;
+  transition: background-color 0.15s ease;
+}
+
+#create-page-container .create-remove-button:hover {
+  background-color: #bb2d3b;
+}
+
+/* --- Empty State --- */
+#create-page-container .create-empty-state {
+  padding: 1rem 1.25rem;
+  background-color: #cff4fc;
+  border: 1px solid #b6effb;
+  border-radius: 8px;
+  color: #055160;
+}
+
+/* --- Property Cards --- */
+#create-page-container .create-property-card {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+#create-page-container .create-property-card-body {
+  padding: 1.25rem;
+}
+
+#create-page-container .create-property-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #212529;
+}
+
+#create-page-container .create-property-key-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+#create-page-container .create-property-key-input {
+  flex: 1;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+#create-page-container .create-property-key-input:focus {
+  border-color: #0d6efd;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+#create-page-container .create-delete-button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: background-color 0.15s ease;
+}
+
+#create-page-container .create-delete-button:hover {
+  background-color: #bb2d3b;
+}
+
+#create-page-container .create-value-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #212529;
+}
+
+#create-page-container .create-value-label-badge {
+  font-weight: 400;
+  color: #6c757d;
+  font-size: 0.875rem;
+}
+
+#create-page-container .create-value-input {
+  width: 100%;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+#create-page-container .create-value-input:focus {
+  border-color: #0d6efd;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+#create-page-container .create-value-textarea {
+  width: 100%;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 150px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+#create-page-container .create-value-textarea:focus {
+  border-color: #0d6efd;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+#create-page-container .create-toggle-array-button {
+  margin-top: 0.5rem;
+  background-color: transparent;
+  color: #6c757d;
+  border: 1px solid #6c757d;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+#create-page-container .create-toggle-array-button:hover {
+  color: white;
+  background-color: #6c757d;
+}
+
+/* --- Array Value Items --- */
+#create-page-container .create-array-item {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+#create-page-container .create-array-item input,
+#create-page-container .create-array-item textarea {
+  flex: 1;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+#create-page-container .create-array-item input:focus,
+#create-page-container .create-array-item textarea:focus {
+  border-color: #0d6efd;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+#create-page-container .create-array-item textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+#create-page-container .create-array-item-remove {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: background-color 0.15s ease;
+  align-self: flex-start;
+}
+
+#create-page-container .create-array-item-remove:hover {
+  background-color: #bb2d3b;
+}
+
+#create-page-container .create-array-controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+#create-page-container .create-add-item-button {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-family: inherit;
+  transition: background-color 0.15s ease;
+}
+
+#create-page-container .create-add-item-button:hover {
+  background-color: #5c636a;
+}
+
+/* --- Relationship Section --- */
+#create-page-container .create-rel-form-card {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+#create-page-container .create-rel-form-body {
+  padding: 1.25rem;
+}
+
+#create-page-container .create-rel-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+#create-page-container .create-rel-col {
+  flex: 1;
+}
+
+#create-page-container .create-rel-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #212529;
+}
+
+#create-page-container .create-rel-input {
+  width: 100%;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+#create-page-container .create-rel-input:focus {
+  border-color: #0d6efd;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+#create-page-container .create-rel-select {
+  width: 100%;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  background-color: white;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+#create-page-container .create-rel-select:focus {
+  border-color: #0d6efd;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+#create-page-container .create-search-group {
+  display: flex;
+  gap: 0;
+}
+
+#create-page-container .create-search-group input {
+  flex: 1;
+  border: 1px solid #ced4da;
+  border-radius: 4px 0 0 4px;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  border-right: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+#create-page-container .create-search-group input:focus {
+  border-color: #0d6efd;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+  border-right: none;
+}
+
+#create-page-container .create-search-button {
+  border-radius: 0 4px 4px 0;
+  background-color: #6c757d;
+  color: white;
+  border: 1px solid #6c757d;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 1rem;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: background-color 0.15s ease;
+}
+
+#create-page-container .create-search-button:hover {
+  background-color: #5c636a;
+}
+
+#create-page-container .create-search-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* --- Search Results --- */
+#create-page-container .create-search-results {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  overflow: hidden;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+#create-page-container .create-search-result-item {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #dee2e6;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  background-color: white;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+}
+
+#create-page-container .create-search-result-item:hover {
+  background-color: #f8f9fa;
+}
+
+#create-page-container .create-search-result-item:last-child {
+  border-bottom: none;
+}
+
+#create-page-container .create-search-result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+#create-page-container .create-search-result-title {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: #212529;
+}
+
+#create-page-container .create-search-result-labels {
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+/* --- Staged Relationships --- */
+#create-page-container .create-staged-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #212529;
+}
+
+#create-page-container .create-staged-list {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+#create-page-container .create-staged-item {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+#create-page-container .create-staged-item:last-child {
+  border-bottom: none;
+}
+
+#create-page-container .create-staged-item-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#create-page-container .create-staged-rel-text {
+  color: #212529;
+}
+
+#create-page-container .create-staged-rel-text strong {
+  font-weight: 600;
+}
+
+#create-page-container .create-staged-rel-type {
+  margin: 0 0.5rem;
+  color: #6c757d;
+}
+
+/* --- Action Buttons --- */
+#create-page-container .create-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
+}
+
+#create-page-container .create-submit-button {
+  background-color: #0d6efd;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1.125rem;
+  font-family: inherit;
+  font-weight: 500;
+  transition: background-color 0.15s ease;
+}
+
+#create-page-container .create-submit-button:hover {
+  background-color: #0b5ed7;
+}
+
+#create-page-container .create-submit-button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+#create-page-container .create-cancel-button {
+  background-color: transparent;
+  color: #0d6efd;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1.125rem;
+  font-family: inherit;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+#create-page-container .create-cancel-button:hover {
+  color: #0b5ed7;
+  text-decoration: underline;
+}
+
+#create-page-container .create-cancel-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* --- Spinner --- */
+#create-page-container .create-spinner {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  vertical-align: text-bottom;
+  border: 0.2em solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: create-spinner-animation 0.75s linear infinite;
+  margin-right: 0.5rem;
+}
+
+@keyframes create-spinner-animation {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* --- Alert --- */
+#create-page-container .create-alert {
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  position: relative;
+}
+
+#create-page-container .create-alert-danger {
+  color: #842029;
+  background-color: #f8d7da;
+  border-color: #f5c2c7;
+}
+
+#create-page-container .create-alert-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  opacity: 0.5;
+  padding: 0.25rem 0.5rem;
+  color: inherit;
+  font-family: inherit;
+}
+
+#create-page-container .create-alert-close:hover {
+  opacity: 1;
+}
+
+/* --- Loading State --- */
+#create-page-container .create-loading-container {
+  text-align: center;
+  padding: 3rem 0;
+}
+
+#create-page-container .create-loading-spinner {
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+  vertical-align: text-bottom;
+  border: 0.25em solid #0d6efd;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: create-spinner-animation 0.75s linear infinite;
+}
+
+#create-page-container .create-loading-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 767px) {
+  #create-page-container {
+    margin: 0.5rem;
+    padding: 0.75rem;
+    width: calc(100% - 1rem);
+  }
+
+  #create-page-container .create-page-title {
+    font-size: 1.5rem;
+  }
+
+  #create-page-container .create-tab-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  #create-page-container .create-rel-row {
+    flex-direction: column;
+  }
+
+  #create-page-container .create-rel-col {
+    width: 100%;
+  }
+
+  #create-page-container .create-property-card-body {
+    padding: 1rem;
+  }
+
+  #create-page-container .create-submit-button,
+  #create-page-container .create-cancel-button {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+  }
+
+  #create-page-container .create-input-group {
+    flex-direction: column;
+  }
+
+  #create-page-container .create-input-group input {
+    border-radius: 4px;
+    border-right: 1px solid #ced4da;
+    margin-bottom: 0.5rem;
+  }
+
+  #create-page-container .create-input-group .create-add-button {
+    border-radius: 4px;
+    width: 100%;
+  }
+
+  #create-page-container .create-search-group {
+    flex-direction: column;
+  }
+
+  #create-page-container .create-search-group input {
+    border-radius: 4px;
+    border-right: 1px solid #ced4da;
+    margin-bottom: 0.5rem;
+  }
+
+  #create-page-container .create-search-button {
+    border-radius: 4px;
+    width: 100%;
+  }
+
+  #create-page-container .create-actions {
+    flex-direction: column;
+  }
+
+  #create-page-container .create-actions button,
+  #create-page-container .create-actions a {
+    width: 100%;
+    text-align: center;
+  }
+
+  #create-page-container .create-property-key-row {
+    flex-direction: column;
+  }
+
+  #create-page-container .create-delete-button {
+    width: 100%;
+  }
+
+  #create-page-container .create-array-controls {
+    flex-direction: column;
+  }
+
+  #create-page-container .create-array-controls button {
+    width: 100%;
+  }
+}
