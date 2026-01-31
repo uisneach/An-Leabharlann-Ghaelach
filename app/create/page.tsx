@@ -48,6 +48,7 @@ const CreateNodePage = () => {
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<'labels' | 'properties' | 'relationships'>('labels');
+  const [authChecked, setAuthChecked] = useState<boolean>(false);
   
   // Label input
   const [newLabel, setNewLabel] = useState<string>('');
@@ -63,11 +64,18 @@ const CreateNodePage = () => {
   const [relSearching, setRelSearching] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/');
-      return;
-    }
+    // Wait a moment for auth state to initialize
+    const timer = setTimeout(() => {
+      setAuthChecked(true);
+      if (!isAuthenticated) {
+        router.push('/');
+      }
+    }, 100);
     
+    return () => clearTimeout(timer);
+  }, [isAuthenticated, router]);
+
+  useEffect(() => {
     // Load initial label from URL if present
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -76,7 +84,7 @@ const CreateNodePage = () => {
         setLabels([label]);
       }
     }
-  }, [isAuthenticated]);
+  }, []);
 
   // --- Label Management ---
   const handleAddLabel = () => {
@@ -334,6 +342,23 @@ const CreateNodePage = () => {
   const handleCancel = () => {
     router.push('/');
   };
+
+  if (!authChecked) {
+    return (
+      <div>
+        <Header 
+          isAuthenticated={isAuthenticated}
+          username={username}
+          onAuthChange={checkAuthStatus} 
+        />
+        <div className="container mt-5 text-center">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return null;
