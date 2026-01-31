@@ -39,7 +39,7 @@ interface NodeData extends Node {
 }
 
 // Properties that should use textarea instead of input
-const LONG_TEXT_PROPERTIES = ['description', 'contents', 'analysis', 'summary', 'biography', 'works'];
+const LONG_TEXT_PROPERTIES = ['description', 'contents', 'summary'];
 
 // Component for editing a single property value (handles primitives and arrays)
 const PropertyValueEditor: React.FC<{

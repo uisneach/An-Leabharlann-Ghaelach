@@ -332,9 +332,248 @@ img {
 
 
 /* Styling for small screens and mobile devices */
-@media (max-wdith: 767px) {
+@media (max-width: 767px) {
+  /* Header mobile styles */
+  header {
+    padding: 0.5rem;
+  }
+
   header nav {
     flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+
+  #logo-and-header {
+    flex-direction: row;
+    justify-content: center;
+    width: 100%;
+    gap: 0.25rem;
+  }
+
+  .navbar-brand {
+    font-size: 1.25rem;
+  }
+
+  header img {
+    width: 28px;
+    height: 28px;
+    margin: 0 4px;
+  }
+
+  #search-form {
+    flex-direction: column;
+    width: 100%;
+    margin: 0.5rem 0;
+  }
+
+  #search-form .form-control {
+    width: 100%;
+    margin: 0 0 0.5rem 0;
+  }
+
+  #search-form .btn {
+    width: 100%;
+    margin: 0;
+  }
+
+  header nav ul {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  /* NodeList columns to stack vertically */
+  #columns {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  #columns > * {
+    width: 100% !important;
+    max-width: 100%;
+  }
+
+  .col-md-4 {
+    width: 100% !important;
+    margin-bottom: 1rem;
+  }
+
+  /* Info page mobile adjustments */
+  #content .mt-4.flex.flex-row,
+  #content .flex.flex-row {
+    flex-direction: column;
+  }
+
+  #content .col-lg-8,
+  #content .col-lg-4,
+  #content .flex-1,
+  #content .flex-0 {
+    width: 100% !important;
+    max-width: 100%;
+    flex-basis: 100%;
+  }
+
+  /* Sidebar on mobile comes after main content */
+  aside {
+    order: 2;
+    max-width: 100% !important;
+  }
+
+  aside .sticky-top {
+    position: relative !important;
+    top: 0 !important;
+  }
+
+  /* Table mobile styles */
+  table {
+    font-size: 0.875rem;
+  }
+
+  th, td {
+    padding: 0.25rem;
+    font-size: 0.875rem;
+  }
+
+  td {
+    max-width: none;
+  }
+
+  /* Infobox mobile adjustments */
+  .infobox {
+    margin-bottom: 1rem;
+  }
+
+  #info-table th {
+    width: 35%;
+  }
+
+  /* Modal adjustments for mobile */
+  .modal-dialog {
+    width: 95%;
+    margin: 1rem auto;
+    max-width: 95%;
+  }
+
+  .modal-header {
+    padding: 0.75rem;
+  }
+
+  .modal-title {
+    font-size: 1.125rem;
+  }
+
+  .modal-body {
+    padding: 0.75rem;
+  }
+
+  /* Button adjustments */
+  .btn {
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.5rem;
+    margin-right: 0.5rem;
+  }
+
+  /* Node list adjustments */
+  ul.node-list {
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  /* Content container */
+  #content, #welcome-message {
+    padding: 0.75rem;
+    margin: 0.5rem;
+    width: calc(100% - 1rem);
+  }
+
+  /* Title container mobile */
+  #title-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* Page title sizing */
+  h1.page-title {
+    font-size: 1.5rem;
+  }
+
+  h2.section-title {
+    font-size: 1.125rem;
+  }
+
+  h3.page-subtitle {
+    font-size: 0.875rem;
+  }
+
+  .section-header {
+    font-size: 1.125rem;
+  }
+
+  /* Node list label container */
+  #node-list-label-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  #node-list-label-container h2 {
+    margin-bottom: 0.5rem;
+  }
+
+  #node-list-label-container > div {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  /* Select dropdown on homepage */
+  select {
+    margin: 0 0.5rem 0.5rem 0;
+    width: auto;
+    max-width: 100%;
+  }
+
+  /* Relationship list mobile */
+  .rels-list li {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .rels-list li .btn {
+    align-self: flex-start;
+  }
+
+  /* Create page mobile */
+  .table.table-bordered {
+    font-size: 0.875rem;
+  }
+
+  .table.table-bordered input {
+    font-size: 0.875rem;
+  }
+
+  /* Label list container */
+  #label-list-container {
+    margin: 1rem auto;
+    padding: 0 0.5rem;
+  }
+
+  /* Make images responsive */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* Tablet breakpoint (768px to 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+  #columns > * {
+    width: 48%;
+  }
+
+  #columns {
+    flex-wrap: wrap;
   }
 }
 
