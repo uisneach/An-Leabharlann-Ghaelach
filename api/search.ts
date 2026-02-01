@@ -1,4 +1,6 @@
 /* 
+ * Advanced Search API
+ * 
  * This endpoint provides intelligent full-text search across the Neo4j database
  * with preference ranking, filtering, and blacklisting capabilities.
  * 
@@ -266,24 +268,44 @@ export async function GET(request: NextRequest) {
     const scoredResults: SearchResult[] = [];
     
     for (const result of results) {
-      const node = result.n;
+      // The runQuery function in neo4j.ts converts nodes to plain objects
+      // So result.n should already be the properties object
+      const rawNode = result.n;
       const labels = result.labels;
       
+      // Debug: log the structure we're getting
+      if (scoredResults.length === 0) {
+        console.log('Sample node structure:', {
+          hasProperties: 'properties' in rawNode,
+          keys: Object.keys(rawNode).slice(0, 5),
+          rawNodeType: typeof rawNode
+        });
+      }
+      
+      // Handle both possible structures from Neo4j driver
+      // Sometimes it's { properties: {...} }, sometimes it's just {...}
+      const nodeProperties = rawNode.properties || rawNode;
+      
+      // Create a consistently structured object for scoring
+      const nodeForScoring = {
+        properties: nodeProperties
+      };
+      
       // Score the node
-      const { score, matchedProperty, matchType } = scoreNode(node, query);
+      const { score, matchedProperty, matchType } = scoreNode(nodeForScoring, query);
       
       // Only include nodes with a score > 0 (i.e., they match the search)
       if (score > 0) {
         // Filter out excluded properties
         const filteredProperties: Record<string, any> = {};
-        for (const [key, value] of Object.entries(node)) {
+        for (const [key, value] of Object.entries(nodeProperties)) {
           if (!EXCLUDED_PROPERTIES.includes(key)) {
             filteredProperties[key] = value;
           }
         }
         
         scoredResults.push({
-          nodeId: node.nodeId,
+          nodeId: nodeProperties.nodeId || rawNode.nodeId || 'unknown',
           labels,
           properties: filteredProperties,
           score,
@@ -291,6 +313,21 @@ export async function GET(request: NextRequest) {
           matchType
         });
       }
+    }
+    
+    console.log(`Scored ${scoredResults.length} results out of ${results.length} nodes`);
+    
+    // Debug: if we found nodes but scored 0, log why
+    if (results.length > 0 && scoredResults.length === 0) {
+      console.log('WARNING: Found nodes but none scored > 0');
+      const sampleNode = results[0].n;
+      const sampleProps = sampleNode.properties || sampleNode;
+      console.log('Sample node properties:', Object.keys(sampleProps));
+      console.log('Sample property values (first 3):', 
+        Object.entries(sampleProps)
+          .slice(0, 3)
+          .map(([k, v]) => `${k}: ${typeof v} = ${String(v).substring(0, 50)}`)
+      );
     }
     
     // Sort by score (descending)
