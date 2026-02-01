@@ -241,8 +241,16 @@ const EditPage = () => {
         incoming: relData.incoming || []
       };
       
+      // Filter out reserved properties when initializing edited properties
+      const editableProps: Record<string, any> = {};
+      for (const [key, value] of Object.entries(fullData.properties)) {
+        if (key !== 'nodeId' && key !== 'createdBy') {
+          editableProps[key] = value;
+        }
+      }
+      
       setNodeData(fullData);
-      setEditedProperties({ ...fullData.properties });
+      setEditedProperties(editableProps);
       setEditedLabels(fullData.labels.filter(l => l !== 'Entity'));
       setLoading(false);
     } catch (err) {
