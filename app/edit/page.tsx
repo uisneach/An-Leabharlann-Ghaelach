@@ -1,5 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../AuthContext';
 import Header from '../Header';
 import { 
@@ -177,18 +178,18 @@ const PropertyValueEditor: React.FC<{
 };
 
 const EditPage = () => {
+  const router = useRouter();
   const { isAuthenticated, username, checkAuthStatus } = useAuth();
-  const [authChecked, setAuthChecked] = useState<boolean>(false);
   const [nodeData, setNodeData] = useState<NodeData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [editingSection, setEditingSection] = useState<'properties' | 'labels' | null>(null);
   const [editedProperties, setEditedProperties] = useState<Record<string, any>>({});
   const [editedLabels, setEditedLabels] = useState<string[]>([]);
-  const [alertMessage, setAlertMessage] = useState<string | null>(null);
+  const [authChecked, setAuthChecked] = useState<boolean>(false);
 
+  // Wait for auth context to initialize before checking authentication
   useEffect(() => {
-    // Wait a moment for auth context to initialize
     const timer = setTimeout(() => {
       setAuthChecked(true);
       if (!isAuthenticated) {
@@ -199,17 +200,12 @@ const EditPage = () => {
     return () => clearTimeout(timer);
   }, [isAuthenticated, router]);
 
+  // Load node data only after auth is checked and user is authenticated
   useEffect(() => {
-    // Only load node data after auth is checked and user is authenticated
     if (authChecked && isAuthenticated) {
       loadNodeData();
     }
   }, [authChecked, isAuthenticated]);
-
-  const showTimedAlert = (message: string) => {
-    setAlertMessage(message);
-    setTimeout(() => setAlertMessage(null), 5000);
-  };
 
   const loadNodeData = async () => {
     const params = new URLSearchParams(window.location.search);
@@ -227,7 +223,7 @@ const EditPage = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('refreshToken');
         checkAuthStatus();
-        window.location.href = '/';
+        router.push('/');
         return;
       }
       if (!nodeRes.ok) throw new Error('Failed to load node');
@@ -264,9 +260,9 @@ const EditPage = () => {
         const data = await response.json();
         throw new Error(data?.error?.message || 'Failed to delete node');
       }
-      window.location.href = '/';
+      router.push('/');
     } catch (err) {
-      showTimedAlert(err instanceof Error ? err.message : 'Failed to delete node');
+      setError(err instanceof Error ? err.message : 'Failed to delete node');
     }
   };
 
@@ -281,7 +277,7 @@ const EditPage = () => {
       }
       await loadNodeData();
     } catch (err) {
-      showTimedAlert(err instanceof Error ? err.message : 'Failed to delete property');
+      setError(err instanceof Error ? err.message : 'Failed to delete property');
     }
   };
 
@@ -296,7 +292,7 @@ const EditPage = () => {
       }
       await loadNodeData();
     } catch (err) {
-      showTimedAlert(err instanceof Error ? err.message : 'Failed to delete relationship');
+      setError(err instanceof Error ? err.message : 'Failed to delete relationship');
     }
   };
 
@@ -307,7 +303,7 @@ const EditPage = () => {
     for (const key of Object.keys(editedProperties)) {
       const validation = validatePropertyKey(key);
       if (!validation.valid) {
-        showTimedAlert(validation.error || 'Invalid property key');
+        setError(validation.error || 'Invalid property key');
         return;
       }
     }
@@ -333,9 +329,9 @@ const EditPage = () => {
       }
       setEditingSection(null);
       await loadNodeData();
-      showTimedAlert('Properties updated successfully!');
+      setError(null); // Clear any previous errors on success
     } catch (err) {
-      showTimedAlert(err instanceof Error ? err.message : 'Failed to update properties');
+      setError(err instanceof Error ? err.message : 'Failed to update properties');
     }
   };
 
@@ -346,7 +342,7 @@ const EditPage = () => {
     for (const label of editedLabels) {
       const validation = validateLabel(label);
       if (!validation.valid) {
-        showTimedAlert(validation.error || 'Invalid label');
+        setError(validation.error || 'Invalid label');
         return;
       }
     }
@@ -364,9 +360,9 @@ const EditPage = () => {
       
       setEditingSection(null);
       await loadNodeData();
-      showTimedAlert('Labels updated successfully!');
+      setError(null); // Clear any previous errors on success
     } catch (err) {
-      showTimedAlert(err instanceof Error ? err.message : 'Failed to update labels');
+      setError(err instanceof Error ? err.message : 'Failed to update labels');
     }
   };
 
@@ -408,6 +404,7 @@ const EditPage = () => {
     });
   };
 
+  // Show loading spinner while checking auth
   if (!authChecked) {
     return (
       <>
@@ -425,6 +422,7 @@ const EditPage = () => {
     );
   }
 
+  // Don't render anything if not authenticated (redirect will happen via useEffect)
   if (!isAuthenticated) {
     return null;
   }
@@ -493,13 +491,6 @@ const EditPage = () => {
         onAuthChange={checkAuthStatus}
       />
       <div id="content" className="container" style={{ maxWidth: '900px' }}>
-        {alertMessage && (
-          <div className="alert alert-success alert-dismissible fade show mt-3" role="alert">
-            {alertMessage}
-            <button type="button" className="btn-close" onClick={() => setAlertMessage(null)}></button>
-          </div>
-        )}
-        
         <div className="mt-4">
           {/* Title */}
           <div id="title-container" className="mb-4">
