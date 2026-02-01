@@ -551,9 +551,6 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
                             <h6 className="mb-1">
                               <strong style={{ color: '#3366cc' }}>{label}</strong>: {escapeHtml(displayName)}
                             </h6>
-                            <span className={`badge bg-${getScoreColor(result.score)} rounded-pill ms-2`}>
-                              {Math.round(result.score)}
-                            </span>
                           </div>
                           {result.matchedProperty && (
                             <small className="text-muted">
@@ -572,7 +569,6 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
               {searchResults.length > 0 && (
                 <div className="mt-3 text-muted" style={{ fontSize: '0.875rem' }}>
                   Showing {searchResults.length} of {totalMatches} results
-                  {searchResults.length < totalMatches && ' (top ranked)'}
                 </div>
               )}
             </div>
