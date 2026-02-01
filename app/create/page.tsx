@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../AuthContext';
 import Header from '../Header';
-import { createNode, createRelationship, searchNodes } from '@/lib/api';
-import { validateLabel, validatePropertyKey } from '@/lib/utils';
+import { createNode, createRelationship, searchNodes, SearchOptions } from '@/lib/api';
+import { validateLabel, validatePropertyKey, escapeHtml } from '@/lib/utils';
 
 // Properties that should use textarea instead of input
 const LONG_TEXT_PROPERTIES = ['description', 'contents', 'summary', 'biography', 'analysis'];
@@ -25,7 +25,7 @@ interface StagedRelationship {
 }
 
 interface SearchResult {
-  id: string;
+  nodeId: string;           // Updated to match new API
   labels: string[];
   properties: {
     name?: string;
@@ -33,6 +33,16 @@ interface SearchResult {
     display_name?: string;
     [key: string]: any;
   };
+  score: number;            // NEW: Search relevance score
+  matchedProperty?: string; // NEW: Which property matched
+  matchType?: 'exact' | 'prefix' | 'substring'; // NEW: How it matched
+}
+
+interface SearchResponse {
+  success: boolean;
+  query: string;
+  results: SearchResult[];
+  totalMatches: number;
 }
 
 const CreateNodePage = () => {
@@ -56,6 +66,13 @@ const CreateNodePage = () => {
   const [relSearchQuery, setRelSearchQuery] = useState<string>('');
   const [relSearchResults, setRelSearchResults] = useState<SearchResult[]>([]);
   const [relSearching, setRelSearching] = useState<boolean>(false);
+
+  // NEW: Duplicate detection state
+  const [showDuplicateCheck, setShowDuplicateCheck] = useState<boolean>(false);
+  const [duplicateCheckQuery, setDuplicateCheckQuery] = useState<string>('');
+  const [duplicateResults, setDuplicateResults] = useState<SearchResult[]>([]);
+  const [duplicateSearching, setDuplicateSearching] = useState<boolean>(false);
+  const [duplicateError, setDuplicateError] = useState<string>('');
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -139,10 +156,20 @@ const CreateNodePage = () => {
     setError('');
   };
 
+  // MODIFIED: Auto-trigger duplicate check when name/title is entered
   const handlePropertyValueChange = (index: number, newValue: string | string[]) => {
     const updated = [...properties];
     updated[index].value = newValue;
     setProperties(updated);
+
+    // NEW: Auto-trigger duplicate check for name/title properties
+    const propertyKey = properties[index].key.toLowerCase();
+    const isNameProperty = ['name', 'title', 'display_name'].includes(propertyKey);
+    
+    if (isNameProperty && typeof newValue === 'string' && newValue.length >= 3) {
+      setDuplicateCheckQuery(newValue);
+      setShowDuplicateCheck(true);
+    }
   };
 
   const handleTogglePropertyArray = (index: number) => {
@@ -189,6 +216,7 @@ const CreateNodePage = () => {
     }
   };
 
+  // MODIFIED: Updated to use new search API format
   const handleSearchRelTarget = async () => {
     if (relSearchQuery.trim().length < 2) {
       setError('Please enter at least 2 characters to search');
@@ -202,7 +230,7 @@ const CreateNodePage = () => {
       const response = await searchNodes(relSearchQuery);
       if (!response.ok) throw new Error('Search failed');
       
-      const data = await response.json();
+      const data: SearchResponse = await response.json();
       setRelSearchResults(data.results || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Search failed');
@@ -226,13 +254,13 @@ const CreateNodePage = () => {
     const targetLabel = targetNode.properties.display_name 
       || targetNode.properties.name 
       || targetNode.properties.title 
-      || targetNode.id;
+      || targetNode.nodeId;
     
     const newRel: StagedRelationship = {
       id: `temp_${Date.now()}_${Math.random()}`,
       type: relType.trim(),
       direction: relDirection,
-      targetNodeId: targetNode.id,
+      targetNodeId: targetNode.nodeId,
       targetNodeLabel: targetLabel
     };
     
@@ -245,6 +273,68 @@ const CreateNodePage = () => {
 
   const handleRemoveRelationship = (id: string) => {
     setRelationships(relationships.filter(r => r.id !== id));
+  };
+
+  // NEW: Duplicate check handler
+  const handleDuplicateCheck = async () => {
+    setDuplicateError('');
+    setDuplicateSearching(true);
+
+    if (!duplicateCheckQuery.trim() || duplicateCheckQuery.length < 2) {
+      setDuplicateError('Please enter at least 2 characters to search');
+      setDuplicateSearching(false);
+      return;
+    }
+
+    try {
+      let response;
+      
+      // Use label filtering if labels are specified
+      if (labels.length > 0) {
+        const options: SearchOptions = {
+          query: duplicateCheckQuery,
+          labels: labels,
+        };
+        response = await searchNodes(options);
+      } else {
+        response = await searchNodes(duplicateCheckQuery);
+      }
+      
+      if (!response.ok) {
+        throw new Error(`Search failed: ${response.status} ${response.statusText}`);
+      }
+      
+      const data: SearchResponse = await response.json();
+      setDuplicateResults(data.results || []);
+    } catch (error) {
+      setDuplicateError(error instanceof Error ? error.message : 'Search failed');
+    } finally {
+      setDuplicateSearching(false);
+    }
+  };
+
+  // NEW: Helper functions for duplicate detection
+  const getDisplayName = (result: SearchResult): string => {
+    return result.properties.display_name || 
+           result.properties.name || 
+           result.properties.title || 
+           result.nodeId || 
+           'Unknown';
+  };
+
+  const getScoreColor = (score: number): string => {
+    if (score >= 200) return 'danger';
+    if (score >= 100) return 'warning';
+    return 'info';
+  };
+
+  const getMatchTypeLabel = (matchType?: 'exact' | 'prefix' | 'substring'): string => {
+    switch (matchType) {
+      case 'exact': return 'Exact match - likely duplicate!';
+      case 'prefix': return 'Starts with query';
+      case 'substring': return 'Contains query';
+      default: return '';
+    }
   };
 
   const handleSubmit = async () => {
@@ -451,6 +541,134 @@ const CreateNodePage = () => {
               </button>
             </div>
             
+            {/* NEW: Duplicate Check Section - integrated into properties tab */}
+            {showDuplicateCheck && (
+              <div className="create-property-card" style={{ borderColor: '#ffc107', backgroundColor: '#fff3cd' }}>
+                <div className="create-property-card-body">
+                  <div className="create-property-key-row">
+                    <h4 style={{ margin: 0, fontSize: '1rem' }}>⚠️ Check for Duplicates</h4>
+                    <button 
+                      className="create-toggle-array-button"
+                      onClick={() => setShowDuplicateCheck(false)}
+                      style={{ padding: '0.25rem 0.5rem' }}
+                    >
+                      Hide
+                    </button>
+                  </div>
+                  
+                  <p style={{ marginTop: '0.5rem', marginBottom: '0.75rem', fontSize: '0.875rem' }}>
+                    Before creating, check if a similar node already exists:
+                  </p>
+                  
+                  <div className="create-search-group">
+                    <input
+                      type="text"
+                      placeholder="Search for similar nodes..."
+                      value={duplicateCheckQuery}
+                      onChange={(e) => setDuplicateCheckQuery(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleDuplicateCheck()}
+                    />
+                    <button 
+                      className="create-search-button"
+                      onClick={handleDuplicateCheck}
+                      disabled={duplicateSearching}
+                    >
+                      {duplicateSearching ? 'Searching...' : 'Search'}
+                    </button>
+                  </div>
+
+                  {duplicateError && (
+                    <div className="create-alert create-alert-danger" style={{ marginTop: '0.75rem' }}>
+                      {duplicateError}
+                    </div>
+                  )}
+
+                  {duplicateResults.length > 0 && (
+                    <div style={{ marginTop: '1rem' }}>
+                      <h5 style={{ fontSize: '0.875rem', marginBottom: '0.5rem' }}>
+                        Found {duplicateResults.length} similar node{duplicateResults.length !== 1 ? 's' : ''}:
+                      </h5>
+                      <div className="create-search-results" style={{ maxHeight: '250px', overflowY: 'auto' }}>
+                        {duplicateResults.map((result, idx) => {
+                          const label = (result.labels || []).find(l => l !== 'Entity') || 'Node';
+                          const displayName = getDisplayName(result);
+                          const scoreColorClass = getScoreColor(result.score);
+                          
+                          return (
+                            <a
+                              key={idx}
+                              className="create-search-result-item"
+                              href={`/info?id=${encodeURIComponent(result.nodeId)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{ display: 'block', marginBottom: '0.5rem', textDecoration: 'none' }}
+                            >
+                              <div className="create-search-result-header">
+                                <div style={{ flex: 1 }}>
+                                  <div className="create-search-result-title">
+                                    <strong>{label}</strong>: {escapeHtml(displayName)}
+                                  </div>
+                                  {result.matchedProperty && (
+                                    <div className="create-search-result-labels" style={{ fontSize: '0.75rem' }}>
+                                      {getMatchTypeLabel(result.matchType)} in <strong>{result.matchedProperty}</strong>
+                                    </div>
+                                  )}
+                                </div>
+                                <span 
+                                  className={`create-tab-badge`}
+                                  style={{ 
+                                    backgroundColor: scoreColorClass === 'danger' ? '#dc3545' : 
+                                                    scoreColorClass === 'warning' ? '#ffc107' : '#0dcaf0',
+                                    color: scoreColorClass === 'warning' ? '#000' : '#fff',
+                                    marginLeft: '0.5rem'
+                                  }}
+                                >
+                                  {Math.round(result.score)}
+                                </span>
+                              </div>
+                            </a>
+                          );
+                        })}
+                      </div>
+                      {duplicateResults.some(r => r.score >= 200) && (
+                        <div className="create-alert create-alert-danger" style={{ marginTop: '0.75rem' }}>
+                          <strong>⚠️ High similarity detected!</strong> Consider editing the existing node instead of creating a duplicate.
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {duplicateResults.length === 0 && !duplicateError && duplicateCheckQuery && !duplicateSearching && (
+                    <div style={{ marginTop: '0.75rem', padding: '0.75rem', backgroundColor: '#d1e7dd', borderRadius: '0.25rem', color: '#0f5132' }}>
+                      ✓ No similar nodes found. You're good to create this node!
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* NEW: Manual duplicate check button when panel is hidden */}
+            {!showDuplicateCheck && properties.length > 0 && (
+              <button
+                className="create-toggle-array-button"
+                onClick={() => {
+                  // Try to pre-fill with name/title if available
+                  const nameProperty = properties.find(p => 
+                    ['name', 'title', 'display_name'].includes(p.key.toLowerCase()) && 
+                    !p.isArray &&
+                    typeof p.value === 'string'
+                  );
+                  if (nameProperty && nameProperty.value) {
+                    setDuplicateCheckQuery(nameProperty.value as string);
+                  }
+                  setShowDuplicateCheck(true);
+                }}
+                style={{ marginBottom: '1rem', backgroundColor: '#ffc107', color: '#000' }}
+              >
+                🔍 Check for Duplicates
+              </button>
+            )}
+            
             {properties.length > 0 && properties.map((prop, propIndex) => (
               <div key={propIndex} className="create-property-card">
                 <div className="create-property-card-body">
@@ -613,12 +831,12 @@ const CreateNodePage = () => {
                         const displayLabel = node.properties.display_name 
                           || node.properties.name 
                           || node.properties.title 
-                          || node.id;
+                          || node.nodeId;
                         const nodeLabels = (node.labels || []).filter(l => l !== 'Entity').join(', ');
                         
                         return (
                           <button
-                            key={node.id}
+                            key={node.nodeId}
                             className="create-search-result-item"
                             onClick={() => handleAddRelationship(node)}
                           >
