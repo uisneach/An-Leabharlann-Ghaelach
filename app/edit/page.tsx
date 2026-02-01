@@ -178,6 +178,7 @@ const PropertyValueEditor: React.FC<{
 
 const EditPage = () => {
   const { isAuthenticated, username, checkAuthStatus } = useAuth();
+  const [authChecked, setAuthChecked] = useState<boolean>(false);
   const [nodeData, setNodeData] = useState<NodeData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -187,12 +188,23 @@ const EditPage = () => {
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      window.location.href = '/';
-      return;
+    // Wait a moment for auth context to initialize
+    const timer = setTimeout(() => {
+      setAuthChecked(true);
+      if (!isAuthenticated) {
+        router.push('/');
+      }
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [isAuthenticated, router]);
+
+  useEffect(() => {
+    // Only load node data after auth is checked and user is authenticated
+    if (authChecked && isAuthenticated) {
+      loadNodeData();
     }
-    loadNodeData();
-  }, [isAuthenticated]);
+  }, [authChecked, isAuthenticated]);
 
   const showTimedAlert = (message: string) => {
     setAlertMessage(message);
@@ -395,6 +407,27 @@ const EditPage = () => {
       [key]: newValue
     });
   };
+
+  if (!authChecked) {
+    return (
+      <>
+        <Header 
+          isAuthenticated={isAuthenticated}
+          username={username}
+          onAuthChange={checkAuthStatus}
+        />
+        <div className="container mt-5 text-center">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   if (loading) {
     return (
