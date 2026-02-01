@@ -202,16 +202,73 @@ export async function deleteRelationship(fromNodeId: string, toNodeId: string, t
 // SEARCH API
 // ============================================
 
-export async function searchNodes(query: string, label?: string) {
-  const params = new URLSearchParams({ 
-    action: 'search',
-    q: query 
-  });
-  if (label) {
-    params.append('label', label);
+export interface SearchOptions {
+  query: string;
+  labels?: string[];
+  excludeLabels?: string[];
+  properties?: Record<string, any>;
+  limit?: number;
+}
+
+/**
+ * Search for nodes with intelligent ranking
+ * 
+ * @param options - Search options object or legacy string query
+ * @param legacyLabel - Optional label filter (for backward compatibility)
+ * 
+ * @example
+ * // Simple search
+ * searchNodes('homer')
+ * 
+ * @example
+ * // Search with label filter
+ * searchNodes('iliad', 'Text')
+ * 
+ * @example
+ * // Advanced search with all options
+ * searchNodes({
+ *   query: 'celtic',
+ *   labels: ['Text', 'Author'],
+ *   excludeLabels: ['Translation'],
+ *   properties: { language: 'Irish' },
+ *   limit: 20
+ * })
+ */
+export async function searchNodes(options: SearchOptions | string, legacyLabel?: string) {
+  // Support legacy single-string query format for backward compatibility
+  if (typeof options === 'string') {
+    const params = new URLSearchParams({ q: options });
+    if (legacyLabel) {
+      params.append('label', legacyLabel);
+    }
+    return fetch(`${API_BASE_URL}/search?${params.toString()}`, {
+      headers: getAuthHeaders()
+    });
   }
   
-  return fetch(`${API_BASE_URL}/util?${params.toString()}`, {
+  // New format with full options
+  const params = new URLSearchParams({ q: options.query });
+  
+  if (options.labels && options.labels.length > 0) {
+    params.append('label', options.labels.join(','));
+  }
+  
+  if (options.excludeLabels && options.excludeLabels.length > 0) {
+    params.append('excludeLabel', options.excludeLabels.join(','));
+  }
+  
+  if (options.properties) {
+    const propertyPairs = Object.entries(options.properties)
+      .map(([key, value]) => `${key}:${value}`)
+      .join(',');
+    params.append('property', propertyPairs);
+  }
+  
+  if (options.limit) {
+    params.append('limit', options.limit.toString());
+  }
+  
+  return fetch(`${API_BASE_URL}/search?${params.toString()}`, {
     headers: getAuthHeaders()
   });
 }
