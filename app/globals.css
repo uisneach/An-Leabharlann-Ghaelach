@@ -598,9 +598,6 @@ img {
    
    All styles are scoped to #create-page-container
    to avoid conflicts with other pages.
-   
-   Usage: Wrap your create page content in:
-   <div id="create-page-container">...</div>
 */
 
 #create-page-container {
@@ -1409,4 +1406,19 @@ img {
   #create-page-container .create-array-controls button {
     width: 100%;
   }
+}
+
+
+/* --- Edit Page --- */
+/* ==============================================
+   EDIT PAGE SPECIFIC STYLES
+   ============================================== 
+   
+   All styles are scoped to #edit-page-container
+   to avoid conflicts with other pages.
+*/
+#edit-page-container input {
+  border-radius: 4px;
+  border-right: 1px solid #ced4da;
+  margin-bottom: 0.5rem;
 }

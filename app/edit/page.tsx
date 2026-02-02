@@ -498,7 +498,7 @@ const EditPage = () => {
         username={username}
         onAuthChange={checkAuthStatus}
       />
-      <div id="content" className="container" style={{ maxWidth: '900px' }}>
+      <div id="edit-page-container" className="container" style={{ maxWidth: '900px' }}>
         <div className="mt-4">
           {/* Title */}
           <div id="title-container" className="mb-4">
@@ -545,22 +545,21 @@ const EditPage = () => {
                   <div key={key} className="card mb-3">
                     <div className="card-body">
                       <div className="mb-3">
-                        <label className="form-label fw-bold">Property Name</label>
                         <div className="d-flex gap-2">
-                          <input 
-                            type="text" 
-                            className="form-control flex-grow-1" 
-                            value={key}
-                            onChange={(e) => handlePropertyKeyChange(key, e.target.value)}
-                          />
+                          <label className="form-label fw-bold">Property Name</label>
                           <button 
                             className="btn btn-danger"
                             onClick={() => handleDeleteProperty(key)}
-                            title="Delete this property"
-                          >
+                            title="Delete this property">
                             Delete Property
                           </button>
                         </div>
+                        <input 
+                          type="text" 
+                          className="form-control flex-grow-1" 
+                          value={key}
+                          onChange={(e) => handlePropertyKeyChange(key, e.target.value)}
+                        />
                       </div>
                       
                       <div>
