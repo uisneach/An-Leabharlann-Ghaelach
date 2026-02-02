@@ -42,6 +42,8 @@ interface NodeData extends Node {
 // Properties that should use textarea instead of input
 const LONG_TEXT_PROPERTIES = ['description', 'contents', 'summary'];
 
+const RESERVED_PROPERTIES = ['nodeId', 'createdBy'];
+
 // Component for editing a single property value (handles primitives and arrays)
 const PropertyValueEditor: React.FC<{
   propertyKey: string;
@@ -240,6 +242,14 @@ const EditPage = () => {
         outgoing: relData.outgoing || [],
         incoming: relData.incoming || []
       };
+
+      // Filter out reserved properties when initializing edited properties
+      const editableProps: Record<string, any> = {};
+      for (const [key, value] of Object.entries(fullData.properties)) {
+        if (!RESERVED_PROPERTIES.includes(key)) {
+          editableProps[key] = value;
+        }
+      }
       
       setNodeData(fullData);
       setEditedProperties(editableProps);
@@ -311,7 +321,7 @@ const EditPage = () => {
     // Clean up properties: remove empty strings from arrays, remove empty properties
     const cleanedProperties: Record<string, any> = {};
     for (const [key, value] of Object.entries(editedProperties)) {
-      if (['nodeId', 'createdBy'].includes(key)) {
+      if (RESERVED_PROPERTIES.includes(key)) {
         // Remove key-value pairs if they appear in restricted properties list
         continue;
       }
