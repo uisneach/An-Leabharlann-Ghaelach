@@ -241,14 +241,6 @@ const EditPage = () => {
         incoming: relData.incoming || []
       };
       
-      // Filter out reserved properties when initializing edited properties
-      const editableProps: Record<string, any> = {};
-      for (const [key, value] of Object.entries(fullData.properties)) {
-        if (key !== 'nodeId' && key !== 'createdBy') {
-          editableProps[key] = value;
-        }
-      }
-      
       setNodeData(fullData);
       setEditedProperties(editableProps);
       setEditedLabels(fullData.labels.filter(l => l !== 'Entity'));
@@ -319,6 +311,10 @@ const EditPage = () => {
     // Clean up properties: remove empty strings from arrays, remove empty properties
     const cleanedProperties: Record<string, any> = {};
     for (const [key, value] of Object.entries(editedProperties)) {
+      if (['nodeId', 'createdBy'].includes(key)) {
+        // Remove key-value pairs if they appear in restricted properties list
+        continue;
+      }
       if (Array.isArray(value)) {
         const cleaned = value.filter(v => String(v).trim() !== '');
         if (cleaned.length > 0) {
@@ -561,7 +557,6 @@ const EditPage = () => {
                           onChange={(e) => handlePropertyKeyChange(key, e.target.value)}
                         />
                       </div>
-                      
                       <div>
                         <label className="form-label fw-bold">
                           Value {Array.isArray(value) ? `(List with ${value.length} item${value.length !== 1 ? 's' : ''})` : '(Single Value)'}
