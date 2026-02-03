@@ -273,7 +273,7 @@ const EditPage = () => {
 
     // Try to POST to /api/nodes/[nodeId]
     try {
-      let data = {};
+      let data: { labels?: string[]; properties?: Record<string, any> } = {};
       if (labelChange)
         data['labels'] = editedLabels;
       if (propChange)
