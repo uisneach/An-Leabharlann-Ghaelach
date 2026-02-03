@@ -10,8 +10,7 @@ interface LabelsEditorProps {
  */
 const LabelsEditor: React.FC<LabelsEditorProps> = ({
   labels,
-  onLabelsChange,
-  onCancel
+  onLabelsChange
 }) => {
   const [newLabelInput, setNewLabelInput] = useState<string>('');
 
