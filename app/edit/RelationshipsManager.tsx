@@ -14,7 +14,8 @@ interface Node {
 
 interface Relationship {
   type: string;
-  node: Node;
+  fromNode: Node;
+  toNode: Node;
 }
 
 interface RelationshipsManagerProps {
@@ -22,7 +23,7 @@ interface RelationshipsManagerProps {
   nodeTitle: string;
   incoming: Relationship[];
   outgoing: Relationship[];
-  onDeleteRelationship: (sourceId: string, targetId: string, relType: string) => void;
+  onDeleteRelationship: (fromNodeId: string, toNodeId: string, relType: string) => void;
 }
 
 /**
@@ -72,8 +73,10 @@ const RelationshipsManager: React.FC<RelationshipsManagerProps> = ({
               <h5 className="h6 text-muted">Incoming</h5>
               <ul className="rels-list list-unstyled">
                 {inRels.map((rel, idx) => {
-                  const fromNode = rel.node;
+                  const fromNode = rel.fromNode;
+                  const toNode = rel.toNode;
                   const fromLabel = getNodeLabel(fromNode);
+                  const toLabel = getNodeLabel(toNode);
                   
                   return (
                     <li key={idx} className="mb-2">
@@ -81,12 +84,16 @@ const RelationshipsManager: React.FC<RelationshipsManagerProps> = ({
                         {fromLabel}
                       </a>
                       {' '}==[{relType}]==&gt;{' '}
-                      <a href={`/info?id=${encodeURIComponent(nodeId)}`}>
-                        {nodeTitle}
+                      <a href={`/info?id=${encodeURIComponent(toNode.nodeId || toNode.id)}`}>
+                        {toLabel}
                       </a>
                       <button 
                         className="btn btn-sm btn-danger ms-2"
-                        onClick={() => onDeleteRelationship(fromNode.id, nodeId, relType)}
+                        onClick={() => onDeleteRelationship(
+                          fromNode.nodeId || fromNode.id, 
+                          toNode.nodeId || toNode.id, 
+                          relType
+                        )}
                       >
                         Delete
                       </button>
@@ -102,13 +109,15 @@ const RelationshipsManager: React.FC<RelationshipsManagerProps> = ({
               <h5 className="h6 text-muted">Outgoing</h5>
               <ul className="rels-list list-unstyled">
                 {outRels.map((rel, idx) => {
-                  const toNode = rel.node;
+                  const fromNode = rel.fromNode;
+                  const toNode = rel.toNode;
+                  const fromLabel = getNodeLabel(fromNode);
                   const toLabel = getNodeLabel(toNode);
                   
                   return (
                     <li key={idx} className="mb-2">
-                      <a href={`/info?id=${encodeURIComponent(nodeId)}`}>
-                        ({nodeTitle})
+                      <a href={`/info?id=${encodeURIComponent(fromNode.nodeId || fromNode.id)}`}>
+                        ({fromLabel})
                       </a>
                       {' '}==[{relType}]==&gt;{' '}
                       <a href={`/info?id=${encodeURIComponent(toNode.nodeId || toNode.id)}`}>
@@ -116,7 +125,11 @@ const RelationshipsManager: React.FC<RelationshipsManagerProps> = ({
                       </a>
                       <button 
                         className="btn btn-sm btn-danger ms-2"
-                        onClick={() => onDeleteRelationship(nodeId, toNode.id, relType)}
+                        onClick={() => onDeleteRelationship(
+                          fromNode.nodeId || fromNode.id, 
+                          toNode.nodeId || toNode.id, 
+                          relType
+                        )}
                       >
                         Delete
                       </button>

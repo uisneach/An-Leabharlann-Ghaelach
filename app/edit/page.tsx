@@ -36,7 +36,8 @@ interface Node {
 
 interface Relationship {
   type: string;
-  node: Node;
+  fromNode: Node;
+  toNode: Node;
 }
 
 interface NodeData extends Node {
@@ -190,11 +191,11 @@ const EditPage = () => {
     }
   };
 
-  const handleDeleteRelationship = async (sourceId: string, targetId: string, relType: string) => {
+  const handleDeleteRelationship = async (fromNodeId: string, toNodeId: string, relType: string) => {
     if (!confirm('Are you sure you want to delete this relationship?')) return;
     
     try {
-      const response = await deleteRelationship(sourceId, targetId, relType);
+      const response = await deleteRelationship(fromNodeId, toNodeId, relType);
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data?.error?.message || 'Failed to delete relationship');

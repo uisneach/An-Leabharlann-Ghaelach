@@ -235,7 +235,12 @@ export function groupBy<T>(arr: T[], keyFn: (item: T) => string): Record<string,
 
 export interface Relationship {
   type: string;
-  node: {
+  fromNode: {
+    nodeId: string;
+    labels?: string[];
+    properties: Record<string, any>;
+  };
+  toNode: {
     nodeId: string;
     labels?: string[];
     properties: Record<string, any>;

@@ -26,7 +26,8 @@ interface Node {
 
 interface Relationship {
   type: string;
-  node: Node;
+  fromNode: Node;
+  toNode: Node;
 }
 
 interface NodeData extends Node {
@@ -260,11 +261,15 @@ const NodeInfoPage = () => {
                 <h3 className="section-header">{category}</h3>
                 <ul className="rels-list">
                   {rels.map((rel, idx) => {
-                    const node = rel.node;
-                    const label = getNodeTitle(node);
+                    // For categorized relationships, we need to determine which node to display
+                    // If this is an incoming relationship, show the fromNode
+                    // If this is an outgoing relationship, show the toNode
+                    const displayNode = rel.direction === 'incoming' ? rel.fromNode : rel.toNode;
+                    const label = getNodeTitle(displayNode);
+                    
                     return (
                       <li key={idx} className="mb-2">
-                        <a href={`?id=${encodeURIComponent(node.nodeId)}`} className="text-decoration-none">
+                        <a href={`?id=${encodeURIComponent(displayNode.nodeId)}`} className="text-decoration-none">
                           {label}
                         </a>
                       </li>
@@ -281,16 +286,16 @@ const NodeInfoPage = () => {
                 {uncategorized.incoming.map((rel, idx) => (
                   <div key={`in-${idx}`} className="mb-2">
                     <span className="badge bg-secondary me-2">← {rel.type}</span>
-                    <a href={`?id=${encodeURIComponent(rel.node.nodeId)}`}>
-                      {getNodeTitle(rel.node)}
+                    <a href={`?id=${encodeURIComponent(rel.fromNode.nodeId)}`}>
+                      {getNodeTitle(rel.fromNode)}
                     </a>
                   </div>
                 ))}
                 {uncategorized.outgoing.map((rel, idx) => (
                   <div key={`out-${idx}`} className="mb-2">
                     <span className="badge bg-primary me-2">{rel.type} →</span>
-                    <a href={`?id=${encodeURIComponent(rel.node.nodeId)}`}>
-                      {getNodeTitle(rel.node)}
+                    <a href={`?id=${encodeURIComponent(rel.toNode.nodeId)}`}>
+                      {getNodeTitle(rel.toNode)}
                     </a>
                   </div>
                 ))}

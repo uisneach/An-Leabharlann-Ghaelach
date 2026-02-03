@@ -34,7 +34,12 @@ export async function GET(request: NextRequest) {
       WITH n, collect(CASE 
         WHEN outRel IS NOT NULL THEN {
           type: type(outRel),
-          node: {
+          fromNode: {
+            nodeId: n.nodeId,
+            labels: labels(n),
+            properties: properties(n)
+          },
+          toNode: {
             nodeId: target.nodeId,
             labels: labels(target),
             properties: properties(target)
@@ -49,10 +54,15 @@ export async function GET(request: NextRequest) {
       WITH outgoingRaw, collect(CASE 
         WHEN inRel IS NOT NULL THEN {
           type: type(inRel),
-          node: {
+          fromNode: {
             nodeId: source.nodeId,
             labels: labels(source),
             properties: properties(source)
+          },
+          toNode: {
+            nodeId: n.nodeId,
+            labels: labels(n),
+            properties: properties(n)
           }
         }
         ELSE null
@@ -101,12 +111,14 @@ export async function GET(request: NextRequest) {
     // Apply property filtering to all relationships
     outgoing = outgoing.map((rel: any) => ({
       type: rel.type,
-      node: filterProperties(rel.node)
+      fromNode: filterProperties(rel.fromNode),
+      toNode: filterProperties(rel.toNode)
     }));
 
     incoming = incoming.map((rel: any) => ({
       type: rel.type,
-      node: filterProperties(rel.node)
+      fromNode: filterProperties(rel.fromNode),
+      toNode: filterProperties(rel.toNode)
     }));
 
     return NextResponse.json({
