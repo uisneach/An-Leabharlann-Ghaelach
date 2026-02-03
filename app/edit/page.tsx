@@ -275,9 +275,9 @@ const EditPage = () => {
     try {
       let data = {};
       if (labelChange)
-        data.labels = editedLabels;
+        data['labels'] = editedLabels;
       if (propChange)
-        data.properties = editedProperties;
+        data.['properties'] = editedProperties;
       
       if (Object.keys(data).length !== 0) // Check that data is not empty.
         await updateNode(nodeData.nodeId, data);
