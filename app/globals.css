@@ -1422,6 +1422,7 @@ img {
   width: 100%;
   max-width: 1400px;
   padding: 0 2rem;
+  margin-bottom: 2rem;
 }
 
 #edit-page-container input {
