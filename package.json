@@ -19,6 +19,7 @@
     "next": "16.1.4",
     "react": "19.2.3",
     "react-dom": "^19.2.3",
+    "react-fast-compare": "^3.2.2",
     "uuid": "^13.0.0"
   },
   "devDependencies": {

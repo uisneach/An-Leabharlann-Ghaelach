@@ -90,6 +90,7 @@ export async function createNode(labels: string[], properties: Record<string, an
 }
 
 export async function updateNode(nodeId: string, data: { labels?: string[], properties?: Record<string, any> }) {
+  console.log(nodeId);
   return fetch(`${API_BASE_URL}/nodes/${nodeId}`, {
     method: 'PUT',
     headers: getAuthHeaders(),

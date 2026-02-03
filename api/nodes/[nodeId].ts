@@ -158,39 +158,29 @@ export async function PUT(request: NextRequest) {
     // Build the Cypher query dynamically
     let cypher = 'MATCH (n {nodeId: $nodeId})\n';
     const queryParams: Record<string, any> = { nodeId };
+    let results = null;
 
-    // If updating labels, we need to remove old labels and set new ones
-    if (labels) {
-      // Get current labels, remove them, then add new ones
-      cypher += `WITH n, labels(n) as oldLabels\n`;
-      cypher += `CALL {\n`;
-      cypher += `  WITH n, oldLabels\n`;
-      cypher += `  UNWIND oldLabels as oldLabel\n`;
-      cypher += `  CALL {\n`;
-      cypher += `    WITH n, oldLabel\n`;
-      cypher += `    REMOVE n:\`\${oldLabel}\`\n`;
-      cypher += `    RETURN n as temp\n`;
-      cypher += `  }\n`;
-      cypher += `  RETURN collect(temp) as temps\n`;
-      cypher += `}\n`;
-      cypher += `WITH n\n`;
-      cypher += `SET n${labels.map((l: string) => `:${l}`).join('')}\n`;
+    if (labels && properties) {
+      cypher += `CALL apoc.create.setLabels(n, $newLabels) YIELD node AS updatedNode`;
+      cypher += `WITH updatedNode, updatedNode.nodeId AS preservedId, keys(updatedNode) AS propKeys`;
+      cypher += `SET updatedNode = $newProperties`;
+      cypher += `SET updatedNode.nodeId = preservedId`;
+      cypher += `RETURN updatedNode, labels(updatedNode) AS labels`;
+      results = await runQuery(cypher, { newLabels: labels, newProperties: properties });
+    } else if (labels) {
+      cypher += `CALL apoc.create.setLabels(n, $newLabels) YIELD node `;
+      cypher += `RETURN node, labels(node) AS labels`;
+      results = await runQuery(cypher, { newLabels: labels });
+    } else if (properties) {
+      cypher += `CALL apoc.create.setLabels(n, $newLabels) YIELD node AS updatedNode`;
+      cypher += `WITH node, node.nodeId AS preservedId`;
+      cypher += `SET node = $newProperties`;
+      cypher += `SET node.nodeId = preservedId`;
+      cypher += `RETURN node, labels(node) AS labels`;
+      results = await runQuery(cypher, { newProperties: properties });
     }
 
-    // If updating properties, replace all properties except nodeId
-    if (properties) {
-      // Remove all properties then set new ones (preserving nodeId)
-      const propsWithId = { ...properties, nodeId };
-      queryParams.properties = propsWithId;
-      
-      cypher += `SET n = $properties\n`;
-    }
-
-    cypher += `RETURN n, labels(n) as labels`;
-
-    const results = await runQuery(cypher, queryParams);
-
-    if (results.length === 0) {
+    if (!results || results.length === 0) {
       return NextResponse.json(
         { error: `Node not found with nodeId '${nodeId}'` },
         { status: 404 }

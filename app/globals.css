@@ -1457,3 +1457,19 @@ img {
   display: flex;
   flex-direction: row;
 }
+
+.edit-labels-container {
+  width: 100%;
+  max-width: 400px;
+}
+
+.label-item {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+
+.label-input {
+  border-radius: 4px;
+  width: 200px;
+}
