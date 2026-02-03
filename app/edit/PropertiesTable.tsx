@@ -7,9 +7,6 @@ const RESERVED_PROPERTIES = ['nodeId', 'createdBy'];
 interface PropertiesTableProps {
   properties: Record<string, any>;
   onPropertiesChange: (properties: Record<string, any>) => void;
-  onPropertyDelete: (key: string) => void;
-  onSave: () => void;
-  onCancel: () => void;
 }
 
 /**

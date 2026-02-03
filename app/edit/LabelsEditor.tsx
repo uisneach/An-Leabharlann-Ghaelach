@@ -3,8 +3,6 @@ import React, { useState } from 'react';
 interface LabelsEditorProps {
   labels: string[];
   onLabelsChange: (labels: string[]) => void;
-  onSave: () => void;
-  onCancel: () => void;
 }
 
 /**
