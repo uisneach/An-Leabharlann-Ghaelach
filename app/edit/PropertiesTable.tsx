@@ -49,7 +49,7 @@ const PropertiesTable: React.FC<PropertiesTableProps> = ({
 
   return (
     <div className="mb-4" id="properties-container">
-      <h3 className="h5 mb-3" id="properties-title">Edit Properties</h3>
+      <h2 className="h5 mb-3" id="properties-title" style={{ marginTop: '2rem' }}>Edit Properties</h2>
       <div className="mb-3">
         <small className="text-muted">
           Tip: Properties can be single values or lists. Use "Convert to List" to store multiple values for a property.

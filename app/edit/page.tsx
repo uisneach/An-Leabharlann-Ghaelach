@@ -165,7 +165,8 @@ const EditPage = () => {
     if (!nodeData || !confirm('Are you sure you want to delete this node and all its relationships?')) return;
     
     try {
-      const response = await deleteNode(nodeData.id);
+      console.log(nodeData);
+      const response = await deleteNode(nodeData.nodeId);
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data?.error?.message || 'Failed to delete node');
@@ -386,48 +387,39 @@ const EditPage = () => {
           {/* Title */}
           <div id="title-container" className="mb-4">
             <h1 className="page-title">Edit: {title}</h1>
-            <h3 className="page-subtitle">{labels.join(', ')}</h3>
-          </div>
+            {/* Action Buttons */}
+            <div className="mb-4 flex flex-row justify-between align-items-center" id="action-father">
+              {/* Navigation & safe actions */}
+              <div className="flex gap-2">
+                <a 
+                  href={`/info?id=${encodeURIComponent(nodeData.nodeId || nodeData.id)}`} 
+                  className="btn btn-secondary">
+                  Back to Info View
+                </a>
+                <button className="btn btn-outline-secondary" onClick={loadNodeData}>
+                  Reload from Database
+                </button>
+                <button className="btn btn-primary" onClick={handleSave}>
+                  Save All Changes
+                </button>
+              </div>
 
-          {/* Action Buttons */}
-          <div className="mb-4 flex flex-row justify-between align-items-center" id="action-father">
-            {/* Navigation & safe actions */}
-            <div className="d-flex gap-2">
-              <a 
-                href={`/info?id=${encodeURIComponent(nodeData.nodeId || nodeData.id)}`} 
-                className="btn btn-secondary"
-              >
-                Back to Info View
-              </a>
-              <button className="btn btn-outline-secondary" onClick={loadNodeData}>
-                Reload from Database
-              </button>
-              <button className="btn btn-primary" onClick={handleSave}>
-                Save All Changes
+              {/* Destructive action */}
+              <button className="btn btn-danger" onClick={handleDeleteNode}>
+                Delete Node
               </button>
             </div>
-
-            {/* Destructive action */}
-            <button className="btn btn-danger" onClick={handleDeleteNode}>
-              Delete Node
-            </button>
           </div>
-
-          <hr />
 
           {/* Edit Labels Form */}
           <LabelsEditor
             labels={editedLabels}
             onLabelsChange={setEditedLabels}/>
 
-          <hr />
-
           {/* Edit Properties Form */}
           <PropertiesTable
             properties={editedProperties}
             onPropertiesChange={setEditedProperties}/>
-
-          <hr />
 
           {/* Relationships Section */}
           <RelationshipsManager

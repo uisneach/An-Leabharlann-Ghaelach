@@ -62,7 +62,7 @@ const RelationshipsManager: React.FC<RelationshipsManagerProps> = ({
 
   return (
     <div className="mt-5" id="relationships-container">
-      <h3 className="h4 border-bottom pb-2 mb-3">Manage Relationships</h3>
+      <h2 className="h4 border-bottom pb-2 mb-3" style={{ marginTop: '2rem' }}>Manage Relationships</h2>
       
       {Array.from(allRelTypes.entries()).map(([relType, { incoming: inRels, outgoing: outRels }]) => (
         <div key={relType} className="rels-section mb-4">
