@@ -36,8 +36,7 @@ interface Node {
 
 interface Relationship {
   type: string;
-  fromNode: Node;
-  toNode: Node;
+  node: Node;
 }
 
 interface NodeData extends Node {
@@ -165,8 +164,7 @@ const EditPage = () => {
     if (!nodeData || !confirm('Are you sure you want to delete this node and all its relationships?')) return;
     
     try {
-      console.log(nodeData);
-      const response = await deleteNode(nodeData.nodeId);
+      const response = await deleteNode(nodeData.id);
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data?.error?.message || 'Failed to delete node');
@@ -192,11 +190,11 @@ const EditPage = () => {
     }
   };
 
-  const handleDeleteRelationship = async (fromNodeId: string, toNodeId: string, relType: string) => {
+  const handleDeleteRelationship = async (sourceId: string, targetId: string, relType: string) => {
     if (!confirm('Are you sure you want to delete this relationship?')) return;
     
     try {
-      const response = await deleteRelationship(fromNodeId, toNodeId, relType);
+      const response = await deleteRelationship(sourceId, targetId, relType);
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data?.error?.message || 'Failed to delete relationship');
@@ -280,7 +278,7 @@ const EditPage = () => {
         data['labels'] = editedLabels;
       if (propChange)
         data['properties'] = editedProperties;
-
+      
       if (Object.keys(data).length !== 0) // Check that data is not empty.
         await updateNode(nodeData.nodeId, data);
       
@@ -387,47 +385,57 @@ const EditPage = () => {
           {/* Title */}
           <div id="title-container" className="mb-4">
             <h1 className="page-title">Edit: {title}</h1>
-            {/* Action Buttons */}
-            <div className="mb-4 flex flex-row justify-between align-items-center" id="action-father">
-              {/* Navigation & safe actions */}
-              <div className="flex gap-2">
-                <a 
-                  href={`/info?id=${encodeURIComponent(nodeData.nodeId || nodeData.id)}`} 
-                  className="btn btn-secondary">
-                  Back to Info View
-                </a>
-                <button className="btn btn-outline-secondary" onClick={loadNodeData}>
-                  Reload from Database
-                </button>
-                <button className="btn btn-primary" onClick={handleSave}>
-                  Save All Changes
-                </button>
-              </div>
+            <h3 className="page-subtitle">{labels.join(', ')}</h3>
+          </div>
 
-              {/* Destructive action */}
-              <button className="btn btn-danger" onClick={handleDeleteNode}>
-                Delete Node
+          {/* Action Buttons */}
+          <div className="mb-4 flex flex-row justify-between align-items-center" id="action-father">
+            {/* Navigation & safe actions */}
+            <div className="d-flex gap-2">
+              <a 
+                href={`/info?id=${encodeURIComponent(nodeData.nodeId || nodeData.id)}`} 
+                className="btn btn-secondary"
+              >
+                Back to Info View
+              </a>
+              <button className="btn btn-outline-secondary" onClick={loadNodeData}>
+                Reload from Database
+              </button>
+              <button className="btn btn-primary" onClick={handleSave}>
+                Save All Changes
               </button>
             </div>
+
+            {/* Destructive action */}
+            <button className="btn btn-danger" onClick={handleDeleteNode}>
+              Delete Node
+            </button>
           </div>
+
+          <hr />
 
           {/* Edit Labels Form */}
           <LabelsEditor
             labels={editedLabels}
             onLabelsChange={setEditedLabels}/>
 
+          <hr />
+
           {/* Edit Properties Form */}
           <PropertiesTable
             properties={editedProperties}
             onPropertiesChange={setEditedProperties}/>
 
+          <hr />
+
           {/* Relationships Section */}
           <RelationshipsManager
-            nodeId={nodeData.id}
+            nodeId={nodeData.nodeId}
             nodeTitle={title}
             incoming={nodeData.incoming || []}
             outgoing={nodeData.outgoing || []}
             onDeleteRelationship={handleDeleteRelationship}
+            onRelationshipCreated={loadNodeData}
           />
         </div>
       </div>

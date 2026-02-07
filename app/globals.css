@@ -985,35 +985,35 @@ img {
 }
 
 /* --- Relationship Section --- */
-#create-page-container .create-rel-form-card {
+.create-rel-form-card {
   border: 1px solid #dee2e6;
   border-radius: 8px;
   margin-bottom: 1rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-#create-page-container .create-rel-form-body {
+.create-rel-form-body {
   padding: 1.25rem;
 }
 
-#create-page-container .create-rel-row {
+.create-rel-row {
   display: flex;
   gap: 1rem;
   margin-bottom: 1rem;
 }
 
-#create-page-container .create-rel-col {
+.create-rel-col {
   flex: 1;
 }
 
-#create-page-container .create-rel-label {
+.create-rel-label {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
   color: #212529;
 }
 
-#create-page-container .create-rel-input {
+.create-rel-input {
   width: 100%;
   border: 1px solid #ced4da;
   border-radius: 4px;
@@ -1023,13 +1023,13 @@ img {
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-#create-page-container .create-rel-input:focus {
+.create-rel-input:focus {
   border-color: #0d6efd;
   outline: 0;
   box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
 }
 
-#create-page-container .create-rel-select {
+.create-rel-select {
   width: 100%;
   border: 1px solid #ced4da;
   border-radius: 4px;
@@ -1040,18 +1040,18 @@ img {
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-#create-page-container .create-rel-select:focus {
+.create-rel-select:focus {
   border-color: #0d6efd;
   outline: 0;
   box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
 }
 
-#create-page-container .create-search-group {
+.create-search-group {
   display: flex;
   gap: 0;
 }
 
-#create-page-container .create-search-group input {
+.create-search-group input {
   flex: 1;
   border: 1px solid #ced4da;
   border-radius: 4px 0 0 4px;
@@ -1062,14 +1062,14 @@ img {
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-#create-page-container .create-search-group input:focus {
+.create-search-group input:focus {
   border-color: #0d6efd;
   outline: 0;
   box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
   border-right: none;
 }
 
-#create-page-container .create-search-button {
+.create-search-button {
   border-radius: 0 4px 4px 0;
   background-color: #6c757d;
   color: white;
@@ -1082,17 +1082,17 @@ img {
   transition: background-color 0.15s ease;
 }
 
-#create-page-container .create-search-button:hover {
+.create-search-button:hover {
   background-color: #5c636a;
 }
 
-#create-page-container .create-search-button:disabled {
+.create-search-button:disabled {
   opacity: 0.65;
   cursor: not-allowed;
 }
 
 /* --- Search Results --- */
-#create-page-container .create-search-results {
+.create-search-results {
   border: 1px solid #dee2e6;
   border-radius: 8px;
   overflow: hidden;
@@ -1100,7 +1100,7 @@ img {
   overflow-y: auto;
 }
 
-#create-page-container .create-search-result-item {
+.create-search-result-item {
   padding: 0.75rem 1rem;
   border-bottom: 1px solid #dee2e6;
   cursor: pointer;
@@ -1112,28 +1112,28 @@ img {
   font-family: inherit;
 }
 
-#create-page-container .create-search-result-item:hover {
+.create-search-result-item:hover {
   background-color: #f8f9fa;
 }
 
-#create-page-container .create-search-result-item:last-child {
+.create-search-result-item:last-child {
   border-bottom: none;
 }
 
-#create-page-container .create-search-result-header {
+.create-search-result-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
 }
 
-#create-page-container .create-search-result-title {
+.create-search-result-title {
   font-weight: 600;
   margin-bottom: 0.25rem;
   color: #212529;
 }
 
-#create-page-container .create-search-result-labels {
+.create-search-result-labels {
   font-size: 0.875rem;
   color: #6c757d;
 }
@@ -1425,10 +1425,10 @@ img {
   margin-bottom: 2rem;
 }
 
-#edit-page-container input {
+#edit-page-container table input {
   padding: 5px;
 }
-#edit-page-container input, #edit-page-container textarea {
+#edit-page-container table input, #edit-page-container textarea {
   border: 1px solid black;
   margin: 0.5rem 0 0 0;
   padding: 5px;
@@ -1475,5 +1475,7 @@ img {
 
 .label-input {
   border-radius: 4px;
+  padding: 0 10px;
   max-width: 500px;
+  border: 1px solid black;
 }

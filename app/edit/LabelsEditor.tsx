@@ -32,7 +32,7 @@ const LabelsEditor: React.FC<LabelsEditorProps> = ({
   };
 
   return (
-    <div className="mb-4">
+    <div className="mb-4" id="labels-container">
       <h2 className="h5 mb-3" style={{ marginTop: '2rem' }}>Edit Labels</h2>
       <ul className="list-unstyled" id="labelsList">
         {labels.map((label, idx) => (
@@ -55,7 +55,7 @@ const LabelsEditor: React.FC<LabelsEditorProps> = ({
         <li className="mb-2">
           <input 
             type="text" 
-            className="form-control d-inline-block w-auto me-2" 
+            className="form-control d-inline-block w-auto me-2 label-input" 
             value={newLabelInput}
             onChange={(e) => setNewLabelInput(e.target.value)}
             onKeyPress={(e) => {

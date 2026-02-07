@@ -183,6 +183,7 @@ export async function getRelationship(fromNodeId: string, toNodeId: string, type
 }
 
 export async function createRelationship(fromNodeId: string, toNodeId: string, type: string) {
+  console.log(fromNodeId);
   return fetch(`${API_BASE_URL}/relationships`, {
     method: 'POST',
     headers: getAuthHeaders(),

@@ -10,6 +10,8 @@ import {
   categorizeRelationships,
   getNodeTitle
 } from '@/lib/utils';
+import { getExternalLinkText } from '@/lib/domainNames';
+
 
 interface Node {
   nodeId: string;
@@ -349,14 +351,17 @@ const NodeInfoPage = () => {
                     <ul className="list-unstyled">
                       {externalLinks.map(([key, value]) => {
                         const links = Array.isArray(value) ? value : [value];
-                        return links.map((link: any, idx: number) => (
-                          <li key={`${key}-${idx}`} className="mb-2">
-                            <a href={String(link)} target="_blank" rel="noopener noreferrer" className="text-decoration-none flex flex-row">
-                              <ExternalLink size={14} className="me-2" />
-                              {cleanString(key)}
-                            </a>
-                          </li>
-                        ));
+                        return links.map((link: any, idx: number) => {
+                          const linkText = getExternalLinkText(String(link), key);
+                          return (
+                            <li key={`${key}-${idx}`} className="mb-2">
+                              <a href={String(link)} target="_blank" rel="noopener noreferrer" className="text-decoration-none flex flex-row">
+                                <ExternalLink size={14} className="me-2" />
+                                {linkText}
+                              </a>
+                            </li>
+                          );
+                        });
                       })}
                     </ul>
                   </div>
