@@ -161,23 +161,26 @@ export async function PUT(request: NextRequest) {
     let results = null;
 
     if (labels && properties) {
-      cypher += `CALL apoc.create.setLabels(n, $newLabels) YIELD node AS updatedNode`;
-      cypher += `WITH updatedNode, updatedNode.nodeId AS preservedId, keys(updatedNode) AS propKeys`;
-      cypher += `SET updatedNode = $newProperties`;
-      cypher += `SET updatedNode.nodeId = preservedId`;
-      cypher += `RETURN updatedNode, labels(updatedNode) AS labels`;
-      results = await runQuery(cypher, { newLabels: labels, newProperties: properties });
+      cypher += `CALL apoc.create.setLabels(n, $newLabels) YIELD node AS updatedNode\n`;
+      cypher += `WITH updatedNode, updatedNode.nodeId AS preservedId\n`;
+      cypher += `SET updatedNode = $newProperties\n`;
+      cypher += `SET updatedNode.nodeId = preservedId\n`;
+      cypher += `RETURN updatedNode AS node, labels(updatedNode) AS labels`;
+      queryParams.newLabels = labels;
+      queryParams.newProperties = properties;
+      results = await runQuery(cypher, queryParams);
     } else if (labels) {
-      cypher += `CALL apoc.create.setLabels(n, $newLabels) YIELD node `;
+      cypher += `CALL apoc.create.setLabels(n, $newLabels) YIELD node\n`;
       cypher += `RETURN node, labels(node) AS labels`;
-      results = await runQuery(cypher, { newLabels: labels });
+      queryParams.newLabels = labels;
+      results = await runQuery(cypher, queryParams);
     } else if (properties) {
-      cypher += `CALL apoc.create.setLabels(n, $newLabels) YIELD node AS updatedNode`;
-      cypher += `WITH node, node.nodeId AS preservedId`;
-      cypher += `SET node = $newProperties`;
-      cypher += `SET node.nodeId = preservedId`;
-      cypher += `RETURN node, labels(node) AS labels`;
-      results = await runQuery(cypher, { newProperties: properties });
+      cypher += `WITH n, n.nodeId AS preservedId\n`;
+      cypher += `SET n = $newProperties\n`;
+      cypher += `SET n.nodeId = preservedId\n`;
+      cypher += `RETURN n AS node, labels(n) AS labels`;
+      queryParams.newProperties = properties;
+      results = await runQuery(cypher, queryParams);
     }
 
     if (!results || results.length === 0) {
@@ -190,7 +193,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'Node updated successfully',
-      node: results[0].n,
+      node: results[0].node,
       labels: results[0].labels
     });
 

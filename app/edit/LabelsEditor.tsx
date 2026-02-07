@@ -45,8 +45,7 @@ const LabelsEditor: React.FC<LabelsEditorProps> = ({
             />
             <button 
               className="btn btn-sm btn-danger remove-label"
-              onClick={() => handleRemoveLabel(idx)}
-            >
+              onClick={() => handleRemoveLabel(idx)}>
               Remove
             </button>
           </li>
@@ -65,7 +64,7 @@ const LabelsEditor: React.FC<LabelsEditorProps> = ({
               }
             }}
             placeholder="Enter new label..."
-            style={{ width: '200px' }}
+            style={{ width: '200px', marginRight: '1rem' }}
           />
           <button 
             className="btn btn-sm btn-secondary"

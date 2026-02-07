@@ -1472,5 +1472,5 @@ img {
 
 .label-input {
   border-radius: 4px;
-  width: 200px;
+  max-width: 500px;
 }
