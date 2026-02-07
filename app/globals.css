@@ -1439,6 +1439,9 @@ img {
   border-collapse: separate;
   border-spacing: 15px 0;
 }
+#edit-page-container tr {
+  margin-top: 0.5rem;
+}
 
 #edit-page-container table .btn-danger {
   margin: 0.5rem 0 0 0;
