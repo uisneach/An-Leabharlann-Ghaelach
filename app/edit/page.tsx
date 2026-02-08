@@ -144,7 +144,7 @@ const EditPage = () => {
     if (!nodeData || !confirm('Are you sure you want to delete this node and all its relationships?')) return;
     
     try {
-      const response = await deleteNode(nodeData.id);
+      const response = await deleteNode(nodeData.nodeId);
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data?.error?.message || 'Failed to delete node');
@@ -172,7 +172,7 @@ const EditPage = () => {
     const labelChange = !isEqual(editedLabels, nodeData.labels);
 
     // Try PUT to /api/nodes/[nodeId]. This will update props and labels.
-    /*try {
+    try {
       let data: { labels?: string[]; properties?: Record<string, any> } = {};
       if (labelChange)
         data['labels'] = editedLabels;
@@ -188,10 +188,11 @@ const EditPage = () => {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update node data.');
       return;
-    }*/
+    }
 
     // If PUT was success, go through relationships and either CREATE, DELETE, or DO NOTHING.
-    
+
+    // Compute staged relationships by finding new rels in editedRels that are not also in the old rel list.
     const stagedRels = editedRels.filter((rel) => ![...nodeData.incoming, ...nodeData.outgoing].some((existingRel) => isSameRel(existingRel, rel)));
     try {
       for (const rel of stagedRels) {

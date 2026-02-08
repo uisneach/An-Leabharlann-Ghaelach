@@ -212,12 +212,6 @@ const NodeInfoPage = () => {
                 >
                   Edit Node
                 </a>
-                <a 
-                  href={`/leabharlann/relationship/index.html?fromId=${encodeURIComponent(nodeData.nodeId)}`}
-                  className="btn btn-primary"
-                >
-                  Create Relationship
-                </a>
               </div>
             )}
 
