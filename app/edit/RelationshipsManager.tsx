@@ -228,15 +228,13 @@ const RelationshipsManager: React.FC<RelationshipsManagerProps> = ({
       )}
 
       {/* Create New Relationship */}
-      {onEditRelationships && (
-        <div className="mt-4">
-          <RelationshipCreator 
-            currentNodeId={nodeData.nodeId}
-            currentNodeTitle={nodeTitle}
-            onCreateRelationship={handleCreateRelationship}
-          />
-        </div>
-      )}
+      <div className="mt-4">
+        <RelationshipCreator 
+          currentNodeId={nodeData.nodeId}
+          currentNodeTitle={nodeTitle}
+          onCreateRelationship={handleCreateRelationship}
+        />
+      </div>
     </div>
   );
 };
