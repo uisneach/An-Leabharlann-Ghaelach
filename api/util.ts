@@ -77,7 +77,7 @@ async function handleLabels(request: NextRequest) {
     
     const labels = results
       .map(record => record.label)
-      .filter(label => label !== null && label !== 'User'); // Exclude User label
+      .filter(label => label !== null && !['User', 'Entity'].includes(label)); // Exclude User and Entity labels
     
     console.log(`Found ${labels.length} labels`);
     
