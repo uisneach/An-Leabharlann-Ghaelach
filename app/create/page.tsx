@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../AuthContext';
-import Header from '../Header';
+import { useAuth } from '@/app/AuthContext';
+import Header from '@/app/Header';
+import Footer from '@/app/Footer';
 import { createNode, createRelationship, searchNodes, SearchOptions } from '@/lib/api';
 import { validateLabel, validatePropertyKey, escapeHtml } from '@/lib/utils';
 import { SearchResult, SearchResponse } from '@/lib/types';
