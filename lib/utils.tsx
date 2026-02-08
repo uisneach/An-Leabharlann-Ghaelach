@@ -1,3 +1,5 @@
+import { Node } from '@/lib/types';
+
 /**
  * Centralized utility functions
  * All common utilities should be placed here
@@ -26,6 +28,13 @@ export function escapeHtml(str: string): string {
     "'": '&#039;'
   };
   return str.replace(/[&<>"']/g, (match) => escapeMap[match]);
+}
+
+export function getNodeDisplayName(node: Node): string {
+  return node.properties.display_name || 
+         node.properties.name || 
+         node.properties.title || 
+         node.nodeId;
 }
 
 // ============================================

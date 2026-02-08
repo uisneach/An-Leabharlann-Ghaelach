@@ -15,34 +15,11 @@ import {
   addNodeLabels,
   deleteNodeLabels
 } from '@/lib/api';
-import { validateLabel, validatePropertyKey } from '@/lib/utils';
+import { validateLabel, validatePropertyKey, getNodeDisplayName } from '@/lib/utils';
+import { Node, Relationship, NodeData } from '@/lib/types';
 import PropertiesTable from './PropertiesTable';
 import LabelsEditor from './LabelsEditor';
 import RelationshipsManager from './RelationshipsManager';
-
-interface Node {
-  id: string;
-  nodeId: string;
-  labels: string[];
-  properties: {
-    display_name?: string;
-    title?: string;
-    name?: string;
-    nodeId?: string | number;
-    createdBy?: string;
-    [key: string]: any;
-  };
-}
-
-interface Relationship {
-  type: string;
-  node: Node;
-}
-
-interface NodeData extends Node {
-  outgoing: Relationship[];
-  incoming: Relationship[];
-}
 
 // Reserved properties that cannot be edited
 const RESERVED_PROPERTIES = ['nodeId', 'createdBy'];
@@ -87,6 +64,7 @@ const EditPage = () => {
   const [editingSection, setEditingSection] = useState<'properties' | 'labels' | null>(null);
   const [editedProperties, setEditedProperties] = useState<Record<string, any>>({});
   const [editedLabels, setEditedLabels] = useState<string[]>([]);
+  const [editedRels, setEditedRels] = useState<Relationship[]>([]);
   const [authChecked, setAuthChecked] = useState<boolean>(false);
 
   // Wait for auth context to initialize before checking authentication
@@ -190,11 +168,11 @@ const EditPage = () => {
     }
   };
 
-  const handleDeleteRelationship = async (sourceId: string, targetId: string, relType: string) => {
+  const handleDeleteRelationship = async (rel: Relationship) => {
     if (!confirm('Are you sure you want to delete this relationship?')) return;
     
     try {
-      const response = await deleteRelationship(sourceId, targetId, relType);
+      const response = await deleteRelationship(rel.fromId, rel.toId, rel.type);
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data?.error?.message || 'Failed to delete relationship');
@@ -256,6 +234,10 @@ const EditPage = () => {
     }
   };
 
+  const onEditRelationships = (relationships: Relationship[]) => {
+    setEditedRels(relationships);
+  };
+
   const handleSave = async () => {
     if (!nodeData) return;
 
@@ -264,6 +246,10 @@ const EditPage = () => {
     // in the request body.
     // If a relationship has been deleted, we remove it at
     // DELETE /api/relationships?fromNodeId=${fromNodeId}& ... etc.
+    // If new relationships have been added, we add them at PUT /api/relationships.
+
+    console.log(editedRels);
+    return;
 
     // Check editedProperties against nodeData.properties
     const propChange = !isEqual(editedProperties, cleanProperties(nodeData.properties))
@@ -366,11 +352,7 @@ const EditPage = () => {
     );
   }
 
-  const title = nodeData.properties.display_name || 
-                nodeData.properties.name || 
-                nodeData.properties.title || 
-                String(nodeData.properties.nodeId) || 
-                nodeData.nodeId;
+  const title = getNodeDisplayName(nodeData);
   const labels = nodeData.labels?.filter((l: string) => l !== 'Entity') || [];
 
   return (
@@ -393,9 +375,8 @@ const EditPage = () => {
             {/* Navigation & safe actions */}
             <div className="d-flex gap-2">
               <a 
-                href={`/info?id=${encodeURIComponent(nodeData.nodeId || nodeData.id)}`} 
-                className="btn btn-secondary"
-              >
+                href={`/info?id=${encodeURIComponent(nodeData.nodeId)}`} 
+                className="btn btn-secondary">
                 Back to Info View
               </a>
               <button className="btn btn-outline-secondary" onClick={loadNodeData}>
@@ -430,12 +411,8 @@ const EditPage = () => {
 
           {/* Relationships Section */}
           <RelationshipsManager
-            nodeId={nodeData.nodeId}
-            nodeTitle={title}
-            incoming={nodeData.incoming || []}
-            outgoing={nodeData.outgoing || []}
-            onDeleteRelationship={handleDeleteRelationship}
-            onRelationshipCreated={loadNodeData}
+            nodeData={nodeData}
+            onEditRelationships={onEditRelationships}
           />
         </div>
       </div>

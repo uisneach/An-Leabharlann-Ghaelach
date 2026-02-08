@@ -1,42 +1,22 @@
 import React, { useState } from 'react';
-import { searchNodes, createRelationship, SearchOptions } from '@/lib/api';
-import { escapeHtml } from '@/lib/utils';
-
-interface SearchResult {
-  nodeId: string;
-  labels: string[];
-  properties: {
-    display_name?: string;
-    name?: string;
-    title?: string;
-    [key: string]: any;
-  };
-  score: number;
-  matchedProperty?: string;
-  matchType?: 'exact' | 'prefix' | 'substring';
-}
-
-interface SearchResponse {
-  success: boolean;
-  query: string;
-  results: SearchResult[];
-  totalMatches: number;
-}
+import { searchNodes, SearchOptions } from '@/lib/api';
+import { getNodeDisplayName } from '@/lib/utils';
+import { SearchResult, SearchResponse, Relationship, Node } from '@/lib/types';
 
 interface RelationshipCreatorProps {
   currentNodeId: string;
   currentNodeTitle: string;
-  onRelationshipCreated?: () => void;
+  onStageRelationship: (relationship: Relationship) => void;
 }
 
 /**
- * Shared component for creating relationships between nodes
+ * Shared component for staging relationships between nodes
  * Used on both Create and Edit pages
  */
 const RelationshipCreator: React.FC<RelationshipCreatorProps> = ({
   currentNodeId,
   currentNodeTitle,
-  onRelationshipCreated
+  onCreateRelationship
 }) => {
   const [relType, setRelType] = useState<string>('');
   const [relDirection, setRelDirection] = useState<'outgoing' | 'incoming'>('outgoing');
@@ -44,8 +24,6 @@ const RelationshipCreator: React.FC<RelationshipCreatorProps> = ({
   const [relSearchResults, setRelSearchResults] = useState<SearchResult[]>([]);
   const [relSearching, setRelSearching] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
-  const [success, setSuccess] = useState<string>('');
-  const [creating, setCreating] = useState<boolean>(false);
 
   const handleSearchRelTarget = async () => {
     if (relSearchQuery.trim().length < 2) {
@@ -69,7 +47,7 @@ const RelationshipCreator: React.FC<RelationshipCreatorProps> = ({
     }
   };
 
-  const handleCreateRelationship = async (targetNode: SearchResult) => {
+  const handleStageRelationship = (targetNode: SearchResult) => {
     if (!relType.trim()) {
       setError('Please enter a relationship type');
       return;
@@ -81,67 +59,53 @@ const RelationshipCreator: React.FC<RelationshipCreatorProps> = ({
       return;
     }
     
-    setCreating(true);
-    setError('');
-    setSuccess('');
+    // Convert SearchResult to Node format
+    const targetNodeData: Node = {
+      nodeId: targetNode.nodeId,
+      properties: targetNode.properties,
+      labels: targetNode.labels
+    };
     
-    try {
-      const fromId = relDirection === 'outgoing' ? currentNodeId : targetNode.nodeId;
-      const toId = relDirection === 'outgoing' ? targetNode.nodeId : currentNodeId;
-      
-      const response = await createRelationship(fromId, toId, relType.trim());
-      
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data?.error || 'Failed to create relationship');
-      }
-      
-      const targetLabel = targetNode.properties.display_name 
-        || targetNode.properties.name 
-        || targetNode.properties.title 
-        || targetNode.nodeId;
-      
-      setSuccess(`Successfully created ${relType} relationship with ${targetLabel}`);
-      
-      // Reset form
-      setRelType('');
-      setRelSearchQuery('');
-      setRelSearchResults([]);
-      
-      // Notify parent component
-      if (onRelationshipCreated) {
-        onRelationshipCreated();
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create relationship');
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  const getDisplayName = (node: SearchResult): string => {
-    return node.properties.display_name || 
-           node.properties.name || 
-           node.properties.title || 
-           node.nodeId;
+    // Create relationship based on direction
+    const createdRel: Relationship = relDirection === 'outgoing' 
+      ? {
+          type: relType.trim(),
+          fromNode: {
+            nodeId: currentNodeId,
+            properties: { name: currentNodeTitle },
+            labels: []
+          },
+          toNode: targetNodeData
+        }
+      : {
+          type: relType.trim(),
+          fromNode: targetNodeData,
+          toNode: {
+            nodeId: currentNodeId,
+            properties: { name: currentNodeTitle },
+            labels: []
+          }
+        };
+    
+    // Pass the staged relationship to parent
+    onCreateRelationship(createdRel);
+    
+    // Reset form
+    setRelType('');
+    setRelSearchQuery('');
+    setRelSearchResults([]);
+    setError('');
   };
 
   return (
     <div className="create-rel-form-card">
       <div className="create-rel-form-body">
-        <h4 className="create-section-title">Create New Relationship</h4>
+        <h3 className="create-section-title">Create Relationship</h3>
         
         {error && (
           <div className="create-alert create-alert-danger">
             {error}
             <button type="button" className="create-alert-close" onClick={() => setError('')}>×</button>
-          </div>
-        )}
-        
-        {success && (
-          <div className="alert alert-success">
-            {success}
-            <button type="button" className="create-alert-close" onClick={() => setSuccess('')}>×</button>
           </div>
         )}
         
@@ -151,7 +115,7 @@ const RelationshipCreator: React.FC<RelationshipCreatorProps> = ({
             <input
               type="text"
               className="create-rel-input"
-              placeholder="e.g., WROTE, PUBLISHED_BY, EDITION_OF"
+              placeholder="e.g., WROTE, EDITION_OF"
               value={relType}
               onChange={(e) => setRelType(e.target.value)}
             />
@@ -164,8 +128,7 @@ const RelationshipCreator: React.FC<RelationshipCreatorProps> = ({
             <select 
               className="create-rel-select"
               value={relDirection}
-              onChange={(e) => setRelDirection(e.target.value as 'outgoing' | 'incoming')}
-            >
+              onChange={(e) => setRelDirection(e.target.value as 'outgoing' | 'incoming')}>
               <option value="outgoing">Outgoing ({currentNodeTitle} → Target)</option>
               <option value="incoming">Incoming (Target → {currentNodeTitle})</option>
             </select>
@@ -197,15 +160,14 @@ const RelationshipCreator: React.FC<RelationshipCreatorProps> = ({
             <label className="create-rel-label">Search Results - Click to Create Relationship</label>
             <div className="create-search-results">
               {relSearchResults.map((node) => {
-                const displayLabel = getDisplayName(node);
+                const displayLabel = getNodeDisplayName(node);
                 const nodeLabels = (node.labels || []).filter(l => l !== 'Entity').join(', ');
                 
                 return (
                   <button
                     key={node.nodeId}
                     className="create-search-result-item"
-                    onClick={() => handleCreateRelationship(node)}
-                    disabled={creating}
+                    onClick={() => handleStageRelationship(node)}
                   >
                     <div className="create-search-result-header">
                       <div>
@@ -218,9 +180,6 @@ const RelationshipCreator: React.FC<RelationshipCreatorProps> = ({
                           </div>
                         )}
                       </div>
-                      {creating && (
-                        <span className="create-spinner" role="status" aria-hidden="true"></span>
-                      )}
                     </div>
                   </button>
                 );

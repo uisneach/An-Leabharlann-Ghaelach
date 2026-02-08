@@ -6,6 +6,7 @@ import { useAuth } from '../AuthContext';
 import Header from '../Header';
 import { createNode, createRelationship, searchNodes, SearchOptions } from '@/lib/api';
 import { validateLabel, validatePropertyKey, escapeHtml } from '@/lib/utils';
+import { SearchResult, SearchResponse } from '@/lib/types';
 
 // Properties that should use textarea instead of input
 const LONG_TEXT_PROPERTIES = ['description', 'contents', 'summary', 'biography', 'analysis'];
@@ -22,27 +23,6 @@ interface StagedRelationship {
   direction: 'outgoing' | 'incoming';
   targetNodeId: string;
   targetNodeLabel: string;
-}
-
-interface SearchResult {
-  nodeId: string;           // Updated to match new API
-  labels: string[];
-  properties: {
-    name?: string;
-    title?: string;
-    display_name?: string;
-    [key: string]: any;
-  };
-  score: number;            // NEW: Search relevance score
-  matchedProperty?: string; // NEW: Which property matched
-  matchType?: 'exact' | 'prefix' | 'substring'; // NEW: How it matched
-}
-
-interface SearchResponse {
-  success: boolean;
-  query: string;
-  results: SearchResult[];
-  totalMatches: number;
 }
 
 const CreateNodePage = () => {

@@ -11,26 +11,7 @@ import {
   getNodeTitle
 } from '@/lib/utils';
 import { getExternalLinkText } from '@/lib/domainNames';
-
-
-interface Node {
-  nodeId: string;
-  labels: string[];
-  properties: {
-    display_name?: string;
-    title?: string;
-    name?: string;
-    nodeId?: string | number;
-    img_link?: string | string[];
-    [key: string]: any;
-  };
-}
-
-interface Relationship {
-  type: string;
-  fromNode: Node;
-  toNode: Node;
-}
+import { Node, Relationship } from '@/lib/types';
 
 interface NodeData extends Node {
   outgoing: Relationship[];

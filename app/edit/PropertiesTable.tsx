@@ -49,7 +49,7 @@ const PropertiesTable: React.FC<PropertiesTableProps> = ({
 
   return (
     <div className="mb-4" id="properties-container">
-      <h2 className="h5 mb-3" id="properties-title" style={{ marginTop: '2rem' }}>Edit Properties</h2>
+      <h2 className="h2 mb-3" id="properties-title" style={{ marginTop: '2rem' }}>Edit Properties</h2>
       <div className="mb-3">
         <small className="text-muted">
           Tip: Properties can be single values or lists. Use "Convert to List" to store multiple values for a property.
@@ -102,8 +102,7 @@ const PropertiesTable: React.FC<PropertiesTableProps> = ({
       <div className="d-flex gap-2 mt-3">
         <button 
           className="btn btn-secondary"
-          onClick={handleAddProperty}
-        >
+          onClick={handleAddProperty}>
           + Add New Property
         </button>
       </div>
