@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '../AuthContext';
+import { useAuth } from '@/app/AuthContext';
 import Header from '@/app/Header';
 import Footer from '@/app/Footer'
 import { getNodesByLabel } from '@/lib/api';
@@ -50,15 +50,13 @@ const NodesPage = () => {
       if (!response.ok) throw new Error('Failed to load nodes');
       
       const data: NodesApiResponse = await response.json();
-
-      console.log(data);
       
       // Handle the new API response format
       let nodesData = data.nodes || [];
       
       // Sort nodes alphabetically
       nodesData = sortNodes(nodesData);
-      console.log(nodesData);
+      
       setNodes(nodesData);
       setError('');
     } catch (error) {
@@ -88,7 +86,7 @@ const NodesPage = () => {
           <ul className="list-group" style={{ marginBottom: '2rem' }}>
             {nodes.map((node, index) => (
               <li key={index} className="list-group-item">
-                <a href={`/info?nodeId=${encodeURIComponent(node.nodeId)}`}>
+                <a href={`/info?id=${encodeURIComponent(node.nodeId)}`}>
                   {getNodeTitle(node)}
                 </a>
               </li>

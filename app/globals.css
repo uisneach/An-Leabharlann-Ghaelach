@@ -1532,8 +1532,8 @@ img {
 }
 
 .footer-links a {
-  color: #3498db;
-  text-decoration: none;
+  color: #bdc3c7;
+  text-decoration: underline;
   font-size: 0.9rem;
   transition: color 0.2s ease;
 }
@@ -1566,7 +1566,6 @@ img {
 .footer-copyright a:hover {
   text-decoration: underline;
 }
-
 
 .footer-note {
   font-size: 0.85rem;

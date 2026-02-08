@@ -2,8 +2,9 @@
 
 import { useEffect, useRef } from 'react'
 import mermaid from 'mermaid'
-import { useAuth } from '../AuthContext'
-import Header from '../Header'
+import { useAuth } from '@/app/AuthContext';
+import Header from '@/app/Header';
+import Footer from '@/app/Footer';
 
 mermaid.initialize({
   startOnLoad: false,
@@ -475,6 +476,7 @@ export default function HowTo() {
         <p>Used on an <a href="#issue">Issue</a> to indicate the <a href="#journal">Journal</a> or other publication to which the Issue belongs. Should always point from the Issue to a Journal.</p>
         </blockquote>
       </section>
+      <Footer />
     </div>
   );
 }
