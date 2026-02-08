@@ -78,6 +78,7 @@ header .navbar-brand {
   display: flex;
   align-items: center;
   font-family: var(--font-bunchlo), system-ui, sans-serif !important;
+  color: black;
 }
 header .navbar-nav .nav-link .navbar-text {
   color: white;
