@@ -35,7 +35,6 @@ export const DOMAIN_NAMES: Record<string, string> = {
   'oxfordreference.com': 'Oxford Reference',
   'cambridge.org': 'Cambridge University Press',
   'brill.com': 'Brill',
-  'jstor.org': 'JSTOR',
   
   // Journals
   'erudit.org': 'Érudit',
