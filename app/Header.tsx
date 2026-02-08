@@ -9,28 +9,7 @@ import {
   clearAuthTokens,
   getNodeTitle
 } from '@/lib/utils';
-
-interface SearchResult {
-  nodeId: string;
-  labels: string[];
-  properties: {
-    display_name?: string;
-    name?: string;
-    title?: string;
-    [key: string]: any;
-  };
-  score: number;
-  matchedProperty?: string;
-  matchType?: 'exact' | 'prefix' | 'substring';
-}
-
-interface SearchResponse {
-  success: boolean;
-  query: string;
-  results: SearchResult[];
-  totalMatches: number;
-  returned: number;
-}
+import { SearchRestul, SearchResponse } from '@/lib/types';
 
 interface RegisterErrors {
   username?: string;

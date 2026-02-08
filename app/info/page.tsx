@@ -1,8 +1,9 @@
 'use client'
 import React, { useState, useEffect } from 'react';
 import { ExternalLink } from 'lucide-react';
-import { useAuth } from '../AuthContext';
-import Header from '../Header';
+import { useAuth } from '@/app/AuthContext';
+import Header from '@/app/Header';
+import Footer from '@/app/Footer';
 import { getNode, getNodeRelationships } from '@/lib/api';
 import { 
   cleanString, 
@@ -347,6 +348,7 @@ const NodeInfoPage = () => {
           </aside>
         </div>
       </div>
+      <Footer />
     </>
   );
 };

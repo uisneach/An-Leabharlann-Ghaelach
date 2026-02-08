@@ -157,7 +157,7 @@ async function handleNodes(request: NextRequest) {
       );
     }
     
-    // Build query based on whether limit is provided
+    // Build query - include labels(n) to get all labels
     let cypher: string;
     let params: Record<string, any> = {};
     
@@ -165,21 +165,21 @@ async function handleNodes(request: NextRequest) {
       // No limit - return all nodes with the label
       cypher = `
         MATCH (n:${label})
-        RETURN n
+        RETURN n, labels(n) AS labels
         ORDER BY n.nodeId
       `;
     } else {
       // With limit
       cypher = `
         MATCH (n:${label})
-        RETURN n
+        RETURN n, labels(n) AS labels
         ORDER BY n.nodeId
         LIMIT $limit
       `;
       params.limit = limit;
     }
     
-    const results = await runQuery<{ n: any }>(cypher, params);
+    const results = await runQuery<{ n: any; labels: string[] }>(cypher, params);
     
     console.log(`Found ${results.length} nodes with label '${label}'`);
     
@@ -196,13 +196,19 @@ async function handleNodes(request: NextRequest) {
       );
     }
     
-    // Extract node data and format response
+    // Extract node data and format to standardized Node interface
     const nodes = results.map(record => {
-      const node = record.n;
+      const nodeProperties = record.n;
+      const nodeLabels = record.labels || [label];
+      const nodeId = nodeProperties.nodeId;
+      
+      // Remove nodeId from properties since it's a separate field
+      const { nodeId: _, ...properties } = nodeProperties;
+      
       return {
-        id: node.nodeId,
-        labels: node.labels || [label],
-        properties: node
+        nodeId: nodeId,
+        labels: nodeLabels,
+        properties: properties
       };
     });
     

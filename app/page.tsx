@@ -4,6 +4,7 @@ import Image from "next/image";
 import Welcome from "./Welcome";
 import NodeList from "./NodeList";
 import Header from "./Header";
+import Footer from "./Footer";
 import React, { useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { getAllLabels } from '@/lib/api';
@@ -100,6 +101,7 @@ export default function Home() {
           ))}
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

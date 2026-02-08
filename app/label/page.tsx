@@ -2,24 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '../AuthContext';
-import Header from '../Header';
+import Header from '@/app/Header';
+import Footer from '@/app/Footer'
 import { getNodesByLabel } from '@/lib/api';
 import { sortNodes, getNodeTitle } from '@/lib/utils';
+import { Node } from '@/lib/types';
 
 // Type definitions
-interface NodeProperties {
-  name?: string;
-  title?: string;
-  display_name?: string;
-  [key: string]: any;
-}
-
-interface Node {
-  id: string;
-  labels: string[];
-  properties: NodeProperties;
-}
-
 interface NodesApiResponse {
   success: boolean;
   label: string;
@@ -61,13 +50,15 @@ const NodesPage = () => {
       if (!response.ok) throw new Error('Failed to load nodes');
       
       const data: NodesApiResponse = await response.json();
+
+      console.log(data);
       
       // Handle the new API response format
       let nodesData = data.nodes || [];
       
       // Sort nodes alphabetically
       nodesData = sortNodes(nodesData);
-      
+      console.log(nodesData);
       setNodes(nodesData);
       setError('');
     } catch (error) {
@@ -105,6 +96,8 @@ const NodesPage = () => {
           </ul>
         )}
       </div>
+
+      <Footer />
     </div>
   );
 };
