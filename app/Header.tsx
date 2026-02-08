@@ -9,7 +9,7 @@ import {
   clearAuthTokens,
   getNodeTitle
 } from '@/lib/utils';
-import { SearchRestul, SearchResponse } from '@/lib/types';
+import { SearchResult, SearchResponse } from '@/lib/types';
 
 interface RegisterErrors {
   username?: string;
