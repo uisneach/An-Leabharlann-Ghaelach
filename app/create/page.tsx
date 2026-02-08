@@ -407,6 +407,7 @@ const CreateNodePage = () => {
             </div>
           </div>
         </div>
+        <Footer />
       </div>
     );
   }
@@ -901,6 +902,7 @@ const CreateNodePage = () => {
           </button>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

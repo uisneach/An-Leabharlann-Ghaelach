@@ -2,8 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import isEqual from 'react-fast-compare';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../AuthContext';
-import Header from '../Header';
+import { useAuth } from '@/app/AuthContext';
+import Header from '@/app/Header';
+import Footer from '@/app/Footer';
 import { 
   getNode, 
   getNodeRelationships,
@@ -276,6 +277,7 @@ const EditPage = () => {
             <p>{error}</p>
           </div>
         </div>
+        <Footer />
       </>
     );
   }
@@ -294,6 +296,7 @@ const EditPage = () => {
             <p className="text-muted">Please select a node to edit.</p>
           </div>
         </div>
+        <Footer />
       </>
     );
   }
@@ -362,6 +365,7 @@ const EditPage = () => {
           />
         </div>
       </div>
+      <Footer />
     </>
   );
 };

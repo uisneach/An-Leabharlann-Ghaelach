@@ -88,7 +88,7 @@ const NodesPage = () => {
           <ul className="list-group" style={{ marginBottom: '2rem' }}>
             {nodes.map((node, index) => (
               <li key={index} className="list-group-item">
-                <a href={`/info?nodeId=${encodeURIComponent(node.id)}`}>
+                <a href={`/info?nodeId=${encodeURIComponent(node.nodeId)}`}>
                   {getNodeTitle(node)}
                 </a>
               </li>
