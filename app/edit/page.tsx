@@ -10,12 +10,13 @@ import {
   updateNode,
   deleteNode,
   deleteNodeProperty,
+  createRelationship,
   deleteRelationship,
   updateNodeProperties,
   addNodeLabels,
   deleteNodeLabels
 } from '@/lib/api';
-import { validateLabel, validatePropertyKey, getNodeDisplayName } from '@/lib/utils';
+import { validateLabel, validatePropertyKey, getNodeDisplayName, isSameRel } from '@/lib/utils';
 import { Node, Relationship, NodeData } from '@/lib/types';
 import PropertiesTable from './PropertiesTable';
 import LabelsEditor from './LabelsEditor';
@@ -131,6 +132,7 @@ const EditPage = () => {
       setNodeData(fullData);
       setEditedProperties(editableProps);
       setEditedLabels(fullData.labels.filter(l => l !== 'Entity'));
+      setEditedRels([...fullData.incoming, ...fullData.outgoing]);
       setLoading(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -153,91 +155,6 @@ const EditPage = () => {
     }
   };
 
-  const handleDeleteProperty = async (key: string) => {
-    if (!nodeData || !confirm(`Are you sure you want to delete the property "${key}"?`)) return;
-    
-    try {
-      const response = await deleteNodeProperty(nodeData.id, key);
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data?.error?.message || 'Failed to delete property');
-      }
-      await loadNodeData();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete property');
-    }
-  };
-
-  const handleDeleteRelationship = async (rel: Relationship) => {
-    if (!confirm('Are you sure you want to delete this relationship?')) return;
-    
-    try {
-      const response = await deleteRelationship(rel.fromId, rel.toId, rel.type);
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data?.error?.message || 'Failed to delete relationship');
-      }
-      await loadNodeData();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete relationship');
-    }
-  };
-
-  const handleSaveProperties = async () => {
-    if (!nodeData) return;
-    
-    // Clean up properties: remove empty strings from arrays, remove empty properties
-    const cleanedProperties = cleanProperties(editedProperties);
-    
-    try {
-      const response = await updateNodeProperties(nodeData.id, cleanedProperties);
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data?.error?.message || 'Failed to update properties');
-      }
-      setEditingSection(null);
-      await loadNodeData();
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update properties');
-    }
-  };
-
-  const handleSaveLabels = async () => {
-    if (!nodeData) return;
-    
-    // Validate all labels
-    for (const label of editedLabels) {
-      const validation = validateLabel(label);
-      if (!validation.valid) {
-        setError(validation.error || 'Invalid label');
-        return;
-      }
-    }
-    
-    try {
-      const currentLabels = nodeData.labels.filter(l => l !== 'Entity');
-      const currentSet = new Set(currentLabels);
-      const editedSet = new Set(editedLabels);
-      
-      const toAdd = editedLabels.filter(l => !currentSet.has(l));
-      const toRemove = currentLabels.filter(l => !editedSet.has(l));
-      
-      if (toAdd.length > 0) await addNodeLabels(nodeData.id, toAdd);
-      if (toRemove.length > 0) await deleteNodeLabels(nodeData.id, toRemove);
-      
-      setEditingSection(null);
-      await loadNodeData();
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update labels');
-    }
-  };
-
-  const onEditRelationships = (relationships: Relationship[]) => {
-    setEditedRels(relationships);
-  };
-
   const handleSave = async () => {
     if (!nodeData) return;
 
@@ -248,17 +165,14 @@ const EditPage = () => {
     // DELETE /api/relationships?fromNodeId=${fromNodeId}& ... etc.
     // If new relationships have been added, we add them at PUT /api/relationships.
 
-    console.log(editedRels);
-    return;
-
     // Check editedProperties against nodeData.properties
     const propChange = !isEqual(editedProperties, cleanProperties(nodeData.properties))
 
     // Check editedLabels against nodeData.labels
     const labelChange = !isEqual(editedLabels, nodeData.labels);
 
-    // Try to POST to /api/nodes/[nodeId]
-    try {
+    // Try PUT to /api/nodes/[nodeId]. This will update props and labels.
+    /*try {
       let data: { labels?: string[]; properties?: Record<string, any> } = {};
       if (labelChange)
         data['labels'] = editedLabels;
@@ -273,6 +187,37 @@ const EditPage = () => {
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update node data.');
+      return;
+    }*/
+
+    // If PUT was success, go through relationships and either CREATE, DELETE, or DO NOTHING.
+    
+    const stagedRels = editedRels.filter((rel) => ![...nodeData.incoming, ...nodeData.outgoing].some((existingRel) => isSameRel(existingRel, rel)));
+    try {
+      for (const rel of stagedRels) {
+        await createRelationship(rel.fromNode.nodeId, rel.toNode.nodeId, rel.type);
+      }
+      setEditingSection(null);
+      await loadNodeData();
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create relationship(s).');
+      return;
+    }
+
+    // Compute all rels which are in the existing NodeData, and NOT in the new editedRels.
+    // Those rels are ones marked for deletion.
+    const relsToDelete = [...nodeData.incoming, ...nodeData.outgoing].filter((rel) => !editedRels.some((newRel) => isSameRel(rel, newRel)));
+    try {
+      for (const rel of relsToDelete) {
+        await deleteRelationship(rel.fromNode.nodeId, rel.toNode.nodeId, rel.type);
+      }
+      setEditingSection(null);
+      await loadNodeData();
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create relationship(s).');
+      return;
     }
   };
 
@@ -412,7 +357,7 @@ const EditPage = () => {
           {/* Relationships Section */}
           <RelationshipsManager
             nodeData={nodeData}
-            onEditRelationships={onEditRelationships}
+            onEditRelationships={setEditedRels}
           />
         </div>
       </div>

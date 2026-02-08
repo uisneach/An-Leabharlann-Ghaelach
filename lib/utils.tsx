@@ -1,4 +1,4 @@
-import { Node } from '@/lib/types';
+import { Node, Relationship } from '@/lib/types';
 
 /**
  * Centralized utility functions
@@ -242,20 +242,6 @@ export function groupBy<T>(arr: T[], keyFn: (item: T) => string): Record<string,
 // RELATIONSHIP UTILITIES
 // ============================================
 
-export interface Relationship {
-  type: string;
-  fromNode: {
-    nodeId: string;
-    labels?: string[];
-    properties: Record<string, any>;
-  };
-  toNode: {
-    nodeId: string;
-    labels?: string[];
-    properties: Record<string, any>;
-  };
-}
-
 /**
  * Category mappings for relationships
  */
@@ -334,6 +320,15 @@ export function categorizeRelationships(
 
   return { categorized, uncategorized };
 }
+
+// Helper to compare two relationships for equality (unique by from, to, type)
+export const isSameRel = (a: Relationship, b: Relationship): boolean => {
+  return (
+    a.fromNode.nodeId === b.fromNode.nodeId &&
+    a.toNode.nodeId === b.toNode.nodeId &&
+    a.type === b.type
+  );
+};
 
 // ============================================
 // LOCAL STORAGE UTILITIES

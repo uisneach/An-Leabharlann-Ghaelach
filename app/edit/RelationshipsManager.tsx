@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { cleanString, getNodeDisplayName } from '@/lib/utils';
+import { cleanString, getNodeDisplayName, isSameRel } from '@/lib/utils';
 import { NodeData, Relationship } from '@/lib/types';
 import RelationshipCreator from '@/app/RelationshipCreator';
 
@@ -20,8 +20,8 @@ const RelationshipsManager: React.FC<RelationshipsManagerProps> = ({
   // This component doesn't edit relationships. It just marks some for deletion
   // and stages others in a staging variable to be submitted later. It passes
   // these changes to the parent page for submission there.
-  const [ stagedRels, setStagedRels ] = useState<Relationship[]>([]);
-  const [ relsToDelete, setRelsToDelete ] = useState<Relationship[]>([]);
+  const [stagedRels, setStagedRels] = useState<Relationship[]>([]);
+  const [relsToDelete, setRelsToDelete] = useState<Relationship[]>([]);
 
   // Reset staged and deletes when nodeData changes (e.g., after save or new node)
   useEffect(() => {
@@ -29,14 +29,12 @@ const RelationshipsManager: React.FC<RelationshipsManagerProps> = ({
     setRelsToDelete([]);
   }, [nodeData]);
 
-  // Helper to compare two relationships for equality (unique by from, to, type)
-  const isSameRel = (a: Relationship, b: Relationship): boolean => {
-    return (
-      a.fromNode.nodeId === b.fromNode.nodeId &&
-      a.toNode.nodeId === b.toNode.nodeId &&
-      a.type === b.type
-    );
-  };
+  const isStaged = (rel: Relationship): boolean => {
+    return stagedRels.some((d) => isSameRel(d, rel));
+  }
+  const isMarkedForDelete = (rel: Relationship): boolean => {
+    return relsToDelete.some((d) => isSameRel(d, rel));
+  }
 
   // Compute original relationships from nodeData
   const originalRels: Relationship[] = [...nodeData.incoming, ...nodeData.outgoing];
@@ -56,16 +54,20 @@ const RelationshipsManager: React.FC<RelationshipsManagerProps> = ({
     }
     allRelTypes.get(rel.type)!.incoming.push(rel);
   });
-  
+
   nodeData.outgoing.forEach(rel => {
     if (!allRelTypes.has(rel.type)) {
       allRelTypes.set(rel.type, { incoming: [], outgoing: [] });
     }
     allRelTypes.get(rel.type)!.outgoing.push(rel);
   });
-
-  console.log('staged rels');
-  console.log(stagedRels);
+  
+  stagedRels.forEach(rel => {
+    if (!allRelTypes.has(rel.type)) {
+      allRelTypes.set(rel.type, { incoming: [], outgoing: [] });
+    }
+    allRelTypes.get(rel.type)!.outgoing.push(rel);
+  });
 
   const handleCreateRelationship = (rel: Relationship) => {
     // Compute new staged
@@ -132,7 +134,7 @@ const RelationshipsManager: React.FC<RelationshipsManagerProps> = ({
       <h2 className="h2 border-bottom pb-2 mb-3">Manage Relationships</h2>
       
       {/* Existing Relationships */}
-      {Array.from(allRelTypes.entries()).map(([relType, { incoming: inRels, outgoing: outRels }]) => (
+      {Array.from(allRelTypes).map(([relType, { incoming: inRels, outgoing: outRels }]) => (
         <div key={relType} className="rels-section mb-4">
           <h4 className="h5">{cleanString(relType)}</h4>
           
@@ -143,7 +145,6 @@ const RelationshipsManager: React.FC<RelationshipsManagerProps> = ({
                 {inRels.map((rel, idx) => {
                   const fromNode = rel.fromNode;
                   const fromLabel = getNodeDisplayName(fromNode);
-                  console.log(relsToDelete.some((d) => isSameRel(d, rel)));
                   
                   return (
                     <li key={idx} className="mb-2">
@@ -154,12 +155,20 @@ const RelationshipsManager: React.FC<RelationshipsManagerProps> = ({
                       <a href={`/info?id=${encodeURIComponent(nodeData.nodeId)}`}>
                         {nodeTitle}
                       </a>
+                      {isMarkedForDelete(rel) &&
+                      <button 
+                        className="btn btn-sm ms-2"
+                        onClick={() => handleUndoDelete(rel)}>
+                        Undo
+                      </button>
+                      }
+                      {!isMarkedForDelete(rel) &&
                       <button 
                         className="btn btn-sm btn-danger ms-2"
-                        onClick={() => onDeleteRelationship(fromNode.nodeId, nodeData.nodeId, rel.type)}
-                      >
+                        onClick={() => handleDeleteRelationship(rel)}>
                         Delete
                       </button>
+                      }
                     </li>
                   );
                 })}
@@ -176,20 +185,31 @@ const RelationshipsManager: React.FC<RelationshipsManagerProps> = ({
                   const toLabel = getNodeDisplayName(toNode);
                   
                   return (
-                    <li key={idx} className="mb-2">
-                      <a href={`/info?id=${encodeURIComponent(nodeData.nodeId)}`}>
+                    <li key={idx} className="mb-2" style={isStaged(rel) ? { backgroundColor: '#d4edda', borderLeft: '4px solid #28a745', padding: '10px 0 10px 8px', alignItems: 'center' } : (isMarkedForDelete(rel) ? { backgroundColor: '#f8d7da', borderLeft: '4px solid #dc3545', padding: '10px 0 10px 8px', alignItems: 'center' } : {})}>
+                      <a href={`/info?id=${encodeURIComponent(nodeData.nodeId)}`} style={isMarkedForDelete(rel) ? { textDecoration: 'line-through', margin: 'auto 0' } : { margin: 'auto 0' }}>
                         {nodeTitle}
                       </a>
-                      {' '}==[{rel.type}]==&gt;{' '}
-                      <a href={`/info?id=${encodeURIComponent(toNode.nodeId)}`}>
+                      <span style={isMarkedForDelete(rel) ? { textDecoration: 'line-through', margin: 'auto 0' } : { margin: 'auto 0' }}>
+                        ==[{rel.type}]==&gt;
+                      </span>
+                      <a href={`/info?id=${encodeURIComponent(toNode.nodeId)}`} style={isMarkedForDelete(rel) ? { textDecoration: 'line-through', margin: 'auto 0' } : { margin: 'auto 0' }}>
                         {toLabel}
                       </a>
+                      {isMarkedForDelete(rel) &&
+                      <button 
+                        className="btn btn-sm ms-2"
+                        style={{ textDecoration: 'none' }}
+                        onClick={() => handleUndoDelete(rel)}>
+                        Undo
+                      </button>
+                      }
+                      {!isMarkedForDelete(rel) &&
                       <button 
                         className="btn btn-sm btn-danger ms-2"
-                        onClick={() => onDeleteRelationship(nodeData.nodeId, toNode.nodeId, rel.type)}
-                      >
+                        onClick={() => handleDeleteRelationship(rel)}>
                         Delete
                       </button>
+                      }
                     </li>
                   );
                 })}
@@ -200,7 +220,7 @@ const RelationshipsManager: React.FC<RelationshipsManagerProps> = ({
       ))}
 
       {/* No relationships message */}
-      {nodeData.incoming.length === 0 && nodeData.outgoing.length === 0 && (
+      {(nodeData.incoming.length === 0 && nodeData.outgoing.length === 0 && stagedRels.length === 0) && (
         <div className="alert alert-info" style={{ textAlign: 'center' }}>
           This node has no relationships yet.
           <br /><br />

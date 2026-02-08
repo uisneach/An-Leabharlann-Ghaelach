@@ -6,7 +6,7 @@ import { SearchResult, SearchResponse, Relationship, Node } from '@/lib/types';
 interface RelationshipCreatorProps {
   currentNodeId: string;
   currentNodeTitle: string;
-  onStageRelationship: (relationship: Relationship) => void;
+  onCreateRelationship: (relationship: Relationship) => void;
 }
 
 /**
