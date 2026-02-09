@@ -5,7 +5,7 @@ import { useAuth } from '@/app/AuthContext';
 import Header from '@/app/Header';
 import Footer from '@/app/Footer'
 import { getNodesByLabel } from '@/lib/api';
-import { sortNodes, getNodeTitle } from '@/lib/utils';
+import { sortNodes, getNodeDisplayName } from '@/lib/utils';
 import { Node } from '@/lib/types';
 
 // Type definitions
@@ -87,7 +87,7 @@ const NodesPage = () => {
             {nodes.map((node, index) => (
               <li key={index} className="list-group-item">
                 <a href={`/info?id=${encodeURIComponent(node.nodeId)}`}>
-                  {getNodeTitle(node)}
+                  {getNodeDisplayName(node)}
                 </a>
               </li>
             ))}

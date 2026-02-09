@@ -6,8 +6,7 @@ import {
   validateUsername, 
   validatePassword,
   setLocalStorage,
-  clearAuthTokens,
-  getNodeTitle
+  clearAuthTokens
 } from '@/lib/utils';
 import { SearchResult, SearchResponse } from '@/lib/types';
 

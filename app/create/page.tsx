@@ -510,20 +510,7 @@ const CreateNodePage = () => {
               Properties store data about your node. They can be single values or lists.
             </p>
             
-            <div className="create-input-group">
-              <input
-                type="text"
-                placeholder="Property name (e.g., name, title, author)"
-                value={newPropertyKey}
-                onChange={(e) => setNewPropertyKey(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleAddProperty()}
-              />
-              <button className="create-add-button" onClick={handleAddProperty}>
-                Add Property
-              </button>
-            </div>
-            
-            {/* NEW: Duplicate Check Section - integrated into properties tab */}
+            {/* Duplicate Check Section - integrated into properties tab */}
             {showDuplicateCheck && (
               <div className="create-property-card" style={{ borderColor: '#ffc107', backgroundColor: '#fff3cd' }}>
                 <div className="create-property-card-body">
@@ -629,7 +616,7 @@ const CreateNodePage = () => {
               </div>
             )}
 
-            {/* NEW: Manual duplicate check button when panel is hidden */}
+            {/* Manual duplicate check button when panel is hidden */}
             {!showDuplicateCheck && properties.length > 0 && (
               <button
                 className="create-toggle-array-button"
@@ -743,6 +730,20 @@ const CreateNodePage = () => {
                 </div>
               </div>
             ))}
+
+            {/* Add Properties Button */}
+            <div className="create-input-group">
+              <input
+                type="text"
+                placeholder="Property name (e.g., name, title, author)"
+                value={newPropertyKey}
+                onChange={(e) => setNewPropertyKey(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleAddProperty()}
+              />
+              <button className="create-add-button" onClick={handleAddProperty}>
+                Add Property
+              </button>
+            </div>
             
             {properties.length === 0 && (
               <div className="create-empty-state">

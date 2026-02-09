@@ -9,7 +9,7 @@ import {
   cleanString, 
   isUrl, 
   categorizeRelationships,
-  getNodeTitle
+  getNodeDisplayName
 } from '@/lib/utils';
 import { getExternalLinkText } from '@/lib/domainNames';
 import { Node, Relationship } from '@/lib/types';
@@ -158,7 +158,7 @@ const NodeInfoPage = () => {
     );
   }
 
-  const title = getNodeTitle(nodeData);
+  const title = getNodeDisplayName(nodeData);
   const labels = nodeData.labels?.filter((l: string) => l !== 'Entity') || [];
 
   const { categorized, uncategorized } = categorizeRelationships(
@@ -243,7 +243,7 @@ const NodeInfoPage = () => {
                     // If this is an incoming relationship, show the fromNode
                     // If this is an outgoing relationship, show the toNode
                     const displayNode = rel.direction === 'incoming' ? rel.fromNode : rel.toNode;
-                    const label = getNodeTitle(displayNode);
+                    const label = getNodeDisplayName(displayNode);
                     
                     return (
                       <li key={idx} className="mb-2">
@@ -265,7 +265,7 @@ const NodeInfoPage = () => {
                   <div key={`in-${idx}`} className="mb-2">
                     <span className="badge bg-secondary me-2">← {rel.type}</span>
                     <a href={`?id=${encodeURIComponent(rel.fromNode.nodeId)}`}>
-                      {getNodeTitle(rel.fromNode)}
+                      {getNodeDisplayName(rel.fromNode)}
                     </a>
                   </div>
                 ))}
@@ -273,7 +273,7 @@ const NodeInfoPage = () => {
                   <div key={`out-${idx}`} className="mb-2">
                     <span className="badge bg-primary me-2">{rel.type} →</span>
                     <a href={`?id=${encodeURIComponent(rel.toNode.nodeId)}`}>
-                      {getNodeTitle(rel.toNode)}
+                      {getNodeDisplayName(rel.toNode)}
                     </a>
                   </div>
                 ))}

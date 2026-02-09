@@ -158,24 +158,6 @@ export function validatePropertyKey(key: string): { valid: boolean; error?: stri
 // ============================================
 
 /**
- * Get display title for a node
- */
-export function getNodeTitle(node: { 
-  properties: { 
-    display_name?: string; 
-    name?: string; 
-    title?: string; 
-    nodeId?: string | number; 
-  }; 
-  nodeId?: string;
-}): string {
-  return node.properties.display_name || 
-         node.properties.name || 
-         node.properties.title || 
-         String(node.properties.nodeId || node.nodeId || 'Unknown');
-}
-
-/**
  * Get trimmed and lowercased title for sorting
  */
 export function getNodeSortKey(node: { 

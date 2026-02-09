@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { getNodesByLabel } from '@/lib/api';
-import { getNodeTitle, getNodeSortKey, sortNodes } from '@/lib/utils';
+import { getNodeDisplayName, getNodeSortKey, sortNodes } from '@/lib/utils';
 
 const defaultLabels = ['Author', 'Text', 'Edition'];
 
@@ -92,7 +92,7 @@ export default function NodeList({ label, onRemove, isDefault, totalColumns, isA
       </div>
       <ul id={`${label}-list`} className="node-list">
         {sortedNodes.map((item) => {
-          const title = getNodeTitle(item);
+          const title = getNodeDisplayName(item);
           const nodeId = item.properties.nodeId || item.nodeId || -1;
           return (
             <li key={nodeId}>
