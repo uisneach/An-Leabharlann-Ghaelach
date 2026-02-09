@@ -160,14 +160,7 @@ export function validatePropertyKey(key: string): { valid: boolean; error?: stri
 /**
  * Get trimmed and lowercased title for sorting
  */
-export function getNodeSortKey(node: { 
-  properties: { 
-    display_name?: string; 
-    name?: string; 
-    title?: string; 
-    nodeId?: string | number; 
-  }
-}): string {
+export function getNodeSortKey(node: Node): string {
   const title = node.properties.display_name || 
                 node.properties.name || 
                 node.properties.title || 
@@ -179,14 +172,7 @@ export function getNodeSortKey(node: {
 /**
  * Sort nodes alphabetically by display name
  */
-export function sortNodes<T extends { 
-  properties: { 
-    display_name?: string; 
-    name?: string; 
-    title?: string; 
-    nodeId?: string | number; 
-  }
-}>(nodes: T[]): T[] {
+export function sortNodes<T extends Node>(nodes: T[]): T[] {
   return [...nodes].sort((a, b) => 
     getNodeSortKey(a).localeCompare(getNodeSortKey(b), undefined, { 
       sensitivity: 'base', 

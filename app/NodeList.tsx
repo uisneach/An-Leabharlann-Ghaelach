@@ -3,20 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { getNodesByLabel } from '@/lib/api';
 import { getNodeDisplayName, getNodeSortKey, sortNodes } from '@/lib/utils';
+import { Node } from '@/lib/types';
 
 const defaultLabels = ['Author', 'Text', 'Edition'];
-
-interface Node {
-  nodeId: string;
-  properties: {
-    title?: string;
-    name?: string;
-    display_name?: string;
-    nodeId?: string | number;
-    [key: string]: any;
-  };
-  [key: string]: any;
-}
 
 interface NodeListProps {
   label: string;
