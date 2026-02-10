@@ -68,8 +68,8 @@ const PropertiesTable: React.FC<PropertiesTableProps> = ({
           <tbody>
             {Object.entries(properties)
               .filter(([key]) => !RESERVED_PROPERTIES.includes(key))
-              .map(([key, value]) => (
-                <tr key={key}>
+              .map(([key, value], index) => (
+                <tr key={index}>
                   <td className="align-top">
                     <input 
                       type="text" 
