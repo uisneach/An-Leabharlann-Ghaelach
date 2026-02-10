@@ -4,9 +4,10 @@ import React, { useState } from 'react';
 interface ImageGalleryProps {
   images: string[];
   title: string;
+  showSourceLinks?: boolean;
 }
 
-const ImageGallery: React.FC<ImageGalleryProps> = ({ images, title }) => {
+const ImageGallery: React.FC<ImageGalleryProps> = ({ images, title, showSourceLinks = true }) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
 
@@ -39,7 +40,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, title }) => {
 
   return (
     <div className="image-gallery-container">
-      <h3 className="section-header">Image Gallery ({images.length} Images)</h3>
+      <h3 className="section-header">Image Gallery ({images.length} images)</h3>
       
       {/* Gallery Grid */}
       <div className="image-gallery-grid">
@@ -67,13 +68,11 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, title }) => {
           className="image-lightbox"
           onClick={closeLightbox}
           onKeyDown={handleKeyDown}
-          tabIndex={0}
-        >
+          tabIndex={0}>
           <button
             className="lightbox-close"
             onClick={closeLightbox}
-            aria-label="Close lightbox"
-          >
+            aria-label="Close lightbox">
             ×
           </button>
 
@@ -85,8 +84,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, title }) => {
                   e.stopPropagation();
                   goToPrevious();
                 }}
-                aria-label="Previous image"
-              >
+                aria-label="Previous image">
                 ‹
               </button>
               <button
@@ -95,8 +93,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, title }) => {
                   e.stopPropagation();
                   goToNext();
                 }}
-                aria-label="Next image"
-              >
+                aria-label="Next image">
                 ›
               </button>
             </>
@@ -108,8 +105,20 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, title }) => {
               alt={`${title} - Image ${currentIndex + 1}`}
               className="lightbox-image"
             />
-            <div className="lightbox-caption">
-              Image {currentIndex + 1} of {images.length}
+            <div className="lightbox-info">
+              <div className="lightbox-caption">
+                Image {currentIndex + 1} of {images.length}
+              </div>
+              {showSourceLinks && (
+                <a
+                  href={selectedImage}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="lightbox-source-btn"
+                  onClick={(e) => e.stopPropagation()}>
+                  View Source
+                </a>
+              )}
             </div>
           </div>
         </div>
@@ -210,6 +219,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, title }) => {
           object-fit: contain;
           border-radius: 4px;
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+          margin-bottom: 0;
         }
 
         .lightbox-caption {
@@ -217,6 +227,32 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, title }) => {
           margin-top: 1rem;
           font-size: 0.875rem;
           text-align: center;
+        }
+
+        .lightbox-info {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          gap: 0.75rem;
+          margin-top: 1rem;
+          justify-content: space-evenly;
+          width: 100%;
+        }
+
+        .lightbox-source-btn {
+          background: rgba(255, 255, 255, 0.15);
+          color: white;
+          padding: 0.5rem 1.25rem;
+          border-radius: 6px;
+          text-decoration: none;
+          font-size: 0.875rem;
+          transition: background 0.2s ease;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .lightbox-source-btn:hover {
+          background: rgba(255, 255, 255, 0.25);
+          color: white;
         }
 
         .lightbox-close {

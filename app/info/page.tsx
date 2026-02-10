@@ -180,7 +180,8 @@ const NodeInfoPage = () => {
     key !== 'nodeId' && key !== 'createdBy'
   );
   
-  const externalLinks = allProps.filter(([_, value]) => {
+  const externalLinks = allProps.filter(([key, value]) => {
+    if (key === 'img_link') return false;
     if (Array.isArray(value)) return value.some(v => isUrl(String(v)));
     return typeof value === 'string' && isUrl(value);
   });
@@ -353,6 +354,27 @@ const NodeInfoPage = () => {
                           );
                         });
                       })}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Image Links */}
+                {imgLink && (
+                  <div className="mb-4">
+                    <h3 className="section-header">Image Links</h3>
+                    <ul className="list-unstyled">
+                      {(Array.isArray(imgLink) ? imgLink : [imgLink]).map((link: any, idx: number) => (
+                        <li key={idx} className="mb-2">
+                          <a 
+                            href={String(link)} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="text-decoration-none flex-row align-items-center">
+                            <ExternalLink size={14} className="me-2" />
+                            Image {Array.isArray(imgLink) && imgLink.length > 1 ? `${idx + 1}` : 'Source'}
+                          </a>
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 )}
