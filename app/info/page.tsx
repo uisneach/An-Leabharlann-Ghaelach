@@ -4,6 +4,7 @@ import { ExternalLink } from 'lucide-react';
 import { useAuth } from '@/app/AuthContext';
 import Header from '@/app/Header';
 import Footer from '@/app/Footer';
+import ImageGallery from '@/app/info/ImageGallery';
 import { getNode, getNodeRelationships } from '@/lib/api';
 import { 
   cleanString, 
@@ -166,6 +167,11 @@ const NodeInfoPage = () => {
     nodeData.outgoing || []
   );
 
+  // Check if we have multiple images for gallery
+  const imgLink = nodeData.properties.img_link;
+  const hasMultipleImages = Array.isArray(imgLink) && imgLink.length > 1;
+  const images = hasMultipleImages ? imgLink : [];
+
   // Separate properties into sections
   const mainContentProps = ['description', 'contents', 'analysis', 'summary', 'biography', 'works'];
   
@@ -179,6 +185,8 @@ const NodeInfoPage = () => {
     return typeof value === 'string' && isUrl(value);
   });
 
+  console.log(allProps);
+  console.log(externalLinks);
   const infoboxProps = allProps.filter(([key]) => 
     !mainContentProps.includes(key) && 
     key !== 'img_link' && 
@@ -187,6 +195,7 @@ const NodeInfoPage = () => {
     key !== 'title' &&
     !externalLinks.some(([k]) => k === key)
   );
+  console.log(infoboxProps);
 
   return (
     <>
@@ -232,6 +241,11 @@ const NodeInfoPage = () => {
                 );
               })}
             </div>
+
+            {/* Image Gallery - Show if multiple images exist */}
+            {hasMultipleImages && (
+              <ImageGallery images={images} title={title} />
+            )}
 
             {/* Categorized relationships */}
             {Object.entries(categorized).map(([category, rels]) => (
