@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     // Create node with dynamic labels
     const labelString = nodeLabels.map(l => `:${l}`).join('');
     const cypher = `
-      CREATE (n:${labelString} $properties)
+      CREATE (n${labelString} $properties)
       RETURN n
     `;
     
