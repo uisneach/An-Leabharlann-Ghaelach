@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     )];
     
     // Validate label (Neo4j labels can't contain spaces or special chars)
-    if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(label)) {
+    if (labels.some(label => !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(label))) {
       return NextResponse.json(
         { 
           error: 'Invalid label format. Use alphanumeric and underscores only.' 
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       node: results[0].n,
-      message: `Node created with label '${label}'`
+      message: `Node created with labels '${labelString}'`
     }, { status: 201 });
     
   } catch (error) {
