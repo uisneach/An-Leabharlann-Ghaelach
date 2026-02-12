@@ -6,16 +6,21 @@ import { v4 as uuidv4 } from 'uuid';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { label, properties } = body;
+    const { labels, properties } = body;
     
-    if (!label || !properties) {
+    if (!labels || !properties) {
       return NextResponse.json(
         {
-          error: 'Missing required fields: label, properties'
+          error: 'Missing required fields: labels, properties'
         },
         { status: 400 }
       );
     }
+
+    // If labels is a string, convert to an array. Remove duplicates
+    const nodeLabels = [...new Set(
+      Array.isArray(labels) ? labels : [labels]
+    )];
     
     // Validate label (Neo4j labels can't contain spaces or special chars)
     if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(label)) {
@@ -31,10 +36,19 @@ export async function POST(request: NextRequest) {
     if (!properties.nodeId) {
       properties.nodeId = uuidv4();
     }
+
+    // Auto-generate display_name if not provided and label has config
+    /*if (!properties.display_name) {
+      const generatedDisplayName = await generateDisplayName(label, properties);
+      if (generatedDisplayName) {
+        properties.display_name = generatedDisplayName;
+      }
+    }*/
     
-    // Create node with dynamic label
+    // Create node with dynamic labels
+    const labelString = nodeLabels.map(l => `:${l}`).join('');
     const cypher = `
-      CREATE (n:${label} $properties)
+      CREATE (n:${labelString} $properties)
       RETURN n
     `;
     

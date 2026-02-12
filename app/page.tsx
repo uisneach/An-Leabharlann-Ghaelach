@@ -89,7 +89,7 @@ export default function Home() {
             Add
           </button>
         </div>
-        <div id="columns" className="row">
+        <div id="columns" className="row" style={{ minHeight: "90vh" }}>
           {activeLabels.map((label) => (
             <NodeList 
               key={label} 

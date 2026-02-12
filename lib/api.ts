@@ -83,7 +83,7 @@ export async function createNode(labels: string[], properties: Record<string, an
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify({ 
-      label: labels[0],
+      labels,
       properties 
     })
   });
