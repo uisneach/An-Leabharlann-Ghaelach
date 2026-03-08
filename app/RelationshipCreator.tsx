@@ -104,7 +104,7 @@ const RelationshipCreator: React.FC<RelationshipCreatorProps> = ({
         <h3 className={styles.sectionTitle}>Create Relationship</h3>
         
         {error && (
-          <div className={`${styles.alert} ${alertDanger}`}>
+          <div className={`${styles.alert} ${styles.alertDanger}`}>
             {error}
             <button type="button" className={styles.alertClose} onClick={() => setError('')}>×</button>
           </div>
