@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import styles from '@/public/styles/labeleditor.module.css';
 
 interface LabelsEditorProps {
   labels: string[];
@@ -32,14 +33,14 @@ const LabelsEditor: React.FC<LabelsEditorProps> = ({
   };
 
   return (
-    <div className="mb-4" id="labels-container">
+    <div className="mb-4" className={styles.labelsContainer}>
       <h2 className="h5 mb-3" style={{ marginTop: '2rem' }}>Edit Labels</h2>
       <ul className="list-unstyled" id="labelsList">
         {labels.map((label, idx) => (
-          <li key={idx} className="mb-2 label-item">
+          <li key={idx} className={`mb-2 ${styles.labelItem}`}>
             <input 
               type="text" 
-              className="form-control d-inline-block w-auto me-2 label-input" 
+              className={`${styles.formControl} d-inline-block w-auto me-2 ${styles.labelInput}`}
               value={label}
               onChange={(e) => handleLabelChange(idx, e.target.value)}
             />
@@ -55,7 +56,7 @@ const LabelsEditor: React.FC<LabelsEditorProps> = ({
         <li className="mb-2">
           <input 
             type="text" 
-            className="form-control d-inline-block w-auto me-2 label-input" 
+            className={`${styles.formControl} d-inline-block w-auto me-2 ${styles.labelInput}`}
             value={newLabelInput}
             onChange={(e) => setNewLabelInput(e.target.value)}
             onKeyPress={(e) => {
@@ -64,7 +65,6 @@ const LabelsEditor: React.FC<LabelsEditorProps> = ({
               }
             }}
             placeholder="Enter new label..."
-            style={{ width: '200px', marginRight: '1rem' }}
           />
           <button 
             className="btn btn-sm btn-secondary"

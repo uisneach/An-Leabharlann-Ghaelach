@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import styles from "@/public/styles/header.module.css";
 import { login, register, searchNodes, SearchOptions } from '@/lib/api';
 import { 
   escapeHtml, 
@@ -236,17 +237,17 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
   };
 
   return (
-    <header>
-      <nav>
+    <header className={styles.header}>
+      <nav className={styles.nav}>
         <div id="logo-and-header">
-          <a className="navbar-brand" href="https://uisneac.com" style={{ marginRight: 0 }}>
-            <img src="https://uisneac.com/assets/Gold-Celtic-Design.png" alt="Logo" width="32" height="32" />
+          <a className={styles.navbarBrand} href="https://uisneac.com" style={{ marginRight: 0 }}>
+            <img src="https://uisneac.com/assets/Gold-Celtic-Design.png" className={styles.headerImg} alt="Logo" width="32" height="32" />
           </a>
-          <a className="navbar-brand" href="/">An Leabharlann Ghaelach</a>
+          <a className={styles.navbarBrand} href="/">An Leabharlann Ghaelach</a>
         </div>
         <div id="search-form">
           <input
-            className="form-control"
+            className={styles.formControl}
             type="search"
             placeholder="Search the database…"
             value={searchQuery}
@@ -255,26 +256,24 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
             disabled={searchLoading}
           />
           <button 
-            className="btn btn-white" 
+            className={`${styles.btnWhite} btn`}
             id="search-btn" 
             onClick={handleSearch}
-            disabled={searchLoading}
-          >
+            disabled={searchLoading}>
             {searchLoading ? 'Searching...' : 'Search'}
           </button>
         </div>
         <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
           <li style={{ position: 'relative' }}>
             <a
-              className="nav-link"
-              onClick={() => {
+              className={styles.navLink}
+              onClick={() => { 
                 if (isAuthenticated) {
                   setIsDropdownOpen(!isDropdownOpen);
                 } else {
                   setIsLoginModalOpen(true);
                 }
-              }}
-            >
+              }}>
               {isAuthenticated ? username : 'Account'}
             </a>
             {isAuthenticated && isDropdownOpen && (
@@ -301,7 +300,7 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
                   <label className="form-label">Username</label>
                   <input
                     type="text"
-                    className="form-control"
+                    className={styles.formControl}
                     value={loginUsername}
                     onChange={(e) => setLoginUsername(e.target.value)}
                     onKeyPress={(e) => handleEnterKey(e, handleLogin)}
@@ -312,7 +311,7 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
                   <label className="form-label">Password</label>
                   <input
                     type="password"
-                    className="form-control"
+                    className={styles.formControl}
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
                     onKeyPress={(e) => handleEnterKey(e, handleLogin)}
@@ -320,9 +319,9 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
                   />
                 </div>
                 {loginError && <div className="text-danger mb-3">{loginError}</div>}
-                <button className="btn btn-primary btn-blue" onClick={handleLogin}>Log In</button>
+                <button className={`btn btn-primary ${styles.btnBlue}`} onClick={handleLogin}>Log In</button>
                 <button
-                  className="btn btn-link btn-blue"
+                  className={`btn btn-link ${styles.btnBlue}`}
                   onClick={() => {
                     setIsLoginModalOpen(false);
                     setIsRegisterModalOpen(true);
@@ -354,7 +353,7 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
                   <label className="form-label">Username</label>
                   <input
                     type="text"
-                    className="form-control"
+                    className={styles.formControl}
                     value={registerUsername}
                     onChange={(e) => {
                       setRegisterUsername(e.target.value);
@@ -371,7 +370,7 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
                   <label className="form-label">Password</label>
                   <input
                     type="password"
-                    className="form-control"
+                    className={styles.formControl}
                     value={registerPassword}
                     onChange={(e) => {
                       setRegisterPassword(e.target.value);
@@ -388,7 +387,7 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
                   <label className="form-label">Confirm Password</label>
                   <input
                     type="password"
-                    className="form-control"
+                    className={styles.formControl}
                     value={confirmPassword}
                     onChange={(e) => {
                       setConfirmPassword(e.target.value);
@@ -416,7 +415,7 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
               <h5 className="modal-title">
                 Search Results for "{searchQuery}"
                 {totalMatches > 0 && (
-                  <small className="text-muted ms-2">({totalMatches} match{totalMatches !== 1 ? 'es' : ''})</small>
+                  <small className="ms-2">({totalMatches} match{totalMatches !== 1 ? 'es' : ''})</small>
                 )}
               </h5>
               <button className="btn-close" onClick={() => { setIsSearchModalOpen(false); clearSearch(); }}>×</button>
@@ -425,7 +424,7 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
               {/* Advanced Search Toggle */}
               <div className="mb-3">
                 <button 
-                  className="btn btn-sm btn-outline-secondary"
+                  className={styles.btn}
                   onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
                 >
                   {showAdvancedSearch ? '− Hide' : '+ Show'} Advanced Filters
@@ -443,7 +442,7 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
                       </label>
                       <input
                         type="text"
-                        className="form-control form-control-sm"
+                        className="formControl form-control-sm"
                         placeholder="e.g., Text, Author, Edition"
                         value={searchLabels}
                         onChange={(e) => setSearchLabels(e.target.value)}
@@ -545,7 +544,7 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
 
               {/* Result Count Info */}
               {searchResults.length > 0 && (
-                <div className="mt-3 text-muted" style={{ fontSize: '0.875rem' }}>
+                <div className="mt-3" style={{ fontSize: '0.875rem' }}>
                   Showing {searchResults.length} of {totalMatches} results
                 </div>
               )}

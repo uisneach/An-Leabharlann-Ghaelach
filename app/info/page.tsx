@@ -1,5 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react';
+import styles from '@/public/styles/info.module.css';
 import { ExternalLink } from 'lucide-react';
 import { useAuth } from '@/app/AuthContext';
 import Header from '@/app/Header';
@@ -196,7 +197,6 @@ const NodeInfoPage = () => {
     key !== 'title' &&
     !externalLinks.some(([k]) => k === key)
   );
-  console.log(infoboxProps);
 
   return (
     <>
@@ -234,7 +234,7 @@ const NodeInfoPage = () => {
                 
                 return (
                   <div key={prop} className="mb-4">
-                    <h3 className="section-header">{cleanString(prop)}</h3>
+                    <h3 className={styles.sectionHeader}>{cleanString(prop)}</h3>
                     <div className="content-section">
                       <p>{String(value)}</p>
                     </div>
@@ -318,14 +318,14 @@ const NodeInfoPage = () => {
                 {infoboxProps.length > 0 && (
                   <div className="mb-3">
                     <h4 className="section-header">Details</h4>
-                    <table className="table table-sm table-borderless" id="info-table">
+                    <table className={`${styles.infoboxTable} ${styles.table} table-sm table-borderless`} id="info-table">
                       <tbody>
                         {infoboxProps.map(([key, value]) => (
-                          <tr key={key}>
+                          <tr key={key} className={styles.tr}>
                             <th className="text-muted small" style={{ width: '40%' }}>
                               {cleanString(key)}
                             </th>
-                            <td className="small">
+                            <td className={`small ${styles.td}`}>
                               {renderPropertyValue(value)}
                             </td>
                           </tr>
@@ -338,7 +338,7 @@ const NodeInfoPage = () => {
                 {/* External links */}
                 {externalLinks.length > 0 && (
                   <div className="mb-4">
-                    <h3 className="section-header">External Links</h3>
+                    <h3 className={styles.sectionHeader}>External Links</h3>
                     <ul className="list-unstyled">
                       {externalLinks.map(([key, value]) => {
                         const links = Array.isArray(value) ? value : [value];
@@ -361,7 +361,7 @@ const NodeInfoPage = () => {
                 {/* Image Links */}
                 {imgLink && (
                   <div className="mb-4">
-                    <h3 className="section-header">Image Links</h3>
+                    <h3 className={styles.sectionHeader}>Image Links</h3>
                     <ul className="list-unstyled">
                       {(Array.isArray(imgLink) ? imgLink : [imgLink]).map((link: any, idx: number) => (
                         <li key={idx} className="mb-2">

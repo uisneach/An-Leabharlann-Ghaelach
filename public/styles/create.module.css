@@ -1,0 +1,616 @@
+.pageContainer {
+  max-width: 900px;
+  margin: 1rem auto;
+  padding: 1rem;
+  background: white;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+
+.createPageTitle {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  color: #212529;
+}
+
+/* --- Tab Navigation --- */
+.createTabs {
+  display: flex;
+  border-bottom: 2px solid #dee2e6;
+  margin-bottom: 1.5rem;
+  list-style: none;
+  padding: 0;
+}
+
+.createTabItem {
+  margin: 0;
+}
+
+.createTabButton {
+  color: #495057;
+  background-color: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.createTabButton:hover {
+  color: #0d6efd;
+  border-bottom-color: #dee2e6;
+}
+
+.createTabButton.active {
+  color: #0d6efd;
+  background-color: transparent;
+  border-bottom-color: #0d6efd;
+}
+
+.createTabBadge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background-color: #e9ecef;
+  color: #495057;
+  border-radius: 12px;
+}
+
+.createTabButton.active .createTabBadge {
+  background-color: #0d6efd;
+  color: white;
+}
+
+/* --- Tab Content --- */
+.createTabContent {
+  display: none;
+}
+
+.createTabContent.active {
+  display: block;
+}
+
+/* --- Section Headers --- */
+.createSectionTitle {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  color: #212529;
+}
+
+.createSectionDescription {
+  color: #6c757d;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+/* --- Input Groups (Add Label/Property) --- */
+.createInputGroup {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1rem;
+}
+
+.createInputGroup input {
+  flex: 1;
+  border: 1px solid #ced4da;
+  border-radius: 4px 0 0 4px;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  border-right: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.createInputGroup input:focus {
+  border-color: #0d6efd;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+  border-right: none;
+}
+
+.createInputGroup .createAddButton {
+  border-radius: 0 4px 4px 0;
+  white-space: nowrap;
+  background-color: #0d6efd;
+  color: white;
+  border: 1px solid #0d6efd;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: background-color 0.15s ease;
+}
+
+.createInputGroup .createAddButton:hover {
+  background-color: #0b5ed7;
+}
+
+.createInputGroup .createAddButton:disabled {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+/* --- Labels List --- */
+.createLabelsList {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.createLabelItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.createLabelItem:last-child {
+  border-bottom: none;
+}
+
+.createLabelBadge {
+  padding: 0.35rem 0.65rem;
+  font-weight: 500;
+  border-radius: 4px;
+  color: black;
+  font-size: 1rem;
+}
+
+.createRemoveButton {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-family: inherit;
+  transition: background-color 0.15s ease;
+}
+
+.createRemoveButton:hover {
+  background-color: #bb2d3b;
+}
+
+/* --- Empty State --- */
+.createEmptyState {
+  padding: 1rem 1.25rem;
+  background-color: #cff4fc;
+  border: 1px solid #b6effb;
+  border-radius: 8px;
+  color: #055160;
+}
+
+/* --- Property Cards --- */
+.createPropertyCard {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.createPropertyCardBody {
+  padding: 1.25rem;
+}
+
+.createPropertyLabel {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #212529;
+}
+
+.createPropertyKeyRow {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.createPropertyKeyInput {
+  flex: 1;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.createPropertyKeyInput:focus {
+  border-color: #0d6efd;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.createDeleteButton {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: background-color 0.15s ease;
+}
+
+.createDeleteButton:hover {
+  background-color: #bb2d3b;
+}
+
+.createValueLabel {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #212529;
+}
+
+.createValueLabelBadge {
+  font-weight: 400;
+  color: #6c757d;
+  font-size: 0.875rem;
+}
+
+.createValueInput {
+  width: 100%;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.createValueInput:focus {
+  border-color: #0d6efd;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.createValueTextarea {
+  width: 100%;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 150px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.createValueTextarea:focus {
+  border-color: #0d6efd;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.createToggleArrayButton {
+  margin-top: 0.5rem;
+  background-color: transparent;
+  color: #6c757d;
+  border: 1px solid #6c757d;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.createToggleArrayButton:hover {
+  color: white;
+  background-color: #6c757d;
+}
+
+/* --- Array Value Items --- */
+.createArrayItem {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.createArrayItem input,
+.createArrayItem textarea {
+  flex: 1;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.createArrayItem input:focus,
+.createArrayItem textarea:focus {
+  border-color: #0d6efd;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.createArrayItem textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.createArrayItemRemove {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: background-color 0.15s ease;
+  align-self: flex-start;
+}
+
+.createArrayItemRemove:hover {
+  background-color: #bb2d3b;
+}
+
+.createArrayControls {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.createAddItemButton {
+  background-color: transparent;
+  color: #0d6efd;
+  border: 1px solid #0d6efd;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.createAddItemButton:hover {
+  color: white;
+  background-color: #0d6efd;
+}
+
+
+
+/* --- Staged Relationships --- */
+.createStagedTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #212529;
+}
+
+.createStagedList {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.createStagedItem {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.createStagedItem:last-child {
+  border-bottom: none;
+}
+
+.createStagedItemContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.createStagedRelText {
+  color: #212529;
+}
+
+.createStagedRelText strong {
+  font-weight: 600;
+}
+
+.createStagedRelType {
+  margin: 0 0.5rem;
+  color: #6c757d;
+}
+
+/* --- Action Buttons --- */
+.createActions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
+}
+
+.createSubmitButton {
+  background-color: #0d6efd;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1.125rem;
+  font-family: inherit;
+  font-weight: 500;
+  transition: background-color 0.15s ease;
+}
+
+.createSubmitButton:hover {
+  background-color: #0b5ed7;
+}
+
+.createSubmitButton:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.createCancelButton {
+  background-color: transparent;
+  color: #0d6efd;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1.125rem;
+  font-family: inherit;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.createCancelButton:hover {
+  color: #0b5ed7;
+  text-decoration: underline;
+}
+
+.createCancelButton:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* --- Spinner --- */
+.createSpinner {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  vertical-align: text-bottom;
+  border: 0.2em solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: createSpinnerAnimation 0.75s linear infinite;
+  margin-right: 0.5rem;
+}
+
+@keyframes createSpinnerAnimation {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+
+/* --- Loading State --- */
+.createLoadingContainer {
+  text-align: center;
+  padding: 3rem 0;
+}
+
+.createLoadingSpinner {
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+  vertical-align: text-bottom;
+  border: 0.25em solid #0d6efd;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: createSpinnerAnimation 0.75s linear infinite;
+}
+
+.createLoadingText {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 767px) {
+  .pageContainer {
+    margin: 0.5rem;
+    padding: 0.75rem;
+    width: calc(100% - 1rem);
+  }
+
+  .createPageTitle {
+    font-size: 1.5rem;
+  }
+
+  .createTabButton {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .createPropertyCardBody {
+    padding: 1rem;
+  }
+
+  .createSubmitButton,
+  .createCancelButton {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+  }
+
+  .createInputGroup {
+    flex-direction: column;
+  }
+
+  .createInputGroup input {
+    border-radius: 4px;
+    border-right: 1px solid #ced4da;
+    margin-bottom: 0.5rem;
+  }
+
+  .createInputGroup .createAddButton {
+    border-radius: 4px;
+    width: 100%;
+  }
+
+  .createSearchGroup {
+    flex-direction: column;
+  }
+
+  .createSearchGroup input {
+    border-radius: 4px;
+    border-right: 1px solid #ced4da;
+    margin-bottom: 0.5rem;
+  }
+
+  .createSearchButton {
+    border-radius: 4px;
+    width: 100%;
+  }
+
+  .createActions {
+    flex-direction: column;
+  }
+
+  .createActions button,
+  .createActions a {
+    width: 100%;
+    text-align: center;
+  }
+
+  .createPropertyKeyRow {
+    flex-direction: column;
+  }
+
+  .createDeleteButton {
+    width: 100%;
+  }
+
+  .createArrayControls {
+    flex-direction: column;
+  }
+
+  .createArrayControls button {
+    width: 100%;
+  }
+}

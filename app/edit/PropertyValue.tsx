@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import styles from '@/public/styles/propertyvalue.module.css';
 
 // Properties that should use textarea instead of input
 const LONG_TEXT_PROPERTIES = ['description', 'contents', 'summary'];
@@ -68,10 +69,10 @@ export const PropertyValue: React.FC<PropertyValueProps> = ({
     return (
       <div className="w-100">
         {arrayValues.map((item, idx) => (
-          <div key={idx} className="mb-2 d-flex gap-1 align-items-start property-list-item">
+          <div key={idx} className={`mb-2 d-flex gap-1 align-items-start ${styles.propertyListItem}`}>
             {isLongText ? (
               <textarea
-                className="form-control flex-grow-1"
+                className={`${styles.formControl} ${styles.textArea} flex-grow-1`}
                 rows={3}
                 value={item}
                 onChange={(e) => handleArrayItemChange(idx, e.target.value)}
@@ -80,7 +81,7 @@ export const PropertyValue: React.FC<PropertyValueProps> = ({
             ) : (
               <input
                 type="text"
-                className="form-control flex-grow-1"
+                className={`${styles.formControl} flex-grow-1`}
                 value={item}
                 onChange={(e) => handleArrayItemChange(idx, e.target.value)}
                 placeholder={`Item ${idx + 1}`}
@@ -103,7 +104,7 @@ export const PropertyValue: React.FC<PropertyValueProps> = ({
             + Add Item
           </button>
           <button
-            className="btn btn-sm btn-outline-secondary convert-to-single"
+            className={`btn btn-sm btn-outline-secondary ${styles.convertToSingle}`}
             onClick={toggleArrayMode}
             title="Convert to single value">
             Single Value
@@ -117,7 +118,7 @@ export const PropertyValue: React.FC<PropertyValueProps> = ({
     <div className="w-100">
       {isLongText ? (
         <textarea
-          className="form-control w-100"
+          className={`${styles.formControl} w-100`}
           rows={6}
           value={singleValue}
           onChange={(e) => setSingleValue(e.target.value)}
@@ -125,13 +126,13 @@ export const PropertyValue: React.FC<PropertyValueProps> = ({
       ) : (
         <input
           type="text"
-          className="form-control w-100"
+          className={`${styles.formControl} w-100`}
           value={singleValue}
           onChange={(e) => setSingleValue(e.target.value)}
           placeholder={`Enter ${propertyKey}`}/>
       )}
     <button
-      className="btn btn-sm btn-outline-secondary convert-to-list"
+      className={`btn btn-sm btn-outline-secondary ${styles.convertToList}`}
       onClick={toggleArrayMode}
       title="Convert to list">
       Convert to List

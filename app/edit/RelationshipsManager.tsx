@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import styles from '@/public/styles/relationshipsmanager.module.css';
 import { cleanString, getNodeDisplayName, isSameRel } from '@/lib/utils';
 import { NodeData, Relationship } from '@/lib/types';
 import RelationshipCreator from '@/app/RelationshipCreator';
@@ -136,7 +137,7 @@ const RelationshipsManager: React.FC<RelationshipsManagerProps> = ({
       {/* Existing Relationships */}
       {Array.from(allRelTypes).map(([relType, { incoming: inRels, outgoing: outRels }]) => (
         <div key={relType} className="rels-section mb-4">
-          <h4 className="h5">{cleanString(relType)}</h4>
+          <h4 className={`h5 ${styles.sectionTitle}`}>{cleanString(relType)}</h4>
           
           {inRels.length > 0 && (
             <div className="mb-3">
@@ -147,7 +148,7 @@ const RelationshipsManager: React.FC<RelationshipsManagerProps> = ({
                   const fromLabel = getNodeDisplayName(fromNode);
                   
                   return (
-                    <li key={idx} className="mb-2">
+                    <li key={idx} className={`mb-2 ${styles.relElement}`}>
                       <a href={`/info?id=${encodeURIComponent(fromNode.nodeId)}`}>
                         {fromLabel}
                       </a>
@@ -185,7 +186,7 @@ const RelationshipsManager: React.FC<RelationshipsManagerProps> = ({
                   const toLabel = getNodeDisplayName(toNode);
                   
                   return (
-                    <li key={idx} className="mb-2" style={isStaged(rel) ? { backgroundColor: '#d4edda', borderLeft: '4px solid #28a745', padding: '10px 0 10px 8px', alignItems: 'center' } : (isMarkedForDelete(rel) ? { backgroundColor: '#f8d7da', borderLeft: '4px solid #dc3545', padding: '10px 0 10px 8px', alignItems: 'center' } : {})}>
+                    <li key={idx} className={`mb-2 ${styles.relElement}`} style={isStaged(rel) ? { backgroundColor: '#d4edda', borderLeft: '4px solid #28a745', padding: '10px 0 10px 8px', alignItems: 'center' } : (isMarkedForDelete(rel) ? { backgroundColor: '#f8d7da', borderLeft: '4px solid #dc3545', padding: '10px 0 10px 8px', alignItems: 'center' } : {})}>
                       <a href={`/info?id=${encodeURIComponent(nodeData.nodeId)}`} style={isMarkedForDelete(rel) ? { textDecoration: 'line-through', margin: 'auto 0' } : { margin: 'auto 0' }}>
                         {nodeTitle}
                       </a>
@@ -221,7 +222,7 @@ const RelationshipsManager: React.FC<RelationshipsManagerProps> = ({
 
       {/* No relationships message */}
       {(nodeData.incoming.length === 0 && nodeData.outgoing.length === 0 && stagedRels.length === 0) && (
-        <div className="alert alert-info" style={{ textAlign: 'center' }}>
+        <div className={`${alert} alert-info`} style={{ textAlign: 'center' }}>
           This node has no relationships yet.
           <br /><br />
         </div>

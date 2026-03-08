@@ -1,0 +1,29 @@
+.formControl {
+  background: white;
+  color: #212529;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  flex: 1;
+  padding: .5rem;
+  margin-right: 1rem;
+}
+
+.labelInput {
+  width: '200px';
+  margin-right: '1rem';
+  border-radius: 4px;
+  padding: 0 10px;
+  max-width: 500px;
+  border: 1px solid black;
+}
+
+.labelItem {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+
+.labelsContainer {
+  width: 100%;
+  max-width: 400px;
+}

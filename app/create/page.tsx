@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react';
+import styles from '@/public/styles/create.module.css';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/AuthContext';
 import Header from '@/app/Header';
@@ -426,7 +427,7 @@ const CreateNodePage = () => {
       />
       
       <div id="create-page-container">
-        <h1 className="create-page-title">Create New Node</h1>
+        <h1 className={styles.createPageTitle}>Create New Node</h1>
         
         {error && (
           <div className="create-alert create-alert-danger">
@@ -515,7 +516,7 @@ const CreateNodePage = () => {
               <div className="create-property-card" style={{ borderColor: '#ffc107', backgroundColor: '#fff3cd' }}>
                 <div className="create-property-card-body">
                   <div className="create-property-key-row">
-                    <h4 style={{ margin: 0, fontSize: '1rem' }}>⚠️ Check for Duplicates</h4>
+                    <h4 style={{ margin: 0, fontSize: '1rem' }}>Check for Duplicates</h4>
                     <button 
                       className="create-toggle-array-button"
                       onClick={() => setShowDuplicateCheck(false)}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { PropertyValue } from './PropertyValue';
+import styles from '@/public/styles/propertiestable.module.css';
 
 // Reserved properties that cannot be edited
 const RESERVED_PROPERTIES = ['nodeId', 'createdBy'];
@@ -49,7 +50,7 @@ const PropertiesTable: React.FC<PropertiesTableProps> = ({
 
   return (
     <div className="mb-4" id="properties-container">
-      <h2 className="h2 mb-3" id="properties-title" style={{ marginTop: '2rem' }}>Edit Properties</h2>
+      <h2 className="h2 mb-3" className={styles.propertiesTitle}>Edit Properties</h2>
       <div className="mb-3">
         <small className="text-muted">
           Tip: Properties can be single values or lists. Use "Convert to List" to store multiple values for a property.
@@ -57,9 +58,9 @@ const PropertiesTable: React.FC<PropertiesTableProps> = ({
       </div>
       
       <div className="table-responsive">
-        <table className="table table-bordered">
+        <table className={`table table-bordered ${styles.table}`}>
           <thead>
-            <tr>
+            <tr className={styles.tr}>
               <th style={{ width: '25%' }}>Property</th>
               <th style={{ width: '65%' }}>Value</th>
               <th style={{ width: '10%' }}></th>
@@ -69,11 +70,11 @@ const PropertiesTable: React.FC<PropertiesTableProps> = ({
             {Object.entries(properties)
               .filter(([key]) => !RESERVED_PROPERTIES.includes(key))
               .map(([key, value], index) => (
-                <tr key={index}>
+                <tr key={index} className={styles.tr}>
                   <td className="align-top">
                     <input 
                       type="text" 
-                      className="form-control" 
+                      className={`${styles.formControl} ${styles.input}`}
                       value={key}
                       onChange={(e) => handlePropertyKeyChange(key, e.target.value)}
                     />
@@ -87,7 +88,7 @@ const PropertiesTable: React.FC<PropertiesTableProps> = ({
                   </td>
                   <td className="align-top text-center">
                     <button 
-                      className="btn btn-sm btn-danger"
+                      className={`btn btn-sm btn-danger ${styles.btnDanger}`}
                       onClick={() => handleDeleteProperty(key)}
                       title="Delete this property">
                       Delete

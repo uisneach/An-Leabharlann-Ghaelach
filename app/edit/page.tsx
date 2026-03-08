@@ -1,5 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react';
+import styles from '@/public/styles/edit.module.css';
 import isEqual from 'react-fast-compare';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/AuthContext';
@@ -68,6 +69,7 @@ const EditPage = () => {
   const [editedLabels, setEditedLabels] = useState<string[]>([]);
   const [editedRels, setEditedRels] = useState<Relationship[]>([]);
   const [authChecked, setAuthChecked] = useState<boolean>(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
 
   // Wait for auth context to initialize before checking authentication
   useEffect(() => {
@@ -159,6 +161,8 @@ const EditPage = () => {
   const handleSave = async () => {
     if (!nodeData) return;
 
+    setSaveStatus('saving');
+
     // We will save all edited data and submit to the API.
     // If properties or labels have changed, we submit them to POST /api/nodes/[nodeId]
     // in the request body.
@@ -188,6 +192,7 @@ const EditPage = () => {
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update node data.');
+      setSaveStatus('error');
       return;
     }
 
@@ -204,6 +209,7 @@ const EditPage = () => {
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create relationship(s).');
+      setSaveStatus('error');
       return;
     }
 
@@ -217,8 +223,11 @@ const EditPage = () => {
       setEditingSection(null);
       await loadNodeData();
       setError(null);
+      setSaveStatus('success');
+      setTimeout(() => setSaveStatus('idle'), 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create relationship(s).');
+      setSaveStatus('error');
       return;
     }
   };
@@ -311,7 +320,7 @@ const EditPage = () => {
         username={username}
         onAuthChange={checkAuthStatus}
       />
-      <div id="edit-page-container" className="container" style={{ maxWidth: '1200px' }}>
+      <div id="edit-page-container" className={styles.container}>
         <div className="mt-4">
           {/* Title */}
           <div id="title-container" className="mb-4">
@@ -331,8 +340,28 @@ const EditPage = () => {
               <button className="btn btn-outline-secondary" onClick={loadNodeData}>
                 Reload from Database
               </button>
-              <button className="btn btn-primary" onClick={handleSave}>
-                Save All Changes
+              <button
+                className={`btn ${saveStatus === 'error' ? 'btn-danger' : 'btn-primary'}`}
+                onClick={handleSave}
+                disabled={saveStatus === 'saving'}
+              >
+                {saveStatus === 'saving' && (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" />
+                    Saving…
+                  </>
+                )}
+                {saveStatus === 'success' && (
+                  <>
+                    Saved!
+                  </>
+                )}
+                {saveStatus === 'error' && (
+                  <>
+                    Save Failed
+                  </>
+                )}
+                {saveStatus === 'idle' && 'Save All Changes'}
               </button>
             </div>
 

@@ -1,0 +1,18 @@
+{
+	"Entity": {
+		"Text": {
+			"Edition": {
+				"Book": {},
+				"Article": {}
+			}
+		},
+		"Person": {
+			"Creator": {},
+			"Scholar": {},
+			"Translator": {}
+		},
+		"Artifact": {},
+		"Media": {},
+		"User": {}
+	}
+}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import styles from '@/public/styles/relationshipcreator.module.css';
 import { searchNodes, SearchOptions } from '@/lib/api';
 import { getNodeDisplayName } from '@/lib/utils';
 import { SearchResult, SearchResponse, Relationship, Node } from '@/lib/types';
@@ -98,23 +99,23 @@ const RelationshipCreator: React.FC<RelationshipCreatorProps> = ({
   };
 
   return (
-    <div className="create-rel-form-card">
-      <div className="create-rel-form-body">
-        <h3 className="create-section-title">Create Relationship</h3>
+    <div className={styles.relFormCard}>
+      <div className={styles.relFormBody}>
+        <h3 className={styles.sectionTitle}>Create Relationship</h3>
         
         {error && (
-          <div className="create-alert create-alert-danger">
+          <div className={`${styles.alert} ${alertDanger}`}>
             {error}
-            <button type="button" className="create-alert-close" onClick={() => setError('')}>×</button>
+            <button type="button" className={styles.alertClose} onClick={() => setError('')}>×</button>
           </div>
         )}
         
-        <div className="create-rel-row">
-          <div className="create-rel-col">
-            <label className="create-rel-label">Relationship Type</label>
+        <div className={styles.relRow}>
+          <div className={styles.relCol}>
+            <label className={styles.relLabel}>Relationship Type</label>
             <input
               type="text"
-              className="create-rel-input"
+              className={styles.relInput}
               placeholder="e.g., WROTE, EDITION_OF"
               value={relType}
               onChange={(e) => setRelType(e.target.value)}
@@ -123,10 +124,10 @@ const RelationshipCreator: React.FC<RelationshipCreatorProps> = ({
               Use UPPERCASE with underscores (e.g., EDITION_OF, WROTE)
             </small>
           </div>
-          <div className="create-rel-col">
-            <label className="create-rel-label">Direction</label>
+          <div className={styles.relCol}>
+            <label className={styles.relLabel}>Direction</label>
             <select 
-              className="create-rel-select"
+              className={styles.relSelect}
               value={relDirection}
               onChange={(e) => setRelDirection(e.target.value as 'outgoing' | 'incoming')}>
               <option value="outgoing">Outgoing ({currentNodeTitle} → Target)</option>
@@ -136,20 +137,20 @@ const RelationshipCreator: React.FC<RelationshipCreatorProps> = ({
         </div>
         
         <div>
-          <label className="create-rel-label">Search for Target Node</label>
-          <div className="create-search-group">
+          <label className={styles.relLabel}>Search for Target Node</label>
+          <div className={styles.searchGroup}>
             <input
               type="text"
+              className={styles.searchInput}
               placeholder="Search for a node..."
               value={relSearchQuery}
               onChange={(e) => setRelSearchQuery(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSearchRelTarget()}
             />
             <button 
-              className="create-search-button" 
+              className={styles.searchButton} 
               onClick={handleSearchRelTarget}
-              disabled={relSearching}
-            >
+              disabled={relSearching}>
               {relSearching ? 'Searching...' : 'Search'}
             </button>
           </div>
@@ -157,8 +158,8 @@ const RelationshipCreator: React.FC<RelationshipCreatorProps> = ({
         
         {relSearchResults.length > 0 && (
           <div style={{ marginTop: '1rem' }}>
-            <label className="create-rel-label">Search Results - Click to Create Relationship</label>
-            <div className="create-search-results">
+            <label className={styles.relLabel}>Search Results - Click to Create Relationship</label>
+            <div className={styles.searchResults}>
               {relSearchResults.map((node) => {
                 const displayLabel = getNodeDisplayName(node);
                 const nodeLabels = (node.labels || []).filter(l => l !== 'Entity').join(', ');
@@ -166,13 +167,13 @@ const RelationshipCreator: React.FC<RelationshipCreatorProps> = ({
                 return (
                   <button
                     key={node.nodeId}
-                    className="create-search-result-item"
+                    className={styles.searchResultItem}
                     onClick={() => handleStageRelationship(node)}
                   >
-                    <div className="create-search-result-header">
+                    <div className={styles.searchResultHeader}>
                       <div>
-                        <div className="create-search-result-title">{displayLabel}</div>
-                        <div className="create-search-result-labels">{nodeLabels}</div>
+                        <div className={styles.searchResultTitle}>{displayLabel}</div>
+                        <div className={styles.searchResultLabels}>{nodeLabels}</div>
                         {node.matchedProperty && (
                           <div className="text-muted" style={{ fontSize: '0.75rem' }}>
                             Matched in: {node.matchedProperty}

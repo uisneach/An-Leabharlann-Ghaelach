@@ -1,0 +1,31 @@
+.textArea {
+  border: 1px solid black;
+  margin: 0.5rem 0 0 0;
+  padding: 5px;
+  width: 100%;
+}
+
+.formControl {
+  background: white;
+  color: #212529;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  flex: 1;
+  padding: .5rem;
+  margin-right: 1rem;
+}
+
+.propertyListItem {
+  display: flex;
+  flex-direction: row;
+}
+
+.convertToList, .convert-to-single {
+  font-family: sans-serif, monospace;
+  font-size: 13px;
+  color: white;
+  background-color: #4875d0;
+  border: 1px solid #ddd;
+  width: 100%;
+  margin: 0;
+}

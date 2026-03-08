@@ -1,0 +1,33 @@
+.table {
+  border-collapse: separate;
+  border-spacing: 15px 0;
+}
+
+.table .btnDanger {
+  margin: 0.5rem 0 0 0;
+}
+
+.tr {
+  margin-top: 0.5rem;
+}
+
+.input {
+  border: 1px solid black;
+  margin: 0.5rem 0 0 0;
+  padding: 5px;
+  width: 100%;
+}
+
+.propertiesTitle {
+  margin-top: '2rem';
+}
+
+.formControl {
+  background: white;
+  color: #212529;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  flex: 1;
+  padding: .5rem;
+  margin-right: 1rem;
+}
