@@ -33,7 +33,7 @@ const LabelsEditor: React.FC<LabelsEditorProps> = ({
   };
 
   return (
-    <div className="mb-4" className={styles.labelsContainer}>
+    <div className={`${styles.labelsContainer} mb-4`}>
       <h2 className="h5 mb-3" style={{ marginTop: '2rem' }}>Edit Labels</h2>
       <ul className="list-unstyled" id="labelsList">
         {labels.map((label, idx) => (
