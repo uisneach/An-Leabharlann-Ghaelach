@@ -44,21 +44,18 @@ export default function RootLayout({
     <html lang="en">
     <head>
       <meta name="viewport" content="width=device-width, initial-scale=1" />
-      <!-- Site-generic Head Data -->
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>An Leabharlann Ghaelach</title>
       <link rel="icon" type="image/x-icon" href="https://uisneac.com/assets/Gold-Celtic-Design.png">
       <meta name="author" content="Ogmios" />
       <link rel="canonical" href="https://uisneac.com">
-
       <meta property="og:title" content="An Leabharlann Ghaelach - Uisneac">
       <meta property="og:site_name" content="An Leabharlann Ghaelach - Uisneac">
       <meta property="og:description" content="A digital library of Irish and Celtic source texts.">
       <meta property="og:image" content="https://uisneac.com/assets/Uisneac.webp">
       <meta property="og:url" content="https://leabharlann.uisneac.com">
       <meta property="og:type" content="website">
-
       <meta name="twitter:card" content="summary_large_image">
       <meta name="twitter:site" content="@ogmios">
       <meta name="twitter:title" content="An Leabharlann Ghaelach - Uisneac">
