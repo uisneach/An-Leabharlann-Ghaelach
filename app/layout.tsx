@@ -45,6 +45,9 @@ export default function RootLayout({
     <head>
       <meta charSet="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&display=swap" rel="stylesheet" />
+      
       <title>An Leabharlann Ghaelach</title>
       <link rel="icon" type="image/x-icon" href="https://uisneac.com/assets/Gold-Celtic-Design.png" />
       <meta name="author" content="Ogmios" />
@@ -61,13 +64,13 @@ export default function RootLayout({
       <meta name="twitter:creator" content="Ogmios" />
       <meta name="twitter:description" content="A digital library of Irish and Celtic source texts." />
       <meta name="twitter:image" content="https://uisneac.com/assets/Uisneac.webp" />
-
     </head>
-      <body className={`${bunchlo.variable} antialiased`} >
-        <AuthProvider>
-          {children}
-        </AuthProvider>
-      </body>
+
+    <body className={`${bunchlo.variable} antialiased`} >
+      <AuthProvider>
+        {children}
+      </AuthProvider>
+    </body>
     </html>
   );
 }
