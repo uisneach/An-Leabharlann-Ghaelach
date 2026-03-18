@@ -1,0 +1,188 @@
+/* ─────────────────────────────────────────────
+   Design tokens
+   ───────────────────────────────────────────── */
+:root {
+  --color-primary:        #0d6efd;
+  --color-primary-hover:  #1d4ed8;
+  --color-primary-ring:   rgba(37, 99, 235, 0.18);
+
+  --color-danger:         #dc2626;
+  --color-danger-hover:   #b91c1c;
+  --color-danger-ring:    rgba(220, 38, 38, 0.15);
+  --color-danger-soft-bg: #fff1f2;
+  --color-danger-soft-fg: #b91c1c;
+
+  --color-neutral-fg:     #374151;
+  --color-neutral-border: #d1d5db;
+  --color-neutral-bg:     #f9fafb;
+  --color-neutral-hover:  #f3f4f6;
+
+  --color-muted:          #6b7280;
+
+  --radius-sm: 5px;
+  --radius-md: 7px;
+
+  --font-size-sm:   0.9rem;
+  --font-size-base: 0.875rem;
+  --font-weight-medium: 500;
+}
+
+/* ─────────────────────────────────────────────
+   Base button reset
+   ───────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 1rem;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  font-family: inherit;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.14s, color 0.14s, border-color 0.14s, box-shadow 0.14s;
+  text-decoration: none;
+  line-height: 1.4;
+}
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-primary-ring);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ─────────────────────────────────────────────
+   Button variants
+   ───────────────────────────────────────────── */
+
+/* Primary — the ONE main CTA on the page */
+.btnPrimary {
+  composes: btn;
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+.btnPrimary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+/* Secondary — navigation, reload, neutral actions */
+.btnSecondary {
+  composes: btn;
+  background: #fff;
+  color: var(--color-neutral-fg);
+  border-color: var(--color-neutral-border);
+}
+.btnSecondary:hover:not(:disabled) {
+  background: var(--color-neutral-hover);
+}
+
+/* Danger — page-level destructive (Delete Node) */
+.btnDanger {
+  composes: btn;
+  background: var(--color-danger);
+  color: #fff;
+  border-color: var(--color-danger);
+}
+.btnDanger:hover:not(:disabled) {
+  background: var(--color-danger-hover);
+  border-color: var(--color-danger-hover);
+}
+.btnDanger:focus-visible {
+  box-shadow: 0 0 0 3px var(--color-danger-ring);
+}
+
+/* Danger ghost — inline row-level destructive (Delete property, ✕ remove label) */
+.btnDangerGhost {
+  composes: btn;
+  background: transparent;
+  color: var(--color-danger-soft-fg);
+  border-color: transparent;
+  padding: 0.3rem 0.55rem;
+  font-size: var(--font-size-sm);
+}
+.btnDangerGhost:hover:not(:disabled) {
+  background: var(--color-danger-soft-bg);
+  border-color: #fecaca;
+}
+.btnDangerGhost:focus-visible {
+  box-shadow: 0 0 0 3px var(--color-danger-ring);
+}
+
+/* Ghost — truly minor actions (Convert to List, Single Value) */
+.btnGhost {
+  composes: btn;
+  background: transparent;
+  color: var(--color-muted);
+  border-color: var(--color-neutral-border);
+  padding: 0.22rem 0.6rem;
+  font-size: var(--font-size-sm);
+  border-radius: var(--radius-sm);
+}
+.btnGhost:hover:not(:disabled) {
+  background: var(--color-neutral-hover);
+  color: var(--color-neutral-fg);
+}
+
+/* Small size modifier — used for "+ Add Item" etc */
+.btnSm {
+  composes: btn;
+  background: var(--color-primary);
+  color: white;
+  padding: 0.3rem 0.7rem;
+  font-size: var(--font-size-sm);
+}
+
+/* State: saving spinner */
+.btnPrimary.saving {
+  background: var(--color-primary-hover);
+}
+
+/* ─────────────────────────────────────────────
+   Shared input
+   ───────────────────────────────────────────── */
+.input {
+  display: block;
+  width: 100%;
+  padding: 0.42rem 0.65rem;
+  font-size: var(--font-size-base);
+  font-family: inherit;
+  color: #111827;
+  background: #fff;
+  border: 1px solid var(--color-neutral-border);
+  border-radius: var(--radius-md);
+  transition: border-color 0.14s, box-shadow 0.14s;
+  line-height: 1.5;
+}
+.input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-ring);
+}
+.input::placeholder {
+  color: #9ca3af;
+}
+
+.textarea {
+  composes: input;
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* ─────────────────────────────────────────────
+   Section header
+   ───────────────────────────────────────────── */
+.sectionTitle {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 1rem 0;
+  letter-spacing: -0.01em;
+}

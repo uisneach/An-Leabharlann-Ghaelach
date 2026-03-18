@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styles from '@/public/styles/labeleditor.module.css';
+import ui from '@/public/styles/ui.module.css';
 
 interface LabelsEditorProps {
   labels: string[];
@@ -34,7 +35,7 @@ const LabelsEditor: React.FC<LabelsEditorProps> = ({
 
   return (
     <div className={`${styles.labelsContainer} mb-4`}>
-      <h2 className="h5 mb-3" style={{ marginTop: '2rem' }}>Edit Labels</h2>
+      <h3 className={`${styles.labelsTitle}`}>Edit Labels</h3>
       <ul className="list-unstyled" id="labelsList">
         {labels.map((label, idx) => (
           <li key={idx} className={`mb-2 ${styles.labelItem}`}>
@@ -45,7 +46,7 @@ const LabelsEditor: React.FC<LabelsEditorProps> = ({
               onChange={(e) => handleLabelChange(idx, e.target.value)}
             />
             <button 
-              className="btn btn-sm btn-danger remove-label"
+              className={`${ui.btnDanger} remove-labels`}
               onClick={() => handleRemoveLabel(idx)}>
               Remove
             </button>
@@ -67,7 +68,7 @@ const LabelsEditor: React.FC<LabelsEditorProps> = ({
             placeholder="Enter new label..."
           />
           <button 
-            className="btn btn-sm btn-secondary"
+            className={ui.btnSecondary}
             onClick={handleAddLabel}>
             Add Label
           </button>

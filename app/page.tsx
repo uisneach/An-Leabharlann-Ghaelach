@@ -1,6 +1,9 @@
 'use client'
 
+// Import styles
 import styles from '@/public/styles/home.module.css';
+import ui from '@/public/styles/ui.module.css';
+
 import Image from "next/image";
 import Welcome from "./Welcome";
 import NodeList from "./NodeList";
@@ -87,7 +90,7 @@ export default function Home() {
                 </option>
               ))}
             </select>
-            <button id="add-label-btn" className="btn btn-primary ms-2" onClick={addLabel}>
+            <button id="add-label-btn" className={ui.btnPrimary} onClick={addLabel}>
               Add
             </button>
           </div>

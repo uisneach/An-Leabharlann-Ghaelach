@@ -1,7 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react';
+
+// Import CSS styles
 import styles from '@/public/styles/create.module.css';
+import ui from '@/public/styles/ui.module.css';
+
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/AuthContext';
 import Header from '@/app/Header';
@@ -28,8 +32,6 @@ const CreateNodePage = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<'labels' | 'properties' | 'relationships'>('labels');
   const [authChecked, setAuthChecked] = useState<boolean>(false);
-
-
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -218,7 +220,7 @@ const CreateNodePage = () => {
             )}
           </button>
           <button
-            className={styles.cancelButton}
+            className={ui.btn}
             onClick={handleCancel}
             disabled={loading}
           >

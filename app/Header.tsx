@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styles from "@/public/styles/header.module.css";
+import ui from '@/public/styles/ui.module.css';
 import { login, register, searchNodes, SearchOptions } from '@/lib/api';
 import { 
   escapeHtml, 
@@ -256,7 +257,7 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
             disabled={searchLoading}
           />
           <button 
-            className={`${styles.btnWhite} btn`}
+            className={ui.btnSecondary}
             id="search-btn" 
             onClick={handleSearch}
             disabled={searchLoading}>
@@ -292,7 +293,7 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h5 className="modal-title">Log In</h5>
-              <button className="btn-close" onClick={() => setIsLoginModalOpen(false)}>×</button>
+              <button className={ui.btnSecondary} onClick={() => setIsLoginModalOpen(false)}>×</button>
             </div>
             <div className="modal-body">
               <div>
@@ -319,9 +320,9 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
                   />
                 </div>
                 {loginError && <div className="text-danger mb-3">{loginError}</div>}
-                <button className={`btn btn-primary ${styles.btnBlue}`} onClick={handleLogin}>Log In</button>
+                <button className={ui.btnPrimary} onClick={handleLogin}>Log In</button>
                 <button
-                  className={`btn btn-link ${styles.btnBlue}`}
+                  className={ui.btnPrimary}
                   onClick={() => {
                     setIsLoginModalOpen(false);
                     setIsRegisterModalOpen(true);
@@ -399,7 +400,7 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
                   />
                   {registerErrors.confirmPassword && <div className="invalid-feedback">{registerErrors.confirmPassword}</div>}
                 </div>
-                <button className="btn btn-primary w-100" onClick={handleRegister}>Register</button>
+                <button className={ui.btnPrimary} onClick={handleRegister}>Register</button>
               </div>
               <p className="text-center mt-3">Already have an account? <a href="#" onClick={(e) => { e.preventDefault(); setIsRegisterModalOpen(false); setIsLoginModalOpen(true); }}>Log In</a></p>
             </div>
@@ -418,13 +419,13 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
                   <small className="ms-2">({totalMatches} match{totalMatches !== 1 ? 'es' : ''})</small>
                 )}
               </h5>
-              <button className="btn-close" onClick={() => { setIsSearchModalOpen(false); clearSearch(); }}>×</button>
+              <button className={ui.btnSecondary} onClick={() => { setIsSearchModalOpen(false); clearSearch(); }}>×</button>
             </div>
             <div className="modal-body">
               {/* Advanced Search Toggle */}
               <div className="mb-3">
                 <button 
-                  className={styles.btn}
+                  className={ui.btnSecondary}
                   onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
                 >
                   {showAdvancedSearch ? '− Hide' : '+ Show'} Advanced Filters
@@ -476,14 +477,14 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
                       <small className="text-muted">Filter by property values</small>
                     </div>
                     <button 
-                      className="btn btn-sm btn-primary mt-2"
+                      className={ui.btnPrimary}
                       onClick={handleSearch}
                       disabled={searchLoading}
                     >
                       {searchLoading ? 'Searching...' : 'Apply Filters'}
                     </button>
                     <button 
-                      className="btn btn-sm btn-link"
+                      className={ui.btnSecondary}
                       onClick={() => {
                         setSearchLabels('');
                         setExcludeLabels('');
@@ -521,8 +522,7 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
                         key={idx}
                         className="list-group-item list-group-item-action d-flex justify-content-between align-items-start"
                         href={`/info?id=${encodeURIComponent(result.nodeId)}`}
-                        style={{ textDecoration: 'none' }}
-                      >
+                        style={{ textDecoration: 'none' }}>
                         <div className="flex-grow-1">
                           <div className="d-flex w-100 justify-content-between align-items-start">
                             <h6 className="mb-1">

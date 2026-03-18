@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
+
+// Import CSS styles
 import styles from '@/public/styles/relationshipsmanager.module.css';
+import ui from '@/public/styles/ui.module.css';
+
 import { cleanString, getNodeDisplayName, isSameRel } from '@/lib/utils';
 import { NodeData, Relationship } from '@/lib/types';
 import RelationshipCreator from '@/app/components/RelationshipCreator';
@@ -186,7 +190,7 @@ const RelationshipsManager: React.FC<RelationshipsManagerProps> = ({
                       </a>
                       {deleted
                         ? <button className="btn btn-sm ms-2" style={{ textDecoration: 'none' }} onClick={() => handleUndoDelete(rel)}>Undo</button>
-                        : <button className="btn btn-sm btn-danger ms-2" onClick={() => handleDeleteRelationship(rel)}>Delete</button>
+                        : <button className={ui.btnDanger} onClick={() => handleDeleteRelationship(rel)}>Delete</button>
                       }
                     </li>
                   );

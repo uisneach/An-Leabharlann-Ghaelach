@@ -1,6 +1,10 @@
 'use client'
 import React, { useState, useEffect } from 'react';
+
+// Import styles
 import styles from '@/public/styles/info.module.css';
+import ui from '@/public/styles/ui.module.css';
+
 import { ExternalLink } from 'lucide-react';
 import { useAuth } from '@/app/AuthContext';
 import Header from '@/app/Header';
@@ -219,7 +223,7 @@ const NodeInfoPage = () => {
               <div className="mb-3">
                 <a 
                   href={`/edit?id=${encodeURIComponent(nodeData.nodeId)}`}
-                  className="btn btn-primary me-2"
+                  className={ui.btnPrimary}
                 >
                   Edit Node
                 </a>

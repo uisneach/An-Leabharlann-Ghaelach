@@ -1,33 +1,66 @@
+.propertiesTitle {
+  margin-top: 2rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111;
+}
+
 .table {
-  border-collapse: separate;
-  border-spacing: 15px 0;
-}
-
-.table .btnDanger {
-  margin: 0.5rem 0 0 0;
-}
-
-.tr {
-  margin-top: 0.5rem;
-}
-
-.input {
-  border: 1px solid black;
-  margin: 0.5rem 0 0 0;
-  padding: 5px;
+  border-collapse: collapse;
+  border-spacing: 0;
   width: 100%;
 }
 
-.propertiesTitle {
-  margin-top: '2rem';
+.table td,
+.table th {
+  padding: 0.6rem 0.75rem;
+  vertical-align: top;
+}
+
+.tr {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tr:last-child {
+  border-bottom: none;
+}
+
+.input {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.9rem;
+  width: 100%;
+  background: #fff;
+  color: #111;
+  transition: border-color 0.15s;
+  margin-top: 0;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #3b5fc0;
+  box-shadow: 0 0 0 3px rgba(59, 95, 192, 0.12);
 }
 
 .formControl {
-  background: white;
-  color: #212529;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  flex: 1;
-  padding: .5rem;
-  margin-right: 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.9rem;
+  background: #fff;
+  color: #111;
+  transition: border-color 0.15s;
+}
+
+.formControl:focus {
+  outline: none;
+  border-color: #3b5fc0;
+  box-shadow: 0 0 0 3px rgba(59, 95, 192, 0.12);
+}
+
+.btnDanger {
+  margin: 0;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.8rem;
 }

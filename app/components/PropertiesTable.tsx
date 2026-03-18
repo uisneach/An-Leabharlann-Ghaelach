@@ -1,6 +1,7 @@
 import React from 'react';
 import { PropertyValue } from './PropertyValue';
 import styles from '@/public/styles/propertiestable.module.css';
+import ui from '@/public/styles/ui.module.css';
 
 // Reserved properties that cannot be edited
 const RESERVED_PROPERTIES = ['nodeId', 'createdBy'];
@@ -88,7 +89,7 @@ const PropertiesTable: React.FC<PropertiesTableProps> = ({
                   </td>
                   <td className="align-top text-center">
                     <button 
-                      className={`btn btn-sm btn-danger ${styles.btnDanger}`}
+                      className={ui.btnDanger}
                       onClick={() => handleDeleteProperty(key)}
                       title="Delete this property">
                       Delete
@@ -102,7 +103,7 @@ const PropertiesTable: React.FC<PropertiesTableProps> = ({
       
       <div className="d-flex gap-2 mt-3">
         <button 
-          className="btn btn-secondary"
+          className={ui.btnSecondary}
           onClick={handleAddProperty}>
           + Add New Property
         </button>

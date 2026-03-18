@@ -1,6 +1,10 @@
 'use client'
 import React, { useState, useEffect } from 'react';
+
+// Import CSS styles
 import styles from '@/public/styles/edit.module.css';
+import ui from '@/public/styles/ui.module.css';
+
 import isEqual from 'react-fast-compare';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/AuthContext';
@@ -331,20 +335,19 @@ const EditPage = () => {
           {/* Action Buttons */}
           <div className="mb-4 flex flex-row justify-between align-items-center" id="action-father">
             {/* Navigation & safe actions */}
-            <div className="d-flex gap-2">
+            <div className="flex-row flex-gap-10">
               <a 
                 href={`/info?id=${encodeURIComponent(nodeData.nodeId)}`} 
-                className="btn btn-secondary">
-                Back to Info View
+                className={ui.btnSecondary}>
+                ← Info View
               </a>
-              <button className="btn btn-outline-secondary" onClick={loadNodeData}>
-                Reload from Database
+              <button className={ui.btnSecondary} onClick={loadNodeData}>
+                Reload
               </button>
               <button
-                className={`btn ${saveStatus === 'error' ? 'btn-danger' : 'btn-primary'}`}
+                className={saveStatus === 'error' ? ui.btnDanger : ui.btnPrimary}
                 onClick={handleSave}
-                disabled={saveStatus === 'saving'}
-              >
+                disabled={saveStatus === 'saving'}>
                 {saveStatus === 'saving' && (
                   <>
                     <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" />
@@ -366,7 +369,7 @@ const EditPage = () => {
             </div>
 
             {/* Destructive action */}
-            <button className="btn btn-danger" onClick={handleDeleteNode}>
+            <button className={ui.btnDanger} onClick={handleDeleteNode}>
               Delete Node
             </button>
           </div>

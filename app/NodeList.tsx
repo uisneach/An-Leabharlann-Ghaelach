@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
+import ui from '@/public/styles/ui.module.css';
 import { useAuth } from './AuthContext';
 import { getNodesByLabel } from '@/lib/api';
 import { getNodeDisplayName, getNodeSortKey, sortNodes } from '@/lib/utils';
@@ -68,13 +69,12 @@ export default function NodeList({ label, onRemove, isDefault, totalColumns, isA
         </h2>
         <div>
           {isAuthenticated && (
-            <a href={`/create?label=${encodeURIComponent(label)}`} className="btn btn-sm btn-primary create-btn">+</a>
+            <a href={`/create?label=${encodeURIComponent(label)}`} className={ui.btnSm}>+</a>
           )}
           <button 
-            className="btn btn-sm btn-danger remove-btn ms-2" 
+            className={ui.btnDanger} 
             onClick={onRemove} 
-            style={{ display: isDefault && totalColumns <= 3 ? 'none' : 'inline-block' }}
-          >
+            style={{ display: isDefault && totalColumns <= 3 ? 'none' : 'inline-block' }}>
             Remove
           </button>
         </div>

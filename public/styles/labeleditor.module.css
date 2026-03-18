@@ -1,29 +1,50 @@
-.formControl {
-  background: white;
-  color: #212529;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  flex: 1;
-  padding: .5rem;
-  margin-right: 1rem;
+.labelsContainer {
+  width: 100%;
+  max-width: 560px;
 }
 
-.labelInput {
-  width: '200px';
-  margin-right: '1rem';
-  border-radius: 4px;
-  padding: 0 10px;
-  max-width: 500px;
-  border: 1px solid black;
+.labelsTitle {
+  margin: 1em 0 0.5em 0;
 }
 
 .labelItem {
   display: flex;
   flex-direction: row;
-  gap: 1rem;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
-.labelsContainer {
-  width: 100%;
-  max-width: 400px;
+.labelInput {
+  flex: 1;
+  max-width: 320px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.95rem;
+  background: #fff;
+  color: #111;
+  transition: border-color 0.15s;
+}
+
+.labelInput:focus {
+  outline: none;
+  border-color: #3b5fc0;
+  box-shadow: 0 0 0 3px rgba(59, 95, 192, 0.12);
+}
+
+.formControl {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.95rem;
+  background: #fff;
+  color: #111;
+  transition: border-color 0.15s;
+}
+
+.formControl:focus {
+  outline: none;
+  border-color: #3b5fc0;
+  box-shadow: 0 0 0 3px rgba(59, 95, 192, 0.12);
 }
