@@ -20,9 +20,9 @@ import {
 } from '@/lib/api';
 import { validateLabel, validatePropertyKey, getNodeDisplayName, isSameRel } from '@/lib/utils';
 import { Node, Relationship, NodeData } from '@/lib/types';
-import PropertiesTable from './PropertiesTable';
-import LabelsEditor from './LabelsEditor';
-import RelationshipsManager from './RelationshipsManager';
+import PropertiesTable from '@/app/components/PropertiesTable';
+import LabelsEditor from '@/app/components/LabelsEditor';
+import RelationshipsManager from '@/app/components/RelationshipsManager';
 
 // Reserved properties that cannot be edited
 const RESERVED_PROPERTIES = ['nodeId', 'createdBy'];
