@@ -46,8 +46,8 @@ export function getNodeDisplayName(node: Node): string {
  */
 export function isUrl(str: string): boolean {
   try {
-    new URL(str);
-    return true;
+    const url = new URL(str);
+    return url.protocol === "http:" || url.protocol === "https:";
   } catch {
     return false;
   }
