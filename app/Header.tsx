@@ -246,7 +246,7 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
           </a>
           <a className={styles.navbarBrand} href="/">An Leabharlann Ghaelach</a>
         </div>
-        <div id="search-form">
+        <div id="search-form" className={styles.searchForm}>
           <input
             className={styles.formControl}
             type="search"
