@@ -6,26 +6,26 @@ import { useAuth } from '@/app/AuthContext';
 import Header from '@/app/Header';
 import Footer from '@/app/Footer';
 import { getProfile, updateProfile, changePassword } from '@/lib/api';
-import { NodeData } from '@/lib/types';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
+import { parseJwt, getLocalStorage } from '@/lib/utils';
+import styles from '@/public/styles/profile.module.css';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
+
 type Tab = 'overview' | 'display-name' | 'password';
 
 interface UserProfile {
   username: string;
-  role: 'user' | 'admin';
+  role: string | 'user';
   display_name: string | null;
   createdAt: string | null;
   lastLogin: string | null;
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 function formatDate(raw: string | null): string {
   if (!raw) return '—';
   try {
-    // Neo4j DateTime objects serialise as an ISO-ish string; Date handles them fine
     return new Date(raw).toLocaleDateString(undefined, {
       year: 'numeric', month: 'long', day: 'numeric',
       hour: '2-digit', minute: '2-digit'
@@ -35,28 +35,16 @@ function formatDate(raw: string | null): string {
   }
 }
 
-function roleBadge(role: string) {
-  const isAdmin = role === 'admin';
+function RoleBadge({ role }: { role: string }) {
   return (
-    <span
-      style={{
-        display: 'inline-block',
-        padding: '0.2rem 0.65rem',
-        borderRadius: '999px',
-        fontSize: '0.78rem',
-        fontWeight: 700,
-        letterSpacing: '0.04em',
-        background: isAdmin ? '#1a3a6b' : '#e8ecf5',
-        color: isAdmin ? '#fff' : '#3c4f7c',
-        border: isAdmin ? 'none' : '1px solid #c3cde8',
-      }}
-    >
+    <span className={role === 'admin' ? styles.roleBadgeAdmin : styles.roleBadge}>
       {role.toUpperCase()}
     </span>
   );
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default function AccountPage() {
   const router = useRouter();
   const { isAuthenticated, username, checkAuthStatus } = useAuth();
@@ -66,21 +54,25 @@ export default function AccountPage() {
   const [authChecked, setAuthChecked] = useState(false);
   const [activeTab, setActiveTab]     = useState<Tab>('overview');
 
+  // Derived from the current session's JWT
+  const [currentUserIsAdmin, setCurrentUserIsAdmin] = useState(false);
+
   // Display-name form
-  const [displayName, setDisplayName]     = useState('');
-  const [dnSaving, setDnSaving]           = useState(false);
-  const [dnSuccess, setDnSuccess]         = useState('');
-  const [dnError, setDnError]             = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [dnSaving, setDnSaving]       = useState(false);
+  const [dnSuccess, setDnSuccess]     = useState('');
+  const [dnError, setDnError]         = useState('');
 
   // Password form
-  const [currentPw, setCurrentPassword]   = useState('');
-  const [newPassword, setNewPassword]           = useState('');
-  const [confirmPassword, setConfirmPassword]   = useState('');
-  const [pwSaving, setPwSaving]     = useState(false);
-  const [pwSuccess, setPwSuccess]   = useState('');
-  const [pwError, setPwError]       = useState('');
+  const [currentPw, setCurrentPassword]       = useState('');
+  const [newPassword, setNewPassword]         = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [pwSaving, setPwSaving]               = useState(false);
+  const [pwSuccess, setPwSuccess]             = useState('');
+  const [pwError, setPwError]                 = useState('');
 
   // ── Auth guard ──────────────────────────────────────────────────────────────
+
   useEffect(() => {
     const t = setTimeout(() => {
       setAuthChecked(true);
@@ -89,17 +81,33 @@ export default function AccountPage() {
     return () => clearTimeout(t);
   }, [isAuthenticated, router]);
 
+  // Read the current user's role from their own session token
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const token = getLocalStorage('token');
+    if (token) {
+      const payload = parseJwt(token);
+      setCurrentUserIsAdmin(payload.role === 'admin');
+    }
+  }, [isAuthenticated]);
+
   useEffect(() => {
     if (!authChecked || !isAuthenticated) return;
     loadProfile();
   }, [authChecked, isAuthenticated]);
 
-  // ── Load profile ───────────────────────────────────────────────────────────
-  const loadProfile = async() => {
-    try {
-      const response = await getProfile(username);
+  // ── Load profile ────────────────────────────────────────────────────────────
 
-      if (!response.ok) 
+  const loadProfile = async () => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const profileUsername = params.get('username');
+
+      console.log(profileUsername);
+
+      const response = await getProfile(profileUsername);
+
+      if (!response.ok)
         throw new Error('Failed to load profile');
 
       const data = await response.json();
@@ -113,6 +121,7 @@ export default function AccountPage() {
   };
 
   // ── Save display name ────────────────────────────────────────────────────────
+
   const handleSaveDisplayName = async () => {
     return;
     /*
@@ -136,6 +145,7 @@ export default function AccountPage() {
   };
 
   // ── Change password ──────────────────────────────────────────────────────────
+
   const handleChangePassword = async () => {
     setPwError(''); setPwSuccess('');
     if (!currentPw || !newPassword || !confirmPassword) {
@@ -162,11 +172,12 @@ export default function AccountPage() {
   };
 
   // ── Loading / redirect states ────────────────────────────────────────────────
+
   if (!authChecked || loading) {
     return (
       <>
         <Header isAuthenticated={isAuthenticated} username={username} onAuthChange={checkAuthStatus} />
-        <div style={{ textAlign: 'center', padding: '4rem' }}>
+        <div className={styles.loadingCenter}>
           <div className="spinner-border text-primary" role="status">
             <span className="visually-hidden">Loading…</span>
           </div>
@@ -185,29 +196,34 @@ export default function AccountPage() {
     { key: 'password',     label: 'Change Password' },
   ];
 
+  const pwMismatch = !!confirmPassword && newPassword !== confirmPassword;
+
   return (
     <>
       <Header isAuthenticated={isAuthenticated} username={username} onAuthChange={checkAuthStatus} />
 
-      <div style={styles.page}>
+      <div className={styles.page}>
+
         {/* ── Left panel ──────────────────────────────────────────────────── */}
-        <aside style={styles.sidebar}>
-          <div style={styles.avatar}>
+        <aside className={styles.sidebar}>
+          <div className={styles.avatar}>
             {(profile?.display_name ?? profile?.username ?? '?')[0].toUpperCase()}
           </div>
-          <div style={styles.sidebarName}>
+          <div className={styles.sidebarName}>
             {profile?.display_name ?? profile?.username}
           </div>
-          <div style={{ marginBottom: '0.4rem' }}>
-            {profile && roleBadge(profile.role)}
-          </div>
-          <div style={styles.sidebarUsername}>@{profile?.username}</div>
+          {currentUserIsAdmin && (
+            <div className={styles.roleBadgeWrapper}>
+              <RoleBadge role={profile.role} />
+            </div>
+          )}
+          <div className={styles.sidebarUsername}>@{profile?.username}</div>
 
-          <nav style={styles.nav}>
+          <nav className={styles.nav}>
             {tabs.map(t => (
               <button
                 key={t.key}
-                style={{ ...styles.navBtn, ...(activeTab === t.key ? styles.navBtnActive : {}) }}
+                className={`${styles.navBtn} ${activeTab === t.key ? styles.navBtnActive : ''}`}
                 onClick={() => setActiveTab(t.key)}
               >
                 {t.label}
@@ -217,60 +233,60 @@ export default function AccountPage() {
         </aside>
 
         {/* ── Main panel ──────────────────────────────────────────────────── */}
-        <main style={styles.main}>
+        <main className={styles.main}>
 
           {/* OVERVIEW ──────────────────────────────────────────────────────── */}
           {activeTab === 'overview' && (
             <section>
-              <h2 style={styles.sectionTitle}>Account Overview</h2>
-              <div style={styles.card}>
-                <table style={styles.infoTable}>
+              <h2 className={styles.sectionTitle}>Account Overview</h2>
+              <div className={styles.card}>
+                <table className={styles.infoTable}>
                   <tbody>
                     <InfoRow label="Username"     value={profile?.username ?? '—'} />
-                    <InfoRow label="Display Name" value={profile?.display_name ?? <em style={{ color: '#999' }}>Not set</em>} />
-                    <InfoRow label="Role"         value={profile ? roleBadge(profile.role) : '—'} />
+                    <InfoRow label="Display Name" value={profile?.display_name ?? <em className={styles.notSet}>Not set</em>} />
                     <InfoRow label="Member Since" value={formatDate(profile?.createdAt ?? null)} />
-                    <InfoRow label="Last Login"   value={formatDate(profile?.lastLogin ?? null)} />
+                    {currentUserIsAdmin && (
+                      <>
+                        <InfoRow label="Role"       value={<RoleBadge role={profile.role} />} />
+                        <InfoRow label="Last Login" value={formatDate(profile.lastLogin ?? null)} />
+                      </>
+                    )}
                   </tbody>
                 </table>
               </div>
-
-              <p style={styles.hint}>
-                Use the tabs on the left to update your display name or change your password.
-              </p>
             </section>
           )}
 
           {/* DISPLAY NAME ──────────────────────────────────────────────────── */}
           {activeTab === 'display-name' && (
             <section>
-              <h2 style={styles.sectionTitle}>Display Name</h2>
-              <p style={styles.description}>
+              <h2 className={styles.sectionTitle}>Display Name</h2>
+              <p className={styles.description}>
                 Your display name is shown instead of your username across the library.
                 It can be up to 60 characters.
               </p>
 
-              <div style={styles.card}>
-                <div style={styles.fieldGroup}>
-                  <label style={styles.fieldLabel}>Display Name</label>
+              <div className={styles.card}>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel}>Display Name</label>
                   <input
                     type="text"
-                    style={styles.input}
+                    className={styles.input}
                     value={displayName}
                     maxLength={60}
                     placeholder="e.g. Séamus Ó Briain"
                     onChange={e => { setDisplayName(e.target.value); setDnError(''); setDnSuccess(''); }}
                     onKeyPress={e => e.key === 'Enter' && handleSaveDisplayName()}
                   />
-                  <div style={styles.charCount}>{displayName.length}/60</div>
+                  <div className={styles.charCount}>{displayName.length}/60</div>
                 </div>
 
-                {dnError   && <div style={styles.alertDanger}>{dnError}</div>}
-                {dnSuccess && <div style={styles.alertSuccess}>{dnSuccess}</div>}
+                {dnError   && <div className={styles.alertDanger}>{dnError}</div>}
+                {dnSuccess && <div className={styles.alertSuccess}>{dnSuccess}</div>}
 
-                <div style={styles.actions}>
+                <div className={styles.actions}>
                   <button
-                    style={{ ...styles.btn, ...styles.btnPrimary }}
+                    className={`${styles.btn} ${styles.btnPrimary}`}
                     onClick={handleSaveDisplayName}
                     disabled={dnSaving}
                   >
@@ -278,7 +294,7 @@ export default function AccountPage() {
                   </button>
                   {profile?.display_name && (
                     <button
-                      style={{ ...styles.btn, ...styles.btnGhost }}
+                      className={`${styles.btn} ${styles.btnGhost}`}
                       onClick={() => { setDisplayName(''); setDnError(''); setDnSuccess(''); }}
                       disabled={dnSaving}
                     >
@@ -293,68 +309,60 @@ export default function AccountPage() {
           {/* CHANGE PASSWORD ────────────────────────────────────────────────── */}
           {activeTab === 'password' && (
             <section>
-              <h2 style={styles.sectionTitle}>Change Password</h2>
-              <p style={styles.description}>
+              <h2 className={styles.sectionTitle}>Change Password</h2>
+              <p className={styles.description}>
                 Enter your current password to confirm your identity, then choose a new password
                 of at least 8 characters.
               </p>
 
-              <div style={styles.card}>
-                <div style={styles.fieldGroup}>
-                  <label style={styles.fieldLabel}>Current Password</label>
+              <div className={styles.card}>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel}>Current Password</label>
                   <input
                     type="password"
-                    style={styles.input}
+                    className={styles.input}
                     value={currentPw}
                     placeholder="Your current password"
                     onChange={e => { setCurrentPassword(e.target.value); setPwError(''); setPwSuccess(''); }}
                   />
                 </div>
 
-                <div style={{ height: '1px', background: '#e8ecf5', margin: '1.25rem 0' }} />
+                <div className={styles.divider} />
 
-                <div style={styles.fieldGroup}>
-                  <label style={styles.fieldLabel}>New Password</label>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel}>New Password</label>
                   <input
                     type="password"
-                    style={styles.input}
+                    className={styles.input}
                     value={newPassword}
                     placeholder="At least 8 characters"
                     onChange={e => { setNewPassword(e.target.value); setPwError(''); setPwSuccess(''); }}
                   />
                 </div>
 
-                <div style={styles.fieldGroup}>
-                  <label style={styles.fieldLabel}>Confirm New Password</label>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel}>Confirm New Password</label>
                   <input
                     type="password"
-                    style={{
-                      ...styles.input,
-                      borderColor: confirmPassword && newPassword !== confirmPassword ? '#dc3545' : undefined,
-                    }}
+                    className={`${styles.input} ${pwMismatch ? styles.inputError : ''}`}
                     value={confirmPassword}
                     placeholder="Repeat new password"
                     onChange={e => { setConfirmPassword(e.target.value); setPwError(''); setPwSuccess(''); }}
                     onKeyPress={e => e.key === 'Enter' && handleChangePassword()}
                   />
-                  {confirmPassword && newPassword !== confirmPassword && (
-                    <div style={{ color: '#dc3545', fontSize: '0.8rem', marginTop: '0.3rem' }}>
-                      Passwords do not match
-                    </div>
+                  {pwMismatch && (
+                    <div className={styles.pwMismatch}>Passwords do not match</div>
                   )}
                 </div>
 
-                {/* Strength indicator */}
-                {newPassword && (
-                  <PasswordStrength password={newPassword} />
-                )}
+                {newPassword && <PasswordStrength password={newPassword} />}
 
-                {pwError   && <div style={styles.alertDanger}>{pwError}</div>}
-                {pwSuccess && <div style={styles.alertSuccess}>{pwSuccess}</div>}
+                {pwError   && <div className={styles.alertDanger}>{pwError}</div>}
+                {pwSuccess && <div className={styles.alertSuccess}>{pwSuccess}</div>}
 
-                <div style={styles.actions}>
+                <div className={styles.actions}>
                   <button
-                    style={{ ...styles.btn, ...styles.btnPrimary }}
+                    className={`${styles.btn} ${styles.btnPrimary}`}
                     onClick={handleChangePassword}
                     disabled={pwSaving}
                   >
@@ -378,8 +386,8 @@ export default function AccountPage() {
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <tr>
-      <th style={styles.infoTh}>{label}</th>
-      <td style={styles.infoTd}>{value}</td>
+      <th className={styles.infoTh}>{label}</th>
+      <td className={styles.infoTd}>{value}</td>
     </tr>
   );
 }
@@ -393,225 +401,24 @@ function PasswordStrength({ password }: { password: string }) {
     /[^A-Za-z0-9]/.test(password),
   ].filter(Boolean).length;
 
-  const labels = ['', 'Weak', 'Fair', 'Good', 'Strong', 'Very strong'];
+  const labels  = ['', 'Weak', 'Fair', 'Good', 'Strong', 'Very strong'];
   const colours = ['', '#dc3545', '#fd7e14', '#ffc107', '#20c997', '#198754'];
 
   return (
     <div style={{ marginBottom: '1rem' }}>
-      <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
-        {[1,2,3,4,5].map(i => (
-          <div key={i} style={{
-            flex: 1,
-            height: '4px',
-            borderRadius: '2px',
-            background: i <= score ? colours[score] : '#e8ecf5',
-            transition: 'background 0.2s',
-          }} />
+      <div className={styles.strengthBars}>
+        {[1, 2, 3, 4, 5].map(i => (
+          // Bar color is runtime-computed (varies per score + index), so inline is correct here
+          <div
+            key={i}
+            className={styles.strengthBar}
+            style={{ background: i <= score ? colours[score] : '#e8ecf5' }}
+          />
         ))}
       </div>
-      <div style={{ fontSize: '0.78rem', color: colours[score], fontWeight: 600 }}>
+      <div className={styles.strengthLabel} style={{ color: colours[score] }}>
         {labels[score]}
       </div>
     </div>
   );
 }
-
-// ─── Styles ────────────────────────────────────────────────────────────────────
-
-const styles: Record<string, React.CSSProperties> = {
-  page: {
-    display: 'flex',
-    flexDirection: 'row',
-    gap: '2rem',
-    maxWidth: '960px',
-    margin: '2rem auto',
-    padding: '0 1rem',
-    alignItems: 'flex-start',
-  },
-  sidebar: {
-    width: '220px',
-    flexShrink: 0,
-    background: '#fff',
-    border: '1px solid #dde3f0',
-    borderRadius: '10px',
-    padding: '1.75rem 1.25rem',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '0.5rem',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-  },
-  avatar: {
-    width: '72px',
-    height: '72px',
-    borderRadius: '50%',
-    background: 'linear-gradient(135deg, #3366cc 0%, #1a3a6b 100%)',
-    color: '#fff',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '2rem',
-    fontWeight: 700,
-    marginBottom: '0.5rem',
-    fontFamily: 'Georgia, serif',
-    letterSpacing: '-0.02em',
-  },
-  sidebarName: {
-    fontWeight: 700,
-    fontSize: '1rem',
-    color: '#1a2a4a',
-    textAlign: 'center',
-    lineHeight: 1.3,
-  },
-  sidebarUsername: {
-    fontSize: '0.82rem',
-    color: '#8899bb',
-    marginBottom: '1rem',
-  },
-  nav: {
-    display: 'flex',
-    flexDirection: 'column',
-    width: '100%',
-    gap: '2px',
-  },
-  navBtn: {
-    width: '100%',
-    textAlign: 'left',
-    background: 'none',
-    border: 'none',
-    padding: '0.55rem 0.9rem',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontSize: '0.9rem',
-    color: '#4a5a7a',
-    fontFamily: 'Georgia, serif',
-    transition: 'background 0.15s, color 0.15s',
-  },
-  navBtnActive: {
-    background: '#eef1fb',
-    color: '#1a3a6b',
-    fontWeight: 600,
-  },
-  main: {
-    flex: 1,
-    minWidth: 0,
-  },
-  sectionTitle: {
-    fontSize: '1.4rem',
-    fontWeight: 700,
-    color: '#1a2a4a',
-    margin: '0 0 0.4rem',
-    fontFamily: 'Georgia, serif',
-  },
-  description: {
-    color: '#5a6a8a',
-    fontSize: '0.9rem',
-    margin: '0 0 1.25rem',
-    lineHeight: 1.6,
-  },
-  card: {
-    background: '#fff',
-    border: '1px solid #dde3f0',
-    borderRadius: '10px',
-    padding: '1.5rem',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-  },
-  infoTable: {
-    width: '100%',
-    borderCollapse: 'collapse',
-  },
-  infoTh: {
-    textAlign: 'left',
-    fontWeight: 600,
-    fontSize: '0.85rem',
-    color: '#7a8aaa',
-    padding: '0.6rem 1rem 0.6rem 0',
-    width: '38%',
-    verticalAlign: 'middle',
-    borderBottom: '1px solid #f0f2fa',
-  },
-  infoTd: {
-    fontSize: '0.9rem',
-    color: '#1a2a4a',
-    padding: '0.6rem 0',
-    borderBottom: '1px solid #f0f2fa',
-    verticalAlign: 'middle',
-  },
-  hint: {
-    marginTop: '1.25rem',
-    fontSize: '0.85rem',
-    color: '#8899bb',
-    lineHeight: 1.6,
-  },
-  fieldGroup: {
-    marginBottom: '1.1rem',
-  },
-  fieldLabel: {
-    display: 'block',
-    fontWeight: 600,
-    fontSize: '0.85rem',
-    color: '#4a5a7a',
-    marginBottom: '0.4rem',
-  },
-  input: {
-    width: '100%',
-    padding: '0.55rem 0.75rem',
-    border: '1px solid #ccd5ea',
-    borderRadius: '6px',
-    fontSize: '0.95rem',
-    fontFamily: 'Georgia, serif',
-    color: '#1a2a4a',
-    outline: 'none',
-    transition: 'border-color 0.15s, box-shadow 0.15s',
-    boxSizing: 'border-box',
-  },
-  charCount: {
-    textAlign: 'right',
-    fontSize: '0.75rem',
-    color: '#aab5cc',
-    marginTop: '0.25rem',
-  },
-  actions: {
-    display: 'flex',
-    gap: '0.75rem',
-    marginTop: '1.25rem',
-    flexWrap: 'wrap',
-  },
-  btn: {
-    padding: '0.55rem 1.25rem',
-    border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontFamily: 'Georgia, serif',
-    fontSize: '0.9rem',
-    fontWeight: 600,
-    transition: 'background 0.15s, opacity 0.15s',
-  },
-  btnPrimary: {
-    background: '#3366cc',
-    color: '#fff',
-  },
-  btnGhost: {
-    background: 'none',
-    color: '#3366cc',
-    border: '1px solid #ccd5ea',
-  },
-  alertDanger: {
-    background: '#fdf0f0',
-    border: '1px solid #f5c2c7',
-    color: '#842029',
-    borderRadius: '6px',
-    padding: '0.65rem 0.9rem',
-    fontSize: '0.875rem',
-    marginTop: '0.75rem',
-  },
-  alertSuccess: {
-    background: '#f0fdf4',
-    border: '1px solid #b6efc9',
-    color: '#0f5132',
-    borderRadius: '6px',
-    padding: '0.65rem 0.9rem',
-    fontSize: '0.875rem',
-    marginTop: '0.75rem',
-  },
-};

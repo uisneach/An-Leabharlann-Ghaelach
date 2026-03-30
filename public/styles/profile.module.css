@@ -1,0 +1,337 @@
+/* ─── Layout ──────────────────────────────────────────────────────────────── */
+
+.page {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  max-width: 960px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  align-items: flex-start;
+}
+
+/* ─── Sidebar ─────────────────────────────────────────────────────────────── */
+
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: #fff;
+  border: 1px solid #dde3f0;
+  border-radius: 10px;
+  padding: 1.75rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3366cc 0%, #1a3a6b 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  font-family: Georgia, serif;
+  letter-spacing: -0.02em;
+}
+
+.sidebarName {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #1a2a4a;
+  text-align: center;
+  line-height: 1.3;
+}
+
+.sidebarUsername {
+  font-size: 0.82rem;
+  color: #8899bb;
+  margin-bottom: 1rem;
+}
+
+.roleBadgeWrapper {
+  margin-bottom: 0.4rem;
+}
+
+/* ─── Role badge ──────────────────────────────────────────────────────────── */
+
+.roleBadge {
+  display: inline-block;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: #e8ecf5;
+  color: #3c4f7c;
+  border: 1px solid #c3cde8;
+}
+
+.roleBadgeAdmin {
+  display: inline-block;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: #1a3a6b;
+  color: #fff;
+  border: none;
+}
+
+/* ─── Sidebar nav ─────────────────────────────────────────────────────────── */
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 2px;
+}
+
+.navBtn {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0.55rem 0.9rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #4a5a7a;
+  font-family: Georgia, serif;
+  transition: background 0.15s, color 0.15s;
+}
+
+.navBtn:hover {
+  background: #f4f6fc;
+}
+
+.navBtnActive {
+  background: #eef1fb;
+  color: #1a3a6b;
+  font-weight: 600;
+}
+
+/* ─── Main panel ──────────────────────────────────────────────────────────── */
+
+.main {
+  flex: 1;
+  min-width: 0;
+}
+
+.sectionTitle {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1a2a4a;
+  margin: 0 0 0.4rem;
+  font-family: Georgia, serif;
+}
+
+.description {
+  color: #5a6a8a;
+  font-size: 0.9rem;
+  margin: 0 0 1.25rem;
+  line-height: 1.6;
+}
+
+.hint {
+  margin-top: 1.25rem;
+  font-size: 0.85rem;
+  color: #8899bb;
+  line-height: 1.6;
+}
+
+/* ─── Card ────────────────────────────────────────────────────────────────── */
+
+.card {
+  background: #fff;
+  border: 1px solid #dde3f0;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* ─── Info table ──────────────────────────────────────────────────────────── */
+
+.infoTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.infoTh {
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #7a8aaa;
+  padding: 0.6rem 1rem 0.6rem 0;
+  width: 38%;
+  vertical-align: middle;
+  border-bottom: 1px solid #f0f2fa;
+}
+
+.infoTd {
+  font-size: 0.9rem;
+  color: #1a2a4a;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #f0f2fa;
+  vertical-align: middle;
+}
+
+.notSet {
+  color: #999;
+}
+
+/* ─── Form fields ─────────────────────────────────────────────────────────── */
+
+.fieldGroup {
+  margin-bottom: 1.1rem;
+}
+
+.fieldLabel {
+  display: block;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #4a5a7a;
+  margin-bottom: 0.4rem;
+}
+
+.input {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid #ccd5ea;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-family: Georgia, serif;
+  color: #1a2a4a;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+}
+
+.input:focus {
+  border-color: #3366cc;
+  box-shadow: 0 0 0 3px rgba(51, 102, 204, 0.15);
+}
+
+.inputError {
+  border-color: #dc3545;
+}
+
+.charCount {
+  text-align: right;
+  font-size: 0.75rem;
+  color: #aab5cc;
+  margin-top: 0.25rem;
+}
+
+.divider {
+  height: 1px;
+  background: #e8ecf5;
+  margin: 1.25rem 0;
+}
+
+.pwMismatch {
+  color: #dc3545;
+  font-size: 0.8rem;
+  margin-top: 0.3rem;
+}
+
+/* ─── Buttons ─────────────────────────────────────────────────────────────── */
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 0.55rem 1.25rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: Georgia, serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btnPrimary {
+  background: #3366cc;
+  color: #fff;
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: #2a55aa;
+}
+
+.btnGhost {
+  background: none;
+  color: #3366cc;
+  border: 1px solid #ccd5ea;
+}
+
+.btnGhost:hover:not(:disabled) {
+  background: #f4f6fc;
+}
+
+/* ─── Alerts ──────────────────────────────────────────────────────────────── */
+
+.alertDanger {
+  background: #fdf0f0;
+  border: 1px solid #f5c2c7;
+  color: #842029;
+  border-radius: 6px;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.875rem;
+  margin-top: 0.75rem;
+}
+
+.alertSuccess {
+  background: #f0fdf4;
+  border: 1px solid #b6efc9;
+  color: #0f5132;
+  border-radius: 6px;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.875rem;
+  margin-top: 0.75rem;
+}
+
+/* ─── Password strength ───────────────────────────────────────────────────── */
+
+.strengthBars {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.strengthBar {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  transition: background 0.2s;
+}
+
+.strengthLabel {
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+/* ─── Loading ─────────────────────────────────────────────────────────────── */
+
+.loadingCenter {
+  text-align: center;
+  padding: 4rem;
+}

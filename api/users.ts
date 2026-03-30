@@ -439,7 +439,7 @@ export async function GET(request: NextRequest) {
 // ---------------------------------------------------------------------------
 async function handleGetUser(username: string) {
   const result = await runQuery(
-    'MATCH (u:User {username: $username}) RETURN u',
+    'MATCH (u:User) WHERE toLower(u.username) = toLower($username) RETURN u',
     { username }
   );
 
