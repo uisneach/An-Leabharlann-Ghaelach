@@ -1,6 +1,6 @@
 import { runQuery } from '../lib/neo4j.js';
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server.js';
+import type { NextRequest } from 'next/server.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { randomUUID } from 'crypto';
