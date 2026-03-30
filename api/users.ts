@@ -97,7 +97,7 @@ async function handleRegister(body: Record<string, string>) {
   }
 
   // Check if user already exists
-  const existing = await runQuery<{ u: User }>(
+  const existing = await runQuery(
     'MATCH (u:User {username: $username}) RETURN u',
     { username }
   );
