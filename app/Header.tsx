@@ -77,7 +77,7 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
       
       onAuthChange();
     } catch (err) {
-      setLoginError(err instanceof Error ? err.error.message : 'Login failed');
+      setLoginError(err instanceof Error ? err.message : 'Login failed');
     }
   };
 
@@ -138,7 +138,7 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
         throw new Error(data.error || 'Registration failed');
       }
     } catch (error) {
-      setRegisterAlert(error instanceof Error ? error.error.message : 'Registration failed');
+      setRegisterAlert(error instanceof Error ? error.message : 'Registration failed');
     }
   };
 
@@ -204,7 +204,7 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
       setTotalMatches(data.totalMatches || 0);
       setIsSearchModalOpen(true);
     } catch (error) {
-      setSearchError(error instanceof Error ? error.error.message : 'Search failed');
+      setSearchError(error instanceof Error ? error.message : 'Search failed');
     } finally {
       setSearchLoading(false);
     }
