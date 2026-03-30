@@ -38,9 +38,6 @@ export async function POST(request: NextRequest) {
       properties.nodeId = uuidv4();
     }
 
-    // Normalize property keys and values to standardized snake case
-    const normalizedProperties = normalizePropertyKeys(properties);
-
     // Auto-generate display_name if not provided and label has config
     /*if (!properties.display_name) {
       const generatedDisplayName = await generateDisplayName(label, properties);

@@ -191,8 +191,6 @@ const NodeInfoPage = () => {
     return typeof value === 'string' && isUrl(value);
   });
 
-  console.log(allProps);
-  console.log(externalLinks);
   const infoboxProps = allProps.filter(([key]) => 
     !mainContentProps.includes(key) && 
     key !== 'img_link' && 
@@ -301,7 +299,7 @@ const NodeInfoPage = () => {
           </div>
 
           {/* Sidebar */}
-          <aside className="col-lg-4 flex-0 basis-1/4 min-w-0 max-w-sm">
+          <aside className="col-lg-4 flex-0 basis-1/3 min-w-0 max-w-sm">
             <div className="card sticky-top infobox" style={{ top: '20px' }}>
               <div className="card-body">
                 {/* Image */}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styles from '@/public/styles/propertyvalue.module.css';
+import ui from '@/public/styles/ui.module.css';
 
 // Properties that should use textarea instead of input
 const LONG_TEXT_PROPERTIES = ['description', 'contents', 'summary'];
@@ -88,7 +89,7 @@ export const PropertyValue: React.FC<PropertyValueProps> = ({
               />
             )}
             <button
-              className="btn btn-sm btn-danger"
+              className={ui.btnDanger}
               onClick={() => handleRemoveArrayItem(idx)}
               title="Remove this item"
               style={{ minWidth: '32px' }}
@@ -99,12 +100,12 @@ export const PropertyValue: React.FC<PropertyValueProps> = ({
         ))}
         <div className="d-flex gap-1 mt-2 flex-wrap">
           <button
-            className="btn btn-sm btn-secondary"
+            className={ui.btnSecondary}
             onClick={handleAddArrayItem}>
-            + Add Item
+            + Add Item 
           </button>
           <button
-            className={`btn btn-sm btn-outline-secondary ${styles.convertToSingle}`}
+            className={ui.btnSecondary}
             onClick={toggleArrayMode}
             title="Convert to single value">
             Single Value
