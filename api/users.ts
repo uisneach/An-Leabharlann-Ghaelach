@@ -26,13 +26,13 @@ export async function POST(request: NextRequest) {
 
     switch (action) {
       case 'register':
-        return handleRegister(body);
+        return await handleRegister(body);
       case 'login':
-        return handleLogin(body);
+        return await handleLogin(body);
       case 'refresh':
-        return handleRefresh(body);
+        return await handleRefresh(body);
       case 'change-password':
-        return handleChangePassword(body);
+        return await handleChangePassword(body);
       default:
         return NextResponse.json(
           {
@@ -197,7 +197,7 @@ async function handleLogin(body: Record<string, string>) {
     );
   }
 
-  const user = result[0].u.properties;
+  const user = result[0].u;
 
   const isValid = await bcrypt.compare(password, user.passwordHash);
   if (!isValid) {
@@ -276,7 +276,7 @@ async function handleRefresh(body: Record<string, string>) {
     );
   }
 
-  const user = result[0].u.properties;
+  const user = result[0].u;
 
   // Generate new access token
   const token = jwt.sign(
@@ -331,7 +331,7 @@ async function handleChangePassword(body: Record<string, string>) {
     );
   }
 
-  const user = result[0].u.properties;
+  const user = result[0].u;
 
   const isValid = await bcrypt.compare(password, user.passwordHash);
   if (!isValid) {
@@ -383,7 +383,7 @@ export async function GET(request: NextRequest) {
       );
     }
  
-    const user = result[0].u.properties;
+    const user = result[0].u;
  
     return NextResponse.json({
       user: {
