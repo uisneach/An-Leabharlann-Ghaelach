@@ -13,6 +13,14 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Tab = 'overview' | 'display-name' | 'password';
 
+interface UserProfile {
+  username: string;
+  role: 'user' | 'admin';
+  display_name: string | null;
+  createdAt: string | null;
+  lastLogin: string | null;
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function formatDate(raw: string | null): string {
   if (!raw) return '—';
@@ -91,10 +99,10 @@ export default function AccountPage() {
     try {
       const response = await getProfile(username);
 
-      if (!res.ok) 
+      if (!response.ok) 
         throw new Error('Failed to load profile');
 
-      const data = await res.json();
+      const data = await response.json();
       setProfile(data.user);
       setDisplayName(data.user.display_name ?? '');
     } catch (e) {
