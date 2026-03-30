@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Normalize property keys and values to standardized snake case
-    properties = normalizePropertyKeys(properties);
+    const normalizedProperties = normalizePropertyKeys(properties);
 
     // Auto-generate display_name if not provided and label has config
     /*if (!properties.display_name) {
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       RETURN n
     `;
     
-    const results = await runQuery(cypher, { properties });
+    const results = await runQuery(cypher, { normalizedProperties });
     
     return NextResponse.json({
       success: true,
