@@ -387,14 +387,15 @@ async function handleUpdateProfile(body: Record<string, string>) {
 // ---------------------------------------------------------------------------
 export async function GET(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { action } = body;
+    const { searchParams } = new URL(request.url);
+    const action = searchParams.get('action');
+    const username = searchParams.get('username');
 
     switch (action) {
       case 'user':
-        return await handleGetUser(body);
+        return await handleGetUser(username);
       case 'profile':
-        return await handleGetUser(body);
+        return await handleGetUser(username);
       default:
         return NextResponse.json(
           {
@@ -424,9 +425,7 @@ export async function GET(request: NextRequest) {
 // ---------------------------------------------------------------------------
 // Get User
 // ---------------------------------------------------------------------------
-async function handleGetUser(body: Record<string, string>) {
-  const { username } = body;
-
+async function handleGetUser(username: string) {
   const result = await runQuery(
     'MATCH (u:User {username: $username}) RETURN u',
     { username }

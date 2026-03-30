@@ -5,24 +5,15 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/AuthContext';
 import Header from '@/app/Header';
 import Footer from '@/app/Footer';
-import { getAuthHeaders, getProfile } from '@/lib/api';
+import { getProfile, updateProfile, changePassword } from '@/lib/api';
+import { NodeData } from '@/lib/types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-
-interface UserProfile {
-  username: string;
-  role: 'user' | 'admin';
-  display_name: string | null;
-  createdAt: string | null;
-  lastLogin: string | null;
-}
-
 type Tab = 'overview' | 'display-name' | 'password';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-
 function formatDate(raw: string | null): string {
   if (!raw) return '—';
   try {
@@ -58,7 +49,6 @@ function roleBadge(role: string) {
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
-
 export default function AccountPage() {
   const router = useRouter();
   const { isAuthenticated, username, checkAuthStatus } = useAuth();
@@ -75,9 +65,9 @@ export default function AccountPage() {
   const [dnError, setDnError]             = useState('');
 
   // Password form
-  const [currentPw, setCurrentPw]   = useState('');
-  const [newPw, setNewPw]           = useState('');
-  const [confirmPw, setConfirmPw]   = useState('');
+  const [currentPw, setCurrentPassword]   = useState('');
+  const [newPassword, setNewPassword]           = useState('');
+  const [confirmPassword, setConfirmPassword]   = useState('');
   const [pwSaving, setPwSaving]     = useState(false);
   const [pwSuccess, setPwSuccess]   = useState('');
   const [pwError, setPwError]       = useState('');
@@ -91,40 +81,39 @@ export default function AccountPage() {
     return () => clearTimeout(t);
   }, [isAuthenticated, router]);
 
-  // ── Fetch profile ───────────────────────────────────────────────────────────
   useEffect(() => {
     if (!authChecked || !isAuthenticated) return;
-    (async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/auth?action=profile`, {
-          headers: getAuthHeaders(),
-        });
-        if (!res.ok) throw new Error('Failed to load profile');
-        const data = await res.json();
-        setProfile(data.user);
-        setDisplayName(data.user.display_name ?? '');
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    })();
+    loadProfile();
   }, [authChecked, isAuthenticated]);
+
+  // ── Load profile ───────────────────────────────────────────────────────────
+  const loadProfile = async() => {
+    try {
+      const response = await getProfile(username);
+
+      if (!res.ok) 
+        throw new Error('Failed to load profile');
+
+      const data = await res.json();
+      setProfile(data.user);
+      setDisplayName(data.user.display_name ?? '');
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // ── Save display name ────────────────────────────────────────────────────────
   const handleSaveDisplayName = async () => {
     setDnError(''); setDnSuccess('');
-    if (displayName.length > 60) {
-      setDnError('Display name must be 60 characters or fewer.');
+    if (displayName.length > 30) {
+      setDnError('Display name must be 30 characters or fewer.');
       return;
     }
     setDnSaving(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/auth?action=update-profile`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ display_name: displayName }),
-      });
+      const res = await updateProfile(displayName);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Update failed');
       setProfile(p => p ? { ...p, display_name: displayName || null } : p);
@@ -139,26 +128,22 @@ export default function AccountPage() {
   // ── Change password ──────────────────────────────────────────────────────────
   const handleChangePassword = async () => {
     setPwError(''); setPwSuccess('');
-    if (!currentPw || !newPw || !confirmPw) {
+    if (!currentPw || !newPassword || !confirmPassword) {
       setPwError('All three fields are required.'); return;
     }
-    if (newPw !== confirmPw) {
+    if (newPassword !== confirmPassword) {
       setPwError('New password and confirmation do not match.'); return;
     }
-    if (newPw.length < 8) {
-      setPwError('New password must be at least 8 characters.'); return;
+    if (newPassword.length < 6) {
+      setPwError('New password must be at least 6 characters.'); return;
     }
     setPwSaving(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/auth?action=change-password`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ currentPassword: currentPw, newPassword: newPw }),
-      });
+      const res = await changePassword(username, currentPw, newPassword);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Password change failed');
       setPwSuccess('Password changed successfully.');
-      setCurrentPw(''); setNewPw(''); setConfirmPw('');
+      setCurrentPassword(''); setNewPassword(''); setConfirmPassword('');
     } catch (e) {
       setPwError(e instanceof Error ? e.message : 'Password change failed');
     } finally {
@@ -312,7 +297,7 @@ export default function AccountPage() {
                     style={styles.input}
                     value={currentPw}
                     placeholder="Your current password"
-                    onChange={e => { setCurrentPw(e.target.value); setPwError(''); setPwSuccess(''); }}
+                    onChange={e => { setCurrentPassword(e.target.value); setPwError(''); setPwSuccess(''); }}
                   />
                 </div>
 
@@ -323,9 +308,9 @@ export default function AccountPage() {
                   <input
                     type="password"
                     style={styles.input}
-                    value={newPw}
+                    value={newPassword}
                     placeholder="At least 8 characters"
-                    onChange={e => { setNewPw(e.target.value); setPwError(''); setPwSuccess(''); }}
+                    onChange={e => { setNewPassword(e.target.value); setPwError(''); setPwSuccess(''); }}
                   />
                 </div>
 
@@ -335,14 +320,14 @@ export default function AccountPage() {
                     type="password"
                     style={{
                       ...styles.input,
-                      borderColor: confirmPw && newPw !== confirmPw ? '#dc3545' : undefined,
+                      borderColor: confirmPassword && newPassword !== confirmPassword ? '#dc3545' : undefined,
                     }}
-                    value={confirmPw}
+                    value={confirmPassword}
                     placeholder="Repeat new password"
-                    onChange={e => { setConfirmPw(e.target.value); setPwError(''); setPwSuccess(''); }}
+                    onChange={e => { setConfirmPassword(e.target.value); setPwError(''); setPwSuccess(''); }}
                     onKeyPress={e => e.key === 'Enter' && handleChangePassword()}
                   />
-                  {confirmPw && newPw !== confirmPw && (
+                  {confirmPassword && newPassword !== confirmPassword && (
                     <div style={{ color: '#dc3545', fontSize: '0.8rem', marginTop: '0.3rem' }}>
                       Passwords do not match
                     </div>
@@ -350,8 +335,8 @@ export default function AccountPage() {
                 </div>
 
                 {/* Strength indicator */}
-                {newPw && (
-                  <PasswordStrength password={newPw} />
+                {newPassword && (
+                  <PasswordStrength password={newPassword} />
                 )}
 
                 {pwError   && <div style={styles.alertDanger}>{pwError}</div>}

@@ -218,11 +218,10 @@ export async function deleteRelationship(fromNodeId: string, toNodeId: string, t
 // USER API
 // ============================================
 
-export async function getProfile() {
-  return fetch(`${API_BASE_URL}/users`, {
+export async function getProfile(username: string) {
+  return fetch(`${API_BASE_URL}/users?action=profile&username=${username}`, {
     method: 'GET',
     headers: getAuthHeaders(),
-    body: JSON.stringify({ action: 'profile' })
   });
 }
 
