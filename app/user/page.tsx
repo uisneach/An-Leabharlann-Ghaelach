@@ -245,7 +245,7 @@ export default function AccountPage() {
                     <InfoRow label="Username"     value={profile?.username ?? '—'} />
                     <InfoRow label="Display Name" value={profile?.display_name ?? <em className={styles.notSet}>Not set</em>} />
                     <InfoRow label="Member Since" value={formatDate(profile?.createdAt ?? null)} />
-                    {currentUserIsAdmin && (
+                    {currentUserIsAdmin && profile && (
                       <>
                         <InfoRow label="Role"       value={<RoleBadge role={profile.role} />} />
                         <InfoRow label="Last Login" value={formatDate(profile.lastLogin ?? null)} />
