@@ -363,6 +363,7 @@ async function handleChangePassword(body: Record<string, string>) {
 // ---------------------------------------------------------------------------
 export async function GET(request: NextRequest) {
   try {
+    const body = await request.json();
     const { username } = body;
 
     const result = await runQuery(
