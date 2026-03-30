@@ -212,7 +212,7 @@ export default function AccountPage() {
           <div className={styles.sidebarName}>
             {profile?.display_name ?? profile?.username}
           </div>
-          {currentUserIsAdmin && (
+          {currentUserIsAdmin && profile && (
             <div className={styles.roleBadgeWrapper}>
               <RoleBadge role={profile.role} />
             </div>
