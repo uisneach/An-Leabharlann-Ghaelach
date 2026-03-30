@@ -33,6 +33,8 @@ export async function POST(request: NextRequest) {
         return await handleRefresh(body);
       case 'change-password':
         return await handleChangePassword(body);
+      case 'update-profile':
+        return await handleUpdateProfile(body);
       default:
         return NextResponse.json(
           {
@@ -359,40 +361,53 @@ async function handleChangePassword(body: Record<string, string>) {
 }
 
 // ---------------------------------------------------------------------------
-// Get User
+// Update Profile
+// ---------------------------------------------------------------------------
+async function handleUpdateProfile(body: Record<string, string>) {
+  const { fields } = body;
+
+  if (!fields) {
+    return NextResponse.json(
+      {
+        error: {
+          code: 'INVALID_INPUT',
+          message: 'Profile data fields are required',
+        },
+      },
+      { status: 400 }
+    );
+  }
+
+  return NextResponse.json("test completed");
+}
+
+
+// ---------------------------------------------------------------------------
+// Get Routing
 // ---------------------------------------------------------------------------
 export async function GET(request: NextRequest) {
   try {
     const body = await request.json();
-    const { username } = body;
+    const { action } = body;
 
-    const result = await runQuery(
-      'MATCH (u:User {username: $username}) RETURN u',
-      { username }
-    );
- 
-    if (result.length === 0) {
-      return NextResponse.json(
-        {
-          error: {
-            code: 'NOT_FOUND',
-            message: `No user found with username '${username}'`,
+    switch (action) {
+      case 'user':
+        return await handleGetUser(body);
+      case 'profile':
+        return await handleGetUser(body);
+      default:
+        return NextResponse.json(
+          {
+            error: {
+              code: 'INVALID_ACTION',
+              message: 'Action must be one of: register, login, refresh, change-password',
+            },
           },
-        },
-        { status: 404 }
-      );
+          { status: 400 }
+        );
     }
- 
-    const user = result[0].u;
- 
-    return NextResponse.json({
-      user: {
-        username: user.username,
-        role: user.role,
-      },
-    });
   } catch (error) {
-    console.error('Get user error:', error);
+    console.error('User endpoint error:', error);
     return NextResponse.json(
       {
         error: {
@@ -404,6 +419,39 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+// ---------------------------------------------------------------------------
+// Get User
+// ---------------------------------------------------------------------------
+async function handleGetUser(body: Record<string, string>) {
+  const { username } = body;
+
+  const result = await runQuery(
+    'MATCH (u:User {username: $username}) RETURN u',
+    { username }
+  );
+
+  if (result.length === 0) {
+    return NextResponse.json(
+      {
+        error: {
+          code: 'NOT_FOUND',
+          message: `No user found with username '${username}'`,
+        },
+      },
+      { status: 404 }
+    );
+  }
+
+  const user = result[0].u;
+
+  return NextResponse.json({
+    user: {
+      username: user.username,
+      role: user.role,
+    },
+  });
 }
 
 /*

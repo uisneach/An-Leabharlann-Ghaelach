@@ -67,7 +67,7 @@ export async function getUser(username: string) {
   return fetch(`${API_BASE_URL}/users`, {
     method: 'GET',
     headers: getAuthHeaders(),
-    body: JSON.stringify({ username })
+    body: JSON.stringify({ action: 'user', username })
   });
 }
 
@@ -211,6 +211,26 @@ export async function deleteRelationship(fromNodeId: string, toNodeId: string, t
   return fetch(`${API_BASE_URL}/relationships?${params.toString()}`, {
     method: 'DELETE',
     headers: getAuthHeaders()
+  });
+}
+
+// ============================================
+// USER API
+// ============================================
+
+export async function getProfile() {
+  return fetch(`${API_BASE_URL}/users`, {
+    method: 'GET',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ action: 'profile' })
+  });
+}
+
+export async function updateProfile(fields: { display_name?: string }) {
+  return fetch(`${API_BASE_URL}/users`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify( action: 'update-profile', fields),
   });
 }
 

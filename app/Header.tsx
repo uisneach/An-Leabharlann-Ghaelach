@@ -279,7 +279,7 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, username, onAuthChange
             </a>
             {isAuthenticated && isDropdownOpen && (
               <ul className="dropdown-menu">
-                <li><a className="dropdown-item" href="account.html">Account</a></li>
+                <li><a className="dropdown-item" href={`user/?username=${ username }`}>Profile</a></li>
                 <li><a className="dropdown-item" onClick={handleLogout}>Log out</a></li>
               </ul>
             )}
