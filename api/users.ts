@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
           {
             error: {
               code: 'INVALID_ACTION',
-              message: 'action must be one of: login, refresh, change-password',
+              message: 'Action must be one of: register, login, refresh, change-password',
             },
           },
           { status: 400 }

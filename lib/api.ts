@@ -32,26 +32,34 @@ export function getAuthHeaders(): Record<string, string> {
 // ============================================
 
 export async function login(username: string, password: string) {
-  return fetch(`${API_BASE_URL}/users?action=login`, {
+  return fetch(`${API_BASE_URL}/users`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password })
+    body: JSON.stringify({ action: 'login', username, password })
   });
 }
 
 export async function register(username: string, password: string) {
-  return fetch(`${API_BASE_URL}/users?action=register`, {
+  return fetch(`${API_BASE_URL}/users`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password })
+    body: JSON.stringify({ action: 'register', username, password })
   });
 }
 
 export async function refreshToken(refreshToken: string) {
-  return fetch(`${API_BASE_URL}/users?action=refresh`, {
+  return fetch(`${API_BASE_URL}/users`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refreshToken })
+    body: JSON.stringify({ action: 'refresh', refreshToken })
+  });
+}
+
+export async function changePassword(username: string, password: string, newPassword: string) {
+  return fetch(`${API_BASE_URL}/users`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'change-password', username, password, newPassword })
   });
 }
 
