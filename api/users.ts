@@ -363,8 +363,8 @@ async function handleChangePassword(body: Record<string, string>) {
 // ---------------------------------------------------------------------------
 // Update Profile
 // ---------------------------------------------------------------------------
-async function handleUpdateProfile(body: Record<string, string>) {
-  const { fields } = body;
+async function handleUpdateProfile(body: Record<string, unknown>) {
+  const { fields, username } = body;
 
   if (!fields) {
     return NextResponse.json(

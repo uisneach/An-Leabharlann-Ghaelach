@@ -225,7 +225,7 @@ export async function getProfile(username: string) {
   });
 }
 
-export async function updateProfile(fields: { display_name?: string }) {
+export async function updateProfile(fields: Record<string, unknown>) {
   return fetch(`${API_BASE_URL}/users`, {
     method: 'POST',
     headers: getAuthHeaders(),
