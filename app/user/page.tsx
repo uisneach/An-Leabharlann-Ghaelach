@@ -113,6 +113,7 @@ export default function AccountPage() {
   };
 
   // ── Save display name ────────────────────────────────────────────────────────
+  /*
   const handleSaveDisplayName = async () => {
     setDnError(''); setDnSuccess('');
     if (displayName.length > 30) {
@@ -121,7 +122,7 @@ export default function AccountPage() {
     }
     setDnSaving(true);
     try {
-      const res = await updateProfile({ displayName, {}});
+      const res = await updateProfile();
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Update failed');
       setProfile(p => p ? { ...p, display_name: displayName || null } : p);
@@ -131,7 +132,7 @@ export default function AccountPage() {
     } finally {
       setDnSaving(false);
     }
-  };
+  };*/
 
   // ── Change password ──────────────────────────────────────────────────────────
   const handleChangePassword = async () => {
