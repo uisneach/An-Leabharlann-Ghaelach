@@ -32,7 +32,7 @@ export function getAuthHeaders(): Record<string, string> {
 // ============================================
 
 export async function login(username: string, password: string) {
-  return fetch(`${API_BASE_URL}/auth?action=login`, {
+  return fetch(`${API_BASE_URL}/users?action=login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, password })
@@ -40,7 +40,7 @@ export async function login(username: string, password: string) {
 }
 
 export async function register(username: string, password: string) {
-  return fetch(`${API_BASE_URL}/auth?action=register`, {
+  return fetch(`${API_BASE_URL}/users?action=register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, password })
@@ -48,10 +48,18 @@ export async function register(username: string, password: string) {
 }
 
 export async function refreshToken(refreshToken: string) {
-  return fetch(`${API_BASE_URL}/auth?action=refresh`, {
+  return fetch(`${API_BASE_URL}/users?action=refresh`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ refreshToken })
+  });
+}
+
+export async function getUser(username: string) {
+  return fetch(`${API_BASE_URL}/users`, {
+    method: 'GET',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ username })
   });
 }
 

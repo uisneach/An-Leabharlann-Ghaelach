@@ -2,6 +2,7 @@ import { runQuery } from '../../lib/neo4j.js';
 import { NextResponse } from 'next/server.js';
 import type { NextRequest } from 'next/server.js';
 import { v4 as uuidv4 } from 'uuid';
+import { normalizePropertyKeys } from '../../lib/apiUtils.js';
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,6 +37,9 @@ export async function POST(request: NextRequest) {
     if (!properties.nodeId) {
       properties.nodeId = uuidv4();
     }
+
+    // Normalize property keys and values to standardized snake case
+    properties = normalizePropertyKeys(properties);
 
     // Auto-generate display_name if not provided and label has config
     /*if (!properties.display_name) {
