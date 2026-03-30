@@ -391,6 +391,18 @@ export async function GET(request: NextRequest) {
     const action = searchParams.get('action');
     const username = searchParams.get('username');
 
+      if (!username) {
+        return NextResponse.json(
+          {
+            error: {
+              code: 'INVALID_REQUEST',
+              message: 'Username is null!',
+            },
+          },
+          { status: 401 }
+        );
+      }
+
     switch (action) {
       case 'user':
         return await handleGetUser(username);
