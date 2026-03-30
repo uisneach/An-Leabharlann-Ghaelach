@@ -121,7 +121,7 @@ export default function AccountPage() {
     }
     setDnSaving(true);
     try {
-      const res = await updateProfile(displayName);
+      const res = await updateProfile({ displayName, {}});
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Update failed');
       setProfile(p => p ? { ...p, display_name: displayName || null } : p);

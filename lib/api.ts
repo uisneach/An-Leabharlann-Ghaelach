@@ -225,11 +225,11 @@ export async function getProfile(username: string) {
   });
 }
 
-export async function updateProfile(fields: Record<string, unknown>) {
+export async function updateProfile(username: string, fields: Record<string, unknown>) {
   return fetch(`${API_BASE_URL}/users`, {
     method: 'POST',
     headers: getAuthHeaders(),
-    body: JSON.stringify({ action: 'update-profile', fields }),
+    body: JSON.stringify({ action: 'update-profile', username, fields }),
   });
 }
 
