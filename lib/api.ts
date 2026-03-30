@@ -230,7 +230,7 @@ export async function updateProfile(fields: { display_name?: string }) {
   return fetch(`${API_BASE_URL}/users`, {
     method: 'POST',
     headers: getAuthHeaders(),
-    body: JSON.stringify( action: 'update-profile', fields),
+    body: JSON.stringify({ action: 'update-profile', fields }),
   });
 }
 
