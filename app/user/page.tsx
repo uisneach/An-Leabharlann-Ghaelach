@@ -103,9 +103,9 @@ export default function AccountPage() {
       const params = new URLSearchParams(window.location.search);
       const profileUsername = params.get('username');
 
-      console.log(profileUsername);
+      if (!profileUsername) return;
 
-      const response = await getProfile(profileUsername);
+      const response = await getProfile(profileUsername!);
 
       if (!response.ok)
         throw new Error('Failed to load profile');
