@@ -113,8 +113,9 @@ export default function AccountPage() {
   };
 
   // ── Save display name ────────────────────────────────────────────────────────
-  /*
   const handleSaveDisplayName = async () => {
+    return;
+    /*
     setDnError(''); setDnSuccess('');
     if (displayName.length > 30) {
       setDnError('Display name must be 30 characters or fewer.');
@@ -131,8 +132,8 @@ export default function AccountPage() {
       setDnError(e instanceof Error ? e.message : 'Update failed');
     } finally {
       setDnSaving(false);
-    }
-  };*/
+    }*/
+  };
 
   // ── Change password ──────────────────────────────────────────────────────────
   const handleChangePassword = async () => {
