@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
       RETURN n
     `;
     
-    const results = await runQuery(cypher, { normalizedProperties });
+    const results = await runQuery(cypher, { properties });
     
     return NextResponse.json({
       success: true,
